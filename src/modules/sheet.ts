@@ -13,12 +13,15 @@ export type CounterActions = SetSheet;
 
 /* thunks */
 export const loadSheetThunk =
-  (file: File) => async (dispatch: Function, getState: () => State) => {
+  (file: File) =>
+  async (dispatch: Function, getState: () => State): Promise<boolean> => {
+    if (file.name === 'a') return false;
     dispatch(
       setSheet({
         title: file.name,
       }),
     );
+    return true;
   };
 
 export const sheetReducer = (
