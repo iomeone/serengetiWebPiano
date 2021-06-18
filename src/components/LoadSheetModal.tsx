@@ -60,7 +60,7 @@ export default function LoadSheetModal({
       }}
     >
       <Space direction="vertical" size={8} style={{ width: '100%' }}>
-        <Typography.Text>MIDI 파일을 업로드해주세요.</Typography.Text>
+        <Typography.Text>MusicXML 파일을 업로드해주세요.</Typography.Text>
         <Upload.Dragger
           name="file"
           multiple={false}
