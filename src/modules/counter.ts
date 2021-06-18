@@ -31,5 +31,7 @@ export const counterReducer = (
         draft.count = state.count - payload.count;
       });
     }
+    default:
+      return state;
   }
 };
