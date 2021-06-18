@@ -15,7 +15,6 @@ export type CounterActions = SetSheet;
 export const loadSheetThunk =
   (file: File) =>
   async (dispatch: Function, getState: () => State): Promise<boolean> => {
-    if (file.name === 'a') return false;
     dispatch(
       setSheet({
         title: file.name,
