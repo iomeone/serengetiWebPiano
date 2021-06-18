@@ -1,11 +1,12 @@
-import { Layout, Space, Typography, Button, message } from "antd";
-import { Footer, Header } from "antd/lib/layout/layout";
-import styled from "styled-components";
-import { SettingOutlined } from "@ant-design/icons";
-import { Sheet } from "models/Sheet";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { State } from "modules/State";
+import { Layout, Space, Typography, Button, message } from 'antd';
+import { Footer, Header } from 'antd/lib/layout/layout';
+import styled from 'styled-components';
+import { SettingOutlined } from '@ant-design/icons';
+import { Sheet } from 'models/Sheet';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { State } from 'modules/State';
+import LoadSheetModal from 'components/LoadSheetModal';
 
 const margin = 20;
 
@@ -48,13 +49,19 @@ function App() {
 
   return (
     <Screen>
+      <LoadSheetModal
+        visible={loadModal}
+        onVisibleChange={(v: boolean) => {
+          setLoadModal(v);
+        }}
+      ></LoadSheetModal>
       <Header>
         <HeaderCont>
           <Space size={8}>
             <Typography.Text
               style={{
-                color: "white",
-                fontWeight: "bold",
+                color: 'white',
+                fontWeight: 'bold',
                 fontSize: 20,
               }}
             >
@@ -62,7 +69,7 @@ function App() {
             </Typography.Text>
             <Typography.Text
               style={{
-                color: "white",
+                color: 'white',
                 fontSize: 18,
               }}
             >
@@ -84,17 +91,26 @@ function App() {
                 }}
               >
                 Press here
-              </Typography.Link>{" "}
+              </Typography.Link>{' '}
               to load new MusicXML file.
             </Typography.Text>
           ) : (
-            <Typography.Text>Now Playing: {sheet.title}</Typography.Text>
+            <Typography.Text>
+              Now Playing: {sheet.title}{' '}
+              <Typography.Link
+                onClick={() => {
+                  setLoadModal(true);
+                }}
+              >
+                Reload
+              </Typography.Link>
+            </Typography.Text>
           )}
         </Title>
       </Main>
       <Footer>
         <FooterCont>
-          <Typography.Text style={{ textAlign: "center" }}>
+          <Typography.Text style={{ textAlign: 'center' }}>
             copyright. 2021. sabana-music
           </Typography.Text>
         </FooterCont>
