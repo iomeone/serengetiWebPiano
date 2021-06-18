@@ -34,6 +34,12 @@ const FooterCont = styled.div`
   justify-content: center;
 `;
 
+const HeaderCont = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 function App() {
   const [loadModal, setLoadModal] = useState<boolean>(false);
 
@@ -43,13 +49,7 @@ function App() {
   return (
     <Screen>
       <Header>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <HeaderCont>
           <Space size={8}>
             <Typography.Text
               style={{
@@ -72,7 +72,7 @@ function App() {
           <Button shape="circle">
             <SettingOutlined />
           </Button>
-        </div>
+        </HeaderCont>
       </Header>
       <Main>
         <Title>
