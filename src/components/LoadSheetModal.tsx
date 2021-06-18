@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 type Props = {
   visible: boolean;
   onVisibleChange: (visible: boolean) => void;
-  file: UploadFile<any> | null;
+  file?: UploadFile<any> | null;
   onFileChange?: (file: UploadFile<any> | null) => void;
 };
 
@@ -21,7 +21,7 @@ export default function LoadSheetModal({
   const [myFile, setMyFile] = useState<UploadFile<any> | null>(null);
 
   useEffect(() => {
-    if (file !== null) setMyFile(file);
+    if (file !== undefined) setMyFile(file);
   }, [file, onFileChange]);
 
   const onMyFileChange = useCallback(
@@ -41,18 +41,18 @@ export default function LoadSheetModal({
       visible={visible}
       title="MusicXML 파일 업로드"
       onOk={async () => {
-        if (file === null) {
+        if (myFile === null) {
           message.error('업로드 완료 후 버튼을 눌러주세요.');
           return;
         }
 
         onVisibleChange(false);
 
-        if (await dispatch(loadSheetThunk(file.originFileObj as File))) {
+        if (await dispatch(loadSheetThunk(myFile.originFileObj as File))) {
+          message.success('파일 로드 성공');
+        } else {
           message.error('파일 로드 실패');
           setMyFile(null);
-        } else {
-          message.success('파일 로드 성공');
         }
       }}
       onCancel={() => {
