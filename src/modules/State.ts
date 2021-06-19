@@ -1,4 +1,4 @@
-import { Sheet } from "models/Sheet";
+import { Sheet } from 'models/Sheet';
 
 export type CounterState = {
   count: number;
@@ -6,6 +6,7 @@ export type CounterState = {
 
 export type SheetState = {
   sheet: Sheet | null;
+  file: File | null;
 };
 
 export type State = {

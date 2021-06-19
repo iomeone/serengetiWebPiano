@@ -1,4 +1,4 @@
-import { State } from "modules/State";
+import { State } from 'modules/State';
 
 const inistialState: State = {
   counter: {
@@ -6,6 +6,7 @@ const inistialState: State = {
   },
   sheet: {
     sheet: null,
+    file: null,
   },
 };
 

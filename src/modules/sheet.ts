@@ -5,11 +5,14 @@ import inistialState from './initialState';
 import { Sheet } from 'models/Sheet';
 
 export const SET_SHEET = '@SHEET/SET_SHEET';
+export const SET_FILE = '@SHEET/SET_FILE';
 
 export const setSheet = (sheet: Sheet) => action(SET_SHEET, { sheet });
 type SetSheet = ActionType<typeof setSheet>;
+export const setFile = (file: File) => action(SET_FILE, { file });
+type SetFile = ActionType<typeof setFile>;
 
-export type CounterActions = SetSheet;
+export type CounterActions = SetSheet | SetFile;
 
 /* thunks */
 export const loadSheetThunk =
@@ -20,6 +23,7 @@ export const loadSheetThunk =
         title: file.name,
       }),
     );
+    dispatch(setFile(file));
     return true;
   };
 
@@ -32,6 +36,12 @@ export const sheetReducer = (
       const { payload } = action as SetSheet;
       return produce<SheetState>(state, (draft) => {
         draft.sheet = payload.sheet;
+      });
+    }
+    case SET_FILE: {
+      const { payload } = action as SetFile;
+      return produce<SheetState>(state, (draft) => {
+        draft.file = payload.file;
       });
     }
     default:
