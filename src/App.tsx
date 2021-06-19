@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
+import Viewer from 'components/Viewer';
 
 const margin = 20;
 
@@ -44,9 +45,8 @@ const HeaderCont = styled.div`
 function App() {
   const [loadModal, setLoadModal] = useState<boolean>(false);
 
-  const sheet = useSelector((state: State) => state.sheet.sheet);
-  const dispatch = useDispatch();
-
+  const sheet = useSelector((state: State) => state.sheet);
+  
   return (
     <Screen>
       <LoadSheetModal
@@ -83,7 +83,7 @@ function App() {
       </Header>
       <Main>
         <Title>
-          {sheet === null ? (
+          {sheet.sheet === null ? (
             <Typography.Text>
               <Typography.Link
                 onClick={() => {
@@ -96,7 +96,7 @@ function App() {
             </Typography.Text>
           ) : (
             <Typography.Text>
-              Now Playing: {sheet.title}{' '}
+              Now Playing: {sheet.sheet.title}{' '}
               <Typography.Link
                 onClick={() => {
                   setLoadModal(true);
@@ -107,6 +107,7 @@ function App() {
             </Typography.Text>
           )}
         </Title>
+        {sheet.file !== null && <Viewer content={sheet.file}></Viewer>}
       </Main>
       <Footer>
         <FooterCont>
