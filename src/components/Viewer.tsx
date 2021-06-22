@@ -7,13 +7,22 @@ export default function Viewer() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const osmd = new OSMD('osmdContainer', {
+    const osmd = new OSMD('osmd-container', {
       backend: 'svg',
+      drawLyricist: false,
+      drawLyrics: false,
+      drawFingerings: true,
       drawTitle: false,
+      drawComposer: false,
+      drawCredits: false,
+      drawSubtitle: false,
+      drawPartNames: false,
+      drawPartAbbreviations: false,
+      drawingParameters: 'compact',
     });
 
     dispatch(setOSMD(osmd));
   }, []);
 
-  return <div id="osmdContainer"></div>;
+  return <div id="osmd-container"></div>;
 }
