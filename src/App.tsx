@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
+import SettingsModal from 'components/SettingsModal';
 
 const margin = 20;
 
@@ -43,17 +44,20 @@ const HeaderCont = styled.div`
 `;
 
 function App() {
-  const [loadModal, setLoadModal] = useState<boolean>(false);
+  const [loadModal, setLoadModal] = useState(false);
+  const [settingsModal, setSettingsModal] = useState(false);
   const sheet = useSelector((state: State) => state.sheet);
 
   return (
     <Screen>
       <LoadSheetModal
         visible={loadModal}
-        onVisibleChange={(v: boolean) => {
-          setLoadModal(v);
-        }}
+        onVisibleChange={setLoadModal}
       ></LoadSheetModal>
+      <SettingsModal
+        visible={settingsModal}
+        onVisibleChange={setSettingsModal}
+      ></SettingsModal>
       <Header>
         <HeaderCont>
           <Space size={8}>
@@ -75,7 +79,12 @@ function App() {
               | UGRP
             </Typography.Text>
           </Space>
-          <Button shape="circle">
+          <Button
+            shape="circle"
+            onClick={() => {
+              setSettingsModal(true);
+            }}
+          >
             <SettingOutlined />
           </Button>
         </HeaderCont>
