@@ -1,30 +1,19 @@
+import { useEffect } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setOSMD } from 'modules/sheet';
 
-type Props = {
-  content: File | null;
-};
-
-export default function Viewer({ content }: Props) {
-  const [osmd, setOsmd] = useState<OSMD | null>(null);
+export default function Viewer() {
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    setOsmd(
-      new OSMD('osmdContainer', {
-        backend: 'svg',
-        drawTitle: false,
-      }),
-    );
+    const osmd = new OSMD('osmdContainer', {
+      backend: 'svg',
+      drawTitle: false,
+    });
+
+    dispatch(setOSMD(osmd));
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      if (osmd !== null && content !== null) {
-        await osmd.load(await content.text());
-        osmd.render();
-      }
-    })();
-  }, [osmd, content]);
 
   return <div id="osmdContainer"></div>;
 }

@@ -44,9 +44,9 @@ const HeaderCont = styled.div`
 
 function App() {
   const [loadModal, setLoadModal] = useState<boolean>(false);
-
   const sheet = useSelector((state: State) => state.sheet);
-  
+  const sheetLoaded = sheet.file !== null;
+
   return (
     <Screen>
       <LoadSheetModal
@@ -107,7 +107,7 @@ function App() {
             </Typography.Text>
           )}
         </Title>
-        {sheet.file !== null && <Viewer content={sheet.file}></Viewer>}
+        <Viewer></Viewer>
       </Main>
       <Footer>
         <FooterCont>

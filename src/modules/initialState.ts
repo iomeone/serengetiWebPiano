@@ -7,6 +7,7 @@ const inistialState: State = {
   sheet: {
     sheet: null,
     file: null,
+    osmd: null,
   },
 };
 

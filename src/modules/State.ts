@@ -7,6 +7,7 @@ export type CounterState = {
 export type SheetState = {
   sheet: Sheet | null;
   file: File | null;
+  osmd: any | null;
 };
 
 export type State = {
