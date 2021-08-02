@@ -12,7 +12,12 @@ import { setPianoRange, setPianoVisibility } from 'modules/piano';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { midiKeyNumberToNote, Note, noteToMidiKeyNumber } from 'utils/Note';
+import {
+  midiKeyNumberToNote,
+  Note,
+  noteToBetterNoteName,
+  noteToMidiKeyNumber,
+} from 'utils/Note';
 
 type Props = {
   visible: boolean;
@@ -43,6 +48,15 @@ const useSettings = () => {
   }, [visibility, max, min]);
 
   return option;
+};
+
+const midiKeyNumberFormatter = (midiKeyNumber?: number): string => {
+  if (midiKeyNumber === undefined) {
+    return '';
+  }
+
+  const note = midiKeyNumberToNote(midiKeyNumber);
+  return noteToBetterNoteName(note);
 };
 
 export default function SettingsModal({ visible, onVisibleChange }: Props) {
@@ -140,6 +154,7 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
             range
             min={21}
             max={108}
+            tipFormatter={midiKeyNumberFormatter}
             value={
               newOption.piano.range.map((note) =>
                 noteToMidiKeyNumber(note),
