@@ -1,4 +1,5 @@
 import { Sheet } from 'models/Sheet';
+import { Note } from 'utils/Note';
 
 export type CounterState = {
   count: number;
@@ -10,7 +11,14 @@ export type SheetState = {
   osmd: any | null;
 };
 
+export type PianoState = {
+  visibility: boolean;
+  min: Note;
+  max: Note;
+};
+
 export type State = {
   counter: CounterState;
   sheet: SheetState;
+  piano: PianoState;
 };

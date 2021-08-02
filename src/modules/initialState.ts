@@ -1,4 +1,5 @@
 import { State } from 'modules/State';
+import { parseNoteNameToNote } from 'utils/Note';
 
 const inistialState: State = {
   counter: {
@@ -8,6 +9,11 @@ const inistialState: State = {
     sheet: null,
     file: null,
     osmd: null,
+  },
+  piano: {
+    visibility: false,
+    min: parseNoteNameToNote('A0'),
+    max: parseNoteNameToNote('C8'),
   },
 };
 
