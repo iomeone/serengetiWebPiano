@@ -34,6 +34,11 @@ export const noteToNoteName = (note: Note): string => {
   return pitchClassArr[note.pitchClass] + note.octave;
 };
 
+export const noteToBetterNoteName = (note: Note): string => {
+  const noteName = noteToNoteName(note);
+  return noteName.replace('is', '#');
+};
+
 export const parseNoteNameToNote = (noteName: string): Note => {
   const noteReg = /^([A-Za-z]+)([0-9]+)$/;
   const ret = noteReg.exec(noteName);
