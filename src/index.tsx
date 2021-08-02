@@ -26,11 +26,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 ReactDOM.render(
-  <React.StrictMode>
-    <ReduxProvider store={store}>
-      <App />
-    </ReduxProvider>
-  </React.StrictMode>,
+  <ReduxProvider store={store}>
+    <App />
+  </ReduxProvider>,
   document.getElementById('root'),
 );
 
