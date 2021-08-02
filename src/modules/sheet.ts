@@ -16,7 +16,7 @@ type SetFile = ActionType<typeof setFile>;
 export const setOSMD = (osmd: OSMD) => action(SET_OSMD, { osmd });
 type SetOSMD = ActionType<typeof setOSMD>;
 
-export type CounterActions = SetSheet | SetFile | SetOSMD;
+export type SheetActions = SetSheet | SetFile | SetOSMD;
 
 /* thunks */
 export const loadSheetThunk =
@@ -41,7 +41,7 @@ export const loadSheetThunk =
 
 export const sheetReducer = (
   state: SheetState = inistialState.sheet,
-  action: CounterActions,
+  action: SheetActions,
 ): SheetState => {
   switch (action.type) {
     case SET_SHEET: {
