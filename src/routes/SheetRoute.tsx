@@ -6,7 +6,11 @@ import { useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
-import { midiKeyNumberToNote, noteToMidiKeyNumber, parseNoteNameToNote } from 'utils/Note';
+import {
+  midiKeyNumberToNote,
+  noteToMidiKeyNumber,
+  parseNoteNameToNote,
+} from 'utils/Note';
 import Piano from 'components/Piano';
 
 const margin = 20;
@@ -58,17 +62,12 @@ export default function SheetRoute() {
         )}
       </Title>
       <Viewer></Viewer>
-      {piano.visibility ? <Piano
-        lower={noteToMidiKeyNumber(piano.min)}
-        upper={noteToMidiKeyNumber(piano.max)}
-        pressedKeys={[
-          parseNoteNameToNote('C3'),
-          parseNoteNameToNote('A3'),
-          parseNoteNameToNote('Ais3'),
-          parseNoteNameToNote('Ais4'),
-        ]}
-      /> : null
-      }
+      {piano.visibility ? (
+        <Piano
+          lower={noteToMidiKeyNumber(piano.min)}
+          upper={noteToMidiKeyNumber(piano.max)}
+        />
+      ) : null}
     </Main>
   );
 }
