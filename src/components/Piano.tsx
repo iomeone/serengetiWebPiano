@@ -58,7 +58,10 @@ export default function Piano({
     }));
 
     myPressedKeys.forEach((key) => {
-      keys[noteToMidiKeyNumber(key) - lower].isPressed = true;
+      const midiKeyNumber = noteToMidiKeyNumber(key);
+      if( midiKeyNumber >= lower && noteToMidiKeyNumber(key) <= upper){
+        keys[noteToMidiKeyNumber(key) - lower].isPressed = true;
+      }
     });
 
     return keys;
