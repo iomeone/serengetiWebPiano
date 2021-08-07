@@ -6,6 +6,8 @@ import { useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
+import { parseNoteNameToNote } from 'utils/Note';
+import Piano from 'components/Piano';
 
 const margin = 20;
 
@@ -56,6 +58,16 @@ export default function SheetRoute() {
         )}
       </Title>
       <Viewer></Viewer>
+      <Piano
+        lower={21}
+        upper={108}
+        pressedKeys={[
+          parseNoteNameToNote('C3'),
+          parseNoteNameToNote('A3'),
+          parseNoteNameToNote('Ais3'),
+          parseNoteNameToNote('Ais4'),
+        ]}
+      />
     </Main>
   );
 }
