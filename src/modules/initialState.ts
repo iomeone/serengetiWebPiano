@@ -11,7 +11,7 @@ const inistialState: State = {
     osmd: null,
   },
   piano: {
-    visibility: false,
+    visibility: true,
     min: parseNoteNameToNote('A0'),
     max: parseNoteNameToNote('C8'),
   },
