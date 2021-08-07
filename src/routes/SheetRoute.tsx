@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
-import { parseNoteNameToNote } from 'utils/Note';
+import { midiKeyNumberToNote, noteToMidiKeyNumber, parseNoteNameToNote } from 'utils/Note';
 import Piano from 'components/Piano';
 
 const margin = 20;
@@ -25,7 +25,7 @@ const Title = styled.div`
 export default function SheetRoute() {
   const [loadModal, setLoadModal] = useState(false);
   const sheet = useSelector((state: State) => state.sheet);
-
+  const piano = useSelector((state: State) => state.piano);
   return (
     <Main>
       <LoadSheetModal
@@ -58,16 +58,17 @@ export default function SheetRoute() {
         )}
       </Title>
       <Viewer></Viewer>
-      <Piano
-        lower={21}
-        upper={108}
+      {piano.visibility ? <Piano
+        lower={noteToMidiKeyNumber(piano.min)}
+        upper={noteToMidiKeyNumber(piano.max)}
         pressedKeys={[
           parseNoteNameToNote('C3'),
           parseNoteNameToNote('A3'),
           parseNoteNameToNote('Ais3'),
           parseNoteNameToNote('Ais4'),
         ]}
-      />
+      /> : null
+      }
     </Main>
   );
 }
