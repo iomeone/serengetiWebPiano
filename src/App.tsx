@@ -9,6 +9,8 @@ import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
 import SettingsModal from 'components/SettingsModal';
+import Piano from 'components/Piano';
+import { midiKeyNumberToNote, parseNoteNameToNote } from 'utils/Note';
 
 const margin = 20;
 
@@ -116,6 +118,16 @@ function App() {
           )}
         </Title>
         <Viewer></Viewer>
+        <Piano
+          lower={21}
+          upper={108}
+          pressedKeys={[
+            parseNoteNameToNote('C3'),
+            parseNoteNameToNote('A3'),
+            parseNoteNameToNote('Ais3'),
+            parseNoteNameToNote('Ais4'),
+          ]}
+        />
       </Main>
       <Footer>
         <FooterCont>
