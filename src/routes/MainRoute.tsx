@@ -36,6 +36,7 @@ export default function MainRoute() {
         size={10}
         style={{
           width: '100%',
+          maxWidth: 1000,
         }}
       >
         <List
