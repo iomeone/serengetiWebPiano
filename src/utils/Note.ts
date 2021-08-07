@@ -12,10 +12,10 @@ export enum PitchClass {
   Ais,
   B,
 }
-export const KeyType = [0,1,0,1,0,0,1,0,1,0,1,0];
 
+const KeyType = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0];
 export const midiKeyNumberToKeyType = (midiKeyNumber: number): number => {
-  return KeyType[midiKeyNumber%12];
+  return KeyType[midiKeyNumber % 12];
 };
 
 const pitchClassArr = Object.entries(PitchClass).map((p) => p[1]) as string[];
@@ -44,7 +44,9 @@ export const noteToBetterNoteName = (note: Note): string => {
   return noteName.replace('is', '#');
 };
 
-export const midiKeyNumberToBetterNoteName = (midiKeyNumber: number): string => {
+export const midiKeyNumberToBetterNoteName = (
+  midiKeyNumber: number,
+): string => {
   const note = midiKeyNumberToNote(midiKeyNumber);
   return noteToBetterNoteName(note);
 };
@@ -63,7 +65,7 @@ export const parseNoteNameToNote = (noteName: string): Note => {
   return { pitchClass, octave };
 };
 
-export function isNaturalNote(note: Note): boolean {
+export function isDiatonicNote(note: Note): boolean {
   switch (note.pitchClass) {
     case PitchClass.Ais:
     case PitchClass.Cis:
