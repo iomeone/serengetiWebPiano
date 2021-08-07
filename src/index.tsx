@@ -9,6 +9,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import combineReducer from 'modules/combineReducer';
 import initialState from 'modules/initialState';
 import ReduxThunk from 'redux-thunk';
+import { BrowserRouter } from 'react-router-dom';
 
 let store;
 if (process.env.NODE_ENV === 'production') {
@@ -27,7 +28,9 @@ if (process.env.NODE_ENV === 'production') {
 
 ReactDOM.render(
   <ReduxProvider store={store}>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </ReduxProvider>,
   document.getElementById('root'),
 );
