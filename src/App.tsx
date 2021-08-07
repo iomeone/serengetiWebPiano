@@ -1,26 +1,30 @@
-import { Layout, Space, Typography, Button, message } from 'antd';
+import { Space, Typography, Button, Breadcrumb } from 'antd';
 import { Footer, Header } from 'antd/lib/layout/layout';
 import styled from 'styled-components';
-import { SettingOutlined } from '@ant-design/icons';
+import { HomeOutlined, SettingOutlined } from '@ant-design/icons';
 import { Sheet } from 'models/Sheet';
-import { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
 import SettingsModal from 'components/SettingsModal';
-
-const margin = 20;
+import {
+  Route,
+  Switch,
+  useLocation,
+  Link,
+  Redirect,
+  RouteComponentProps,
+} from 'react-router-dom';
+import MainRoute from 'routes/MainRoute';
+import SheetRoute from 'routes/SheetRoute';
+import OSMDRoute from 'routes/OSMDRoute';
 
 const Main = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: ${margin}px 50px ${margin}px 50px;
-`;
-
-const Title = styled.div`
-  margin-bottom: ${margin}px;
 `;
 
 const Screen = styled.div`
@@ -43,10 +47,69 @@ const HeaderCont = styled.div`
   align-items: center;
 `;
 
+const BreadCrumbCont = styled.div`
+  background-color: #f1f1f1;
+  padding: 10px 50px 10px 50px;
+`;
+
+type BreadcrumbItem = {
+  routeName: string;
+  component:
+    | React.ComponentType<RouteComponentProps<any>>
+    | React.ComponentType<any>
+    | undefined;
+  extraIcon?: React.ReactNode;
+};
+
+type BreadCrumbMap = {
+  [key: string]: BreadcrumbItem;
+};
+
+const routeMap: BreadCrumbMap = {
+  '/sheet': {
+    routeName: 'Sheet Music Viewer',
+    component: SheetRoute,
+  },
+  '/osmd': {
+    routeName: 'OSMD Component',
+    component: OSMDRoute,
+  },
+};
+
 function App() {
   const [loadModal, setLoadModal] = useState(false);
   const [settingsModal, setSettingsModal] = useState(false);
-  const sheet = useSelector((state: State) => state.sheet);
+
+  const location = useLocation();
+  const pathSnippets = useMemo(
+    () => location.pathname.split('/').filter((i) => i),
+    [location],
+  );
+  const breadcrumbItems = useMemo(() => {
+    const mainBreadcrumb: React.ReactNode[] = [
+      <Breadcrumb.Item key="/">
+        <Space direction="horizontal">
+          <HomeOutlined />
+          <Link to="/">Main</Link>
+        </Space>
+      </Breadcrumb.Item>,
+    ];
+    const extraBreadcrumbs: React.ReactNode[] = [];
+    pathSnippets.forEach((_, index) => {
+      const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
+      if (routeMap[url] !== undefined) {
+        extraBreadcrumbs.push(
+          <Breadcrumb.Item key={url}>
+            <Space direction="horizontal">
+              {routeMap[url].extraIcon !== undefined && routeMap[url].extraIcon}
+              <Link to={url}>{routeMap[url].routeName}</Link>
+            </Space>
+          </Breadcrumb.Item>,
+        );
+      }
+    });
+    return mainBreadcrumb.concat(extraBreadcrumbs);
+  }, [pathSnippets]);
 
   return (
     <Screen>
@@ -90,32 +153,16 @@ function App() {
         </HeaderCont>
       </Header>
       <Main>
-        <Title>
-          {sheet.sheet === null ? (
-            <Typography.Text>
-              <Typography.Link
-                onClick={() => {
-                  setLoadModal(true);
-                }}
-              >
-                Press here
-              </Typography.Link>{' '}
-              to load new MusicXML file.
-            </Typography.Text>
-          ) : (
-            <Typography.Text>
-              Now Playing: {sheet.sheet.title}{' '}
-              <Typography.Link
-                onClick={() => {
-                  setLoadModal(true);
-                }}
-              >
-                Reload
-              </Typography.Link>
-            </Typography.Text>
-          )}
-        </Title>
-        <Viewer></Viewer>
+        <BreadCrumbCont>
+          <Breadcrumb separator=">">{breadcrumbItems}</Breadcrumb>
+        </BreadCrumbCont>
+        <Switch>
+          <Route path="/" exact component={MainRoute} />
+          {Object.entries(routeMap).map(([route, { component }], _) => (
+            <Route path={route} exact component={component} />
+          ))}
+          <Redirect to="/"></Redirect>
+        </Switch>
       </Main>
       <Footer>
         <FooterCont>
