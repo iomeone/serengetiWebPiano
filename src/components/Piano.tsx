@@ -46,10 +46,9 @@ export default function Piano({
 }: Props) {
   const play = usePiano();
 
-  const [myPressedKeys, setMyPressedKeys] = useState<Note[] | null>(null);
+  const [myPressedKeys, setMyPressedKeys] = useState<Note[]>([]);
 
-  const keys = useMemo<Key[] | null>(() => {
-    if (myPressedKeys === null) return null;
+  const keys = useMemo<Key[]>(() => {
     const length = upper - lower + 1;
     const keys = Array.from({ length }, (_, ind) => ({
       midiKeyNumber: ind + lower,
