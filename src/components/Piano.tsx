@@ -7,8 +7,7 @@ import {
   midiKeyNumberToKeyType,
   noteToMidiKeyNumber,
 } from '../utils/Note';
-import BlackKey from './piano/BlackKey';
-import WhiteKey from './piano/WhiteKey';
+import Key from './Key';
 
 const Wrap = styled.div`
   position: fixed;
@@ -59,7 +58,7 @@ export default function Piano({
 
     myPressedKeys.forEach((key) => {
       const midiKeyNumber = noteToMidiKeyNumber(key);
-      if( midiKeyNumber >= lower && noteToMidiKeyNumber(key) <= upper){
+      if (midiKeyNumber >= lower && noteToMidiKeyNumber(key) <= upper) {
         keys[noteToMidiKeyNumber(key) - lower].isPressed = true;
       }
     });
@@ -86,33 +85,21 @@ export default function Piano({
   return (
     <Wrap>
       <KeyBoard>
-        {keys.map((key, id) => {
-          if (midiKeyNumberToKeyType(key.midiKeyNumber)) {
-            return (
-              <BlackKey
-                key={key.midiKeyNumber}
-                midiKeyNumber={key.midiKeyNumber}
-                isPressed={key.isPressed}
-              />
-            );
-          } else {
-            return (
-              <WhiteKey
-                key={key.midiKeyNumber}
-                midiKeyNumber={key.midiKeyNumber}
-                isPressed={key.isPressed}
-                play={(midiKeyNumber) => {
-                  play({
-                    articulation: Articulation.Legato,
-                    duration: 1,
-                    gain: 4,
-                    midiKeyNumber,
-                  });
-                }}
-              />
-            );
-          }
-        })}
+        {keys.map((key, id) => (
+          <Key
+            key={key.midiKeyNumber}
+            midiKeyNumber={key.midiKeyNumber}
+            isPressed={key.isPressed}
+            play={(midiKeyNumber) => {
+              play({
+                articulation: Articulation.Legato,
+                duration: 1,
+                gain: 4,
+                midiKeyNumber,
+              });
+            }}
+          />
+        ))}
       </KeyBoard>
     </Wrap>
   );
