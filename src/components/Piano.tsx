@@ -1,4 +1,6 @@
+import { usePiano } from 'hooks/usePiano';
 import React, { useEffect, useMemo, useState } from 'react';
+import { Articulation } from 'services/IAudioService';
 import styled, { StyledComponent } from 'styled-components';
 import {
   Note,
@@ -43,6 +45,8 @@ export default function Piano({
   pressedKeys,
   onPressedKeysChanged,
 }: Props) {
+  const play = usePiano();
+
   const [myPressedKeys, setMyPressedKeys] = useState<Note[] | null>(null);
 
   const keys = useMemo<Key[] | null>(() => {
@@ -94,6 +98,14 @@ export default function Piano({
                 key={key.midiKeyNumber}
                 midiKeyNumber={key.midiKeyNumber}
                 isPressed={key.isPressed}
+                play={(midiKeyNumber) => {
+                  play({
+                    articulation: Articulation.Legato,
+                    duration: 1,
+                    gain: 4,
+                    midiKeyNumber,
+                  });
+                }}
               />
             );
           }
