@@ -1,22 +1,17 @@
-import {
-  Button,
-  Modal,
-  Slider,
-  Checkbox,
-  Space,
-  Typography,
-  Divider,
-} from 'antd';
+import { Button, Modal, Slider, Checkbox, Space, Typography } from 'antd';
 import produce from 'immer';
 import { setPianoRange, setPianoVisibility } from 'modules/piano';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  midiKeyNumberToNote,
+  diatonicNumberToNote,
+  diatonicNumberToNoteName,
   Note,
   noteToBetterNoteName,
+  noteToDiatonicNumber,
   noteToMidiKeyNumber,
+  parseNoteNameToDiatonicNumber,
 } from 'utils/Note';
 
 type Props = {
@@ -50,13 +45,11 @@ const useSettings = () => {
   return option;
 };
 
-const midiKeyNumberFormatter = (midiKeyNumber?: number): string => {
-  if (midiKeyNumber === undefined) {
+const diatonicNumberFormatter = (diatonicNumber?: number): string => {
+  if (diatonicNumber === undefined) {
     return '';
   }
-
-  const note = midiKeyNumberToNote(midiKeyNumber);
-  return noteToBetterNoteName(note);
+  return diatonicNumberToNoteName(diatonicNumber);
 };
 
 export default function SettingsModal({ visible, onVisibleChange }: Props) {
@@ -152,19 +145,19 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
           <Typography.Text>Piano Render Range</Typography.Text>
           <Slider
             range
-            min={21}
-            max={108}
-            tipFormatter={midiKeyNumberFormatter}
+            min={parseNoteNameToDiatonicNumber('A0')}
+            max={parseNoteNameToDiatonicNumber('C8')}
+            tipFormatter={diatonicNumberFormatter}
             value={
               newOption.piano.range.map((note) =>
-                noteToMidiKeyNumber(note),
+                noteToDiatonicNumber(note),
               ) as [number, number]
             }
             onChange={(keyNumbers) => {
               handleOption(
                 produce(newOption, (draft) => {
                   draft.piano.range = keyNumbers.map((num) =>
-                    midiKeyNumberToNote(num),
+                    diatonicNumberToNote(num),
                   ) as [Note, Note];
                 }),
               );
