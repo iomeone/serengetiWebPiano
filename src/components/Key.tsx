@@ -16,6 +16,7 @@ const WhiteKey = styled.div`
   border: 1px solid black;
   align-items: flex-end;
   justify-content: center;
+  user-drag: none;
 `;
 
 const BlackKey = styled.div`
@@ -24,14 +25,18 @@ const BlackKey = styled.div`
   max-width: 17px;
   width: 1.5vw;
   height: 60%;
-  left: -0.75vw;
+  left: -0.5vw;
+  user-drag: none;
 `;
 const BlackKeyWrap = styled.div`
+  user-select: none;
+  user-drag: none;
   width: 0px;
 `;
 
 const KeyText = styled.div`
   user-select: none;
+  user-drag: none;
 `;
 
 type Props = {
@@ -54,8 +59,11 @@ export default function Key({ midiKeyNumber, isPressed, play }: Props) {
   };
   if (midiKeyNumberToKeyType(midiKeyNumber)) {
     return (
-      <BlackKeyWrap>
+      <BlackKeyWrap
+      draggable="false"
+      >
         <BlackKey
+          draggable="false"
           style={{
             backgroundColor: myIsPressed || isPressed ? '#803435' : 'black',
           }}
@@ -75,6 +83,7 @@ export default function Key({ midiKeyNumber, isPressed, play }: Props) {
   } else {
     return (
       <WhiteKey
+        draggable="false"
         style={{
           backgroundColor: myIsPressed || isPressed ? '#fe656a' : 'white',
         }}

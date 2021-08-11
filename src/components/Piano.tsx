@@ -1,7 +1,12 @@
+import { DownCircleFilled } from '@ant-design/icons';
+import { AntdIconProps } from '@ant-design/icons/lib/components/AntdIcon';
 import { usePiano } from 'hooks/usePiano';
+import { State } from 'modules/State';
+import { setPianoVisibility } from 'modules/piano';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Articulation } from 'services/IAudioService';
-import styled, { StyledComponent } from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
+import styled, { keyframes } from 'styled-components';
 import {
   Note,
   midiKeyNumberToKeyType,
@@ -9,12 +14,33 @@ import {
 } from '../utils/Note';
 import Key from './Key';
 
+const pianoPopUpAnimation = keyframes`
+  0%{ opacity: 0; bottom: -6vh;}
+  100%{ opacity: 1; bottom: 0px;}
+`;
+
+const pianoHideAnimation = keyframes`
+  0%{ opacity: 1; bottom: 0px;}
+  100%{ opacity: 0; bottom: -6vh;}
+`;
+
+type AnimationProps = {
+  visibility: boolean;
+};
+
 const Wrap = styled.div`
   position: fixed;
   width: 100vw;
   height: 20vh;
   left: 0px;
   bottom: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  animation-name: ${(props: AnimationProps) =>
+    props.visibility ? pianoPopUpAnimation : pianoHideAnimation};
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
 `;
 
 const KeyBoard = styled.div`
@@ -24,6 +50,14 @@ const KeyBoard = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
+`;
+
+const DownArrow: React.FunctionComponent<AntdIconProps> = styled(
+  DownCircleFilled,
+)`
+  color: #fe656a;
+  font-size: 30px;
+  margin-bottom: 10px;
 `;
 
 type Props = {
@@ -45,7 +79,10 @@ export default function Piano({
   onPressedKeysChanged,
 }: Props) {
   const { play } = usePiano();
+  const dispatch = useDispatch();
+
   const [myPressedKeys, setMyPressedKeys] = useState<Note[]>([]);
+  const piano = useSelector((state: State) => state.piano);
 
   const keys = useMemo<Key[]>(() => {
     const length = upper - lower + 1;
@@ -71,6 +108,10 @@ export default function Piano({
     }
   };
 
+  const onUp = () => {
+    dispatch(setPianoVisibility(false));
+  };
+
   useEffect(() => {
     if (pressedKeys) {
       changePressedKeys(pressedKeys);
@@ -81,7 +122,8 @@ export default function Piano({
     return <></>;
   }
   return (
-    <Wrap>
+    <Wrap visibility={piano.visibility}>
+      <DownArrow onTouchEnd={onUp} onMouseUp={onUp} />
       <KeyBoard>
         {keys.map((key, id) => (
           <Key
