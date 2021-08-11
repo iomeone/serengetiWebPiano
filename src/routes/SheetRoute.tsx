@@ -1,8 +1,8 @@
-import { Typography } from 'antd';
+import { Button, Typography } from 'antd';
 import styled from 'styled-components';
 import { Sheet } from 'models/Sheet';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
@@ -12,6 +12,7 @@ import {
   parseNoteNameToNote,
 } from 'utils/Note';
 import Piano from 'components/Piano';
+import { setPianoVisibility } from 'modules/piano';
 
 const margin = 20;
 
@@ -30,6 +31,9 @@ export default function SheetRoute() {
   const [loadModal, setLoadModal] = useState(false);
   const sheet = useSelector((state: State) => state.sheet);
   const piano = useSelector((state: State) => state.piano);
+
+  const dispatch = useDispatch();
+
   return (
     <Main>
       <LoadSheetModal
@@ -61,8 +65,9 @@ export default function SheetRoute() {
           </Typography.Text>
         )}
       </Title>
+      <Button onClick={()=>{dispatch(setPianoVisibility(true))}}>피아노 열기</Button>
       <Viewer></Viewer>
-        <Piano
+      <Piano
           lower={noteToMidiKeyNumber(piano.min)}
           upper={noteToMidiKeyNumber(piano.max)}
         />
