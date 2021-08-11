@@ -62,12 +62,10 @@ export default function SheetRoute() {
         )}
       </Title>
       <Viewer></Viewer>
-      {piano.visibility ? (
         <Piano
           lower={noteToMidiKeyNumber(piano.min)}
           upper={noteToMidiKeyNumber(piano.max)}
         />
-      ) : null}
     </Main>
   );
 }
