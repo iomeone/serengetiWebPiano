@@ -44,8 +44,7 @@ export default function Piano({
   pressedKeys,
   onPressedKeysChanged,
 }: Props) {
-  const play = usePiano();
-
+  const { play } = usePiano();
   const [myPressedKeys, setMyPressedKeys] = useState<Note[]>([]);
 
   const keys = useMemo<Key[]>(() => {
