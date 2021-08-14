@@ -9,6 +9,10 @@ export class FrontAudioService implements IAudioService {
   private static audioContext: IAudioContext | null = null;
   private player: Player | null = null;
 
+  public static get AudioContext() {
+    return this.audioContext;
+  }
+
   public async init() {
     if (FrontAudioService.audioContext === null) {
       FrontAudioService.audioContext = new AudioContext();
