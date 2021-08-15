@@ -39,6 +39,27 @@ export const loadSheetThunk =
     return true;
   };
 
+export const loadTestSheetThunk =
+  () =>
+  async (dispatch: Function, getState: () => State): Promise<boolean> => {
+    const osmd = getState().sheet.osmd as OSMD | null;
+    if (osmd === null) return false;
+    try {
+      await osmd.load(
+        'https://opensheetmusicdisplay.github.io/demo/sheets/MuzioClementi_SonatinaOpus36No3_Part1.xml',
+      );
+    } catch {
+      return false;
+    }
+    dispatch(
+      setSheet({
+        title: 'sonatina',
+      }),
+    );
+    osmd.render();
+    return true;
+  };
+
 export const sheetReducer = (
   state: SheetState = inistialState.sheet,
   action: SheetActions,
