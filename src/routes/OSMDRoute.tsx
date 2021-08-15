@@ -1,19 +1,18 @@
 import { Button, Space, Typography } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
-import { FrontAudioService } from 'services/FrontAudioService';
-import { Articulation } from 'services/IAudioService';
+import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { State } from 'modules/State';
-import LoadSheetModal from 'components/LoadSheetModal';
 import Viewer from 'components/Viewer';
 import PlaybackEngine from 'osmd-audio-player';
 import { IAudioContext } from 'standardized-audio-context';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import { FrontAudioService } from 'services/FrontAudioService';
+import LoadSheet from 'components/LoadSheet';
 
 const margin = 20;
 
@@ -34,43 +33,14 @@ export default function OSMDRoute() {
     setAudioService(fas);
     return fas;
   };
-  const [loadModal, setLoadModal] = useState(false);
   const sheet = useSelector((state: State) => state.sheet);
   const osmd = useSelector((state: State) => state.sheet.osmd) as OSMD;
 
   return (
     <Main>
-      <Space direction="vertical" size={8} style={{ width: '100%' }}>
+      <Space direction="vertical" size={10} style={{ width: '100%' }}>
         <Typography.Text>OSMD Component Test Page</Typography.Text>
-        <LoadSheetModal
-          visible={loadModal}
-          onVisibleChange={setLoadModal}
-        ></LoadSheetModal>
-        <Typography.Text>
-          {sheet.sheet === null ? (
-            <Typography.Text>
-              <Typography.Link
-                onClick={() => {
-                  setLoadModal(true);
-                }}
-              >
-                Press here
-              </Typography.Link>{' '}
-              to load new MusicXML file.
-            </Typography.Text>
-          ) : (
-            <Typography.Text>
-              Now Playing: {sheet.sheet.title}{' '}
-              <Typography.Link
-                onClick={() => {
-                  setLoadModal(true);
-                }}
-              >
-                Reload
-              </Typography.Link>
-            </Typography.Text>
-          )}
-        </Typography.Text>
+        <LoadSheet></LoadSheet>
         {isLoaded ? (
           <Space direction="horizontal" size={8}>
             <CheckCircleOutlined></CheckCircleOutlined>
