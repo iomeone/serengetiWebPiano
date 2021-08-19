@@ -4,11 +4,11 @@ import { useDispatch } from 'react-redux';
 import { addSheet } from 'modules/audio';
 
 type ViewerProps = {
-  key: string;
+  sheetKey: string;
   hidden?: boolean;
 };
 
-export default function Viewer({ key, hidden }: ViewerProps) {
+export default function Viewer({ sheetKey, hidden }: ViewerProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
 
@@ -28,9 +28,9 @@ export default function Viewer({ key, hidden }: ViewerProps) {
         drawingParameters: 'compact',
       });
 
-      dispatch(addSheet(key, osmd));
+      dispatch(addSheet(sheetKey, osmd));
     }
-  }, [osmdDivRef, dispatch, key]);
+  }, [osmdDivRef, dispatch, sheetKey]);
 
   return (
     <div
