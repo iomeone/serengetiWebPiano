@@ -3,15 +3,11 @@ import { AntdIconProps } from '@ant-design/icons/lib/components/AntdIcon';
 import { usePiano } from 'hooks/usePiano';
 import { State } from 'modules/State';
 import { setPianoVisibility } from 'modules/piano';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Articulation } from 'services/IAudioService';
 import { useDispatch, useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
-import {
-  Note,
-  midiKeyNumberToKeyType,
-  noteToMidiKeyNumber,
-} from '../utils/Note';
+import { Note, noteToMidiKeyNumber } from '../utils/Note';
 import Key from './Key';
 
 const pianoPopUpAnimation = keyframes`
@@ -67,7 +63,7 @@ type Props = {
   onPressedKeysChanged?: (pressedKeys: Note[]) => void;
 };
 
-type Key = {
+type KeyProps = {
   midiKeyNumber: number;
   isPressed: boolean;
 };
@@ -84,7 +80,7 @@ export default function Piano({
   const [myPressedKeys, setMyPressedKeys] = useState<Note[]>([]);
   const piano = useSelector((state: State) => state.piano);
 
-  const keys = useMemo<Key[]>(() => {
+  const keys = useMemo<KeyProps[]>(() => {
     const length = upper - lower + 1;
     const keys = Array.from({ length }, (_, ind) => ({
       midiKeyNumber: ind + lower,
@@ -101,12 +97,15 @@ export default function Piano({
     return keys;
   }, [lower, upper, myPressedKeys]);
 
-  const changePressedKeys = (keys: Note[]) => {
-    setMyPressedKeys(keys);
-    if (onPressedKeysChanged) {
-      onPressedKeysChanged(keys);
-    }
-  };
+  const changePressedKeys = useCallback(
+    (keys: Note[]) => {
+      setMyPressedKeys(keys);
+      if (onPressedKeysChanged) {
+        onPressedKeysChanged(keys);
+      }
+    },
+    [setMyPressedKeys, onPressedKeysChanged],
+  );
 
   const onUp = () => {
     dispatch(setPianoVisibility(false));
@@ -116,7 +115,7 @@ export default function Piano({
     if (pressedKeys) {
       changePressedKeys(pressedKeys);
     }
-  }, [pressedKeys]);
+  }, [pressedKeys, changePressedKeys]);
 
   if (keys === null) {
     return <></>;

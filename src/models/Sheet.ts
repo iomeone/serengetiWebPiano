@@ -1,3 +1,6 @@
 export type Sheet = {
-  title: string;
+  osmd: any;
+  title: string | null;
+  file: File | null;
+  loaded: boolean;
 };

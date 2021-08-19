@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
 import { counterReducer } from 'modules/counter';
-import { sheetReducer } from 'modules/sheet';
+import { audioReducer } from 'modules/audio';
 import { pianoReducer } from 'modules/piano';
 
 export default combineReducers({
   counter: counterReducer,
-  sheet: sheetReducer,
+  audio: audioReducer,
   piano: pianoReducer,
 });

@@ -1,25 +1,16 @@
 import { Articulation, IAudioService, NotePlayOption } from './IAudioService';
 import * as Soundfont from 'soundfont-player';
-import { AudioContext, IAudioContext } from 'standardized-audio-context';
+import { IAudioContext } from 'standardized-audio-context';
 import { Player } from 'soundfont-player';
 
 export class FrontAudioService implements IAudioService {
   private static instMidiName = 'acoustic_grand_piano' as const;
-
-  private static audioContext: IAudioContext | null = null;
   private player: Player | null = null;
 
-  public static get AudioContext() {
-    return this.audioContext;
-  }
-
-  public async init() {
-    if (FrontAudioService.audioContext === null) {
-      FrontAudioService.audioContext = new AudioContext();
-    }
+  public async init(audioContext: IAudioContext) {
     this.player = await Soundfont.instrument(
       //@ts-ignore
-      FrontAudioService.audioContext,
+      audioContext,
       FrontAudioService.instMidiName,
     );
     return;

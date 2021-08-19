@@ -5,10 +5,9 @@ const inistialState: State = {
   counter: {
     count: 0,
   },
-  sheet: {
-    sheet: null,
-    file: null,
-    osmd: null,
+  audio: {
+    sheets: {},
+    audioContext: null,
   },
   piano: {
     visibility: true,

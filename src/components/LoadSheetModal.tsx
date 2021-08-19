@@ -1,7 +1,7 @@
 import { InboxOutlined } from '@ant-design/icons';
 import { message, Modal, Space, Typography, Upload } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
-import { loadSheetThunk } from 'modules/sheet';
+import { loadSheetThunk } from 'modules/audio';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -10,6 +10,7 @@ type Props = {
   onVisibleChange: (visible: boolean) => void;
   file?: UploadFile<any> | null;
   onFileChange?: (file: UploadFile<any> | null) => void;
+  key: string;
 };
 
 export default function LoadSheetModal({
@@ -17,6 +18,7 @@ export default function LoadSheetModal({
   onVisibleChange,
   file,
   onFileChange,
+  key,
 }: Props) {
   const [myFile, setMyFile] = useState<UploadFile<any> | null>(null);
 
@@ -48,12 +50,7 @@ export default function LoadSheetModal({
 
         onVisibleChange(false);
 
-        if (await dispatch(loadSheetThunk(myFile.originFileObj as File))) {
-          message.success('파일 로드 성공');
-        } else {
-          message.error('파일 로드 실패');
-          setMyFile(null);
-        }
+        await dispatch(loadSheetThunk(key, myFile.originFileObj as File));
       }}
       onCancel={() => {
         onVisibleChange(false);

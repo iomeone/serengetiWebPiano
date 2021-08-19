@@ -1,6 +1,6 @@
 import { useMouseState } from 'hooks/useMouseState';
-import { useEffect, useState } from 'react';
-import styled, { StyledComponent } from 'styled-components';
+import { useState } from 'react';
+import styled from 'styled-components';
 import {
   midiKeyNumberToBetterNoteName,
   midiKeyNumberToKeyType,
@@ -59,9 +59,7 @@ export default function Key({ midiKeyNumber, isPressed, play }: Props) {
   };
   if (midiKeyNumberToKeyType(midiKeyNumber)) {
     return (
-      <BlackKeyWrap
-      draggable="false"
-      >
+      <BlackKeyWrap draggable="false">
         <BlackKey
           draggable="false"
           style={{

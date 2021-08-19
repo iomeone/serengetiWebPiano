@@ -11,7 +11,6 @@ export type NotePlayOption = {
 };
 
 export interface IAudioService {
-  init: () => void;
   schedule: (time: number, notes: NotePlayOption[]) => void;
   play: (note: NotePlayOption) => void;
   stop: () => void;

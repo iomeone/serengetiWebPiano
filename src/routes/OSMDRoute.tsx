@@ -1,46 +1,32 @@
 import { Button, Space, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
-import { State } from 'modules/State';
-import Viewer from 'components/Viewer';
-import PlaybackEngine from 'osmd-audio-player';
-import { IAudioContext } from 'standardized-audio-context';
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { FrontAudioService } from 'services/FrontAudioService';
 import LoadSheet from 'components/LoadSheet';
+import SegmentViewer from 'components/SegmentViewer';
+import { useFrontAudioService } from 'hooks/useFrontAudioService';
 
 const margin = 20;
-
+const key = 'osmd-main-key';
 const Main = styled.div`
   padding: ${margin}px 50px ${margin}px 50px;
 `;
 
 export default function OSMDRoute() {
-  const [audioService, setAudioService] = useState<FrontAudioService | null>(
-    null,
-  );
-  const isLoaded = useMemo(() => {
-    return audioService !== null;
-  }, [audioService]);
-  const preloadWithGesture = async (): Promise<FrontAudioService> => {
-    const fas = new FrontAudioService();
-    await fas.init();
-    setAudioService(fas);
-    return fas;
-  };
-  const sheet = useSelector((state: State) => state.sheet);
-  const osmd = useSelector((state: State) => state.sheet.osmd) as OSMD;
+  const {
+    frontAudioService: audioService,
+    getOrCreateFrontAudioServiceWithGesture: preloadWithGesture,
+  } = useFrontAudioService();
+  const isLoaded = useMemo(() => audioService !== null, [audioService]);
 
   return (
     <Main>
       <Space direction="vertical" size={10} style={{ width: '100%' }}>
         <Typography.Text>OSMD Component Test Page</Typography.Text>
-        <LoadSheet></LoadSheet>
+        <LoadSheet key={key}></LoadSheet>
         {isLoaded ? (
           <Space direction="horizontal" size={8}>
             <CheckCircleOutlined></CheckCircleOutlined>
@@ -59,20 +45,7 @@ export default function OSMDRoute() {
         >
           preload audio service
         </Button>
-        <Button
-          onClick={async () => {
-            const engine = new PlaybackEngine(
-              FrontAudioService.AudioContext as IAudioContext,
-            );
-            await engine.loadScore(osmd as any);
-            engine.setBpm(120);
-            engine.play();
-          }}
-          disabled={!isLoaded || sheet.sheet === null}
-        >
-          play loaded musicxml file
-        </Button>
-        <Viewer></Viewer>
+        <SegmentViewer key={key}></SegmentViewer>
       </Space>
     </Main>
   );

@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { FrontAudioService } from 'services/FrontAudioService';
 import { NotePlayOption } from 'services/IAudioService';
+import { useFrontAudioService } from './useFrontAudioService';
 
 type PianoRes = {
   preloadWithGesture: () => void;
@@ -9,32 +10,22 @@ type PianoRes = {
 };
 
 export function usePiano(): PianoRes {
-  const [audioService, setAudioService] = useState<FrontAudioService | null>(
-    null,
-  );
-  const isLoaded = useMemo(() => {
-    return audioService !== null;
-  }, [audioService]);
+  const {
+    frontAudioService,
+    getOrCreateFrontAudioServiceWithGesture: preloadWithGesture,
+  } = useFrontAudioService();
 
-  const preloadWithGesture = async (): Promise<FrontAudioService> => {
-    const fas = new FrontAudioService();
-    await fas.init();
-    setAudioService(fas);
-    return fas;
-  };
+  const isLoaded = useMemo(() => {
+    return frontAudioService !== null;
+  }, [frontAudioService]);
 
   const play = async (note: NotePlayOption) => {
-    let fas: FrontAudioService | null = null;
-
-    if (audioService === null) {
+    let fas: FrontAudioService | null = frontAudioService;
+    if (frontAudioService === null) {
       fas = await preloadWithGesture();
-    } else {
-      fas = audioService;
     }
 
-    if (fas !== null) {
-      fas.play(note);
-    }
+    fas?.play(note);
   };
 
   return { preloadWithGesture, isLoaded, play };
