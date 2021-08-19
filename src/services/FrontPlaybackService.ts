@@ -1,6 +1,5 @@
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import PlaybackEngine from 'osmd-audio-player';
-import { FrontAudioService } from './FrontAudioService';
 import { IPlaybackService } from './IPlaybackService';
 import { IAudioContext } from 'standardized-audio-context';
 
