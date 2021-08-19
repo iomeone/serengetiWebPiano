@@ -2,9 +2,6 @@ import { State } from 'modules/State';
 import { parseNoteNameToNote } from 'utils/Note';
 
 const inistialState: State = {
-  counter: {
-    count: 0,
-  },
   audio: {
     sheets: {},
     audioContext: null,
