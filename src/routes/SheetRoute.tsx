@@ -21,6 +21,8 @@ const Title = styled.div`
   margin-bottom: ${margin}px;
 `;
 
+const key = 'osmd-sheet-key';
+
 export default function SheetRoute() {
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
@@ -28,7 +30,7 @@ export default function SheetRoute() {
   return (
     <Main>
       <Title>
-        <LoadSheet></LoadSheet>
+        <LoadSheet key={key}></LoadSheet>
       </Title>
       <Button
         onClick={() => {
@@ -37,7 +39,7 @@ export default function SheetRoute() {
       >
         피아노 열기
       </Button>
-      <Viewer></Viewer>
+      <Viewer key={key}></Viewer>
       <Piano
         lower={noteToMidiKeyNumber(piano.min)}
         upper={noteToMidiKeyNumber(piano.max)}
