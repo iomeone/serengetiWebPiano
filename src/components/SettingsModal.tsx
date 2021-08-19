@@ -8,9 +8,7 @@ import {
   diatonicNumberToNote,
   diatonicNumberToNoteName,
   Note,
-  noteToBetterNoteName,
   noteToDiatonicNumber,
-  noteToMidiKeyNumber,
   parseNoteNameToDiatonicNumber,
 } from 'utils/Note';
 
