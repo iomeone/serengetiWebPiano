@@ -1,4 +1,5 @@
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import { Fraction } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
 
 type NoteSchedule = {
@@ -9,6 +10,9 @@ type NoteSchedule = {
 type MidiKeyNumberSchedule = {
   midiKeyNumbers: number[];
   timing: number;
+  timeSignature: Fraction;
+  length: Fraction;
+  bpm: number;
 };
 
 export class OSMDService {
@@ -20,8 +24,6 @@ export class OSMDService {
   }
 
   public getNoteSchedules(): NoteSchedule[] {
-    if (this.osmd === null) throw Error('OSMD Service is not initialized.');
-
     const allNoteSchedules: MidiKeyNumberSchedule[] = [];
     this.osmd.cursor.reset();
     const iterator = this.osmd.cursor.iterator;
@@ -34,20 +36,20 @@ export class OSMDService {
         for (var j = 0; j < notes.length; j++) {
           const note = notes[j];
           // make sure our note is not silent
-          if (note != null && note.halfTone != 0) {
+          if (note !== null && note.halfTone !== 0) {
             const midiKeyNumber = note.halfTone + 12; // see issue #224
             const timing =
               (iterator.currentTimeStamp.RealValue * 4 * 60) / this.bpm;
-            const len = allNoteSchedules.length;
-            const lastNoteSchedule = allNoteSchedules[len - 1];
-            if (lastNoteSchedule.timing === timing) {
-              lastNoteSchedule.midiKeyNumbers.push(midiKeyNumber);
-            } else {
-              allNoteSchedules.push({
-                midiKeyNumbers: [midiKeyNumber],
-                timing,
-              });
-            }
+            const bpm = iterator.CurrentBpm;
+            const timeSignature = iterator.CurrentMeasure.ActiveTimeSignature;
+            const length = note.Length;
+            allNoteSchedules.push({
+              midiKeyNumbers: [midiKeyNumber],
+              timing,
+              timeSignature,
+              length,
+              bpm,
+            });
           }
         }
       }
@@ -55,7 +57,7 @@ export class OSMDService {
     }
 
     return allNoteSchedules.map((note) => ({
-      timing: note.timing,
+      ...note,
       notes: note.midiKeyNumbers.map((midiKeyNumber) =>
         midiKeyNumberToNote(midiKeyNumber),
       ),
