@@ -16,6 +16,10 @@ export class OSMDService {
     this.osmd = osmd;
   }
 
+  public setBPM(bpm: number) {
+    this.bpm = bpm;
+  }
+
   public getNoteSchedules(): NoteSchedule[] {
     const allNoteSchedules: NoteSchedule[] = [];
     this.osmd.cursor.reset();
