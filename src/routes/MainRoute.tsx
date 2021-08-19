@@ -1,5 +1,4 @@
 import { Card, List, Space, Typography } from 'antd';
-import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 const margin = 20;
