@@ -12,9 +12,10 @@ type MidiKeyNumberSchedule = {
 };
 
 export class OSMDService {
-  private osmd: OSMD | null = null;
+  private osmd: OSMD;
   private bpm: number = 120;
-  public async init(osmd: OSMD) {
+
+  constructor(osmd: OSMD) {
     this.osmd = osmd;
   }
 
