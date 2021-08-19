@@ -1,28 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { useDispatch, useSelector } from 'react-redux';
-import { setOSMD } from 'modules/sheet';
+import { useDispatch } from 'react-redux';
+import { addSheet } from 'modules/audio';
 
-export default function Viewer() {
+type ViewerProps = {
+  key: string;
+};
+
+export default function Viewer({ key }: ViewerProps) {
   const dispatch = useDispatch();
+  const osmdDivRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const osmd = new OSMD('osmd-container', {
-      backend: 'svg',
-      drawLyricist: false,
-      drawLyrics: false,
-      drawFingerings: true,
-      drawTitle: false,
-      drawComposer: false,
-      drawCredits: false,
-      drawSubtitle: false,
-      drawPartNames: false,
-      drawPartAbbreviations: false,
-      drawingParameters: 'compact',
-    });
+    if (osmdDivRef.current !== null) {
+      const osmd = new OSMD(osmdDivRef.current, {
+        backend: 'svg',
+        drawLyricist: false,
+        drawLyrics: false,
+        drawFingerings: true,
+        drawTitle: false,
+        drawComposer: false,
+        drawCredits: false,
+        drawSubtitle: false,
+        drawPartNames: false,
+        drawPartAbbreviations: false,
+        drawingParameters: 'compact',
+      });
 
-    dispatch(setOSMD(osmd));
-  }, []);
+      dispatch(addSheet(key, osmd));
+    }
+  }, [osmdDivRef, dispatch, key]);
 
-  return <div id="osmd-container"></div>;
+  return <div ref={osmdDivRef}></div>;
 }
