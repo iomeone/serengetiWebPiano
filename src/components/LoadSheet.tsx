@@ -7,21 +7,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import LoadSheetModal from './LoadSheetModal';
 
 type LoadSheetProps = {
-  key: string;
+  sheetKey: string;
 };
 
-export default function LoadSheet({ key }: LoadSheetProps) {
+export default function LoadSheet({ sheetKey }: LoadSheetProps) {
   const [loadModal, setLoadModal] = useState(false);
   const dispatch = useDispatch();
   const sheet = useSelector(
-    (state: State) => (state.audio.sheets[key] ?? null) as Sheet | null,
+    (state: State) => (state.audio.sheets[sheetKey] ?? null) as Sheet | null,
   );
   const loaded = useMemo(() => sheet !== null && sheet.loaded, [sheet]);
 
   return (
     <>
       <LoadSheetModal
-        key={key}
+        sheetKey={sheetKey}
         visible={loadModal}
         onVisibleChange={setLoadModal}
       ></LoadSheetModal>
@@ -49,7 +49,7 @@ export default function LoadSheet({ key }: LoadSheetProps) {
             to load new MusicXML file.{' '}
             <Typography.Link
               onClick={() => {
-                dispatch(loadTestSheetThunk(key));
+                dispatch(loadTestSheetThunk(sheetKey));
               }}
             >
               OR Just Use Test data

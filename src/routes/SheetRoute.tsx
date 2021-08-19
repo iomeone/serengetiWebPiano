@@ -1,4 +1,4 @@
-import { Button } from 'antd';
+import { Button, Space } from 'antd';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
@@ -7,6 +7,10 @@ import { noteToMidiKeyNumber } from 'utils/Note';
 import Piano from 'components/Piano';
 import { setPianoVisibility } from 'modules/piano';
 import LoadSheet from 'components/LoadSheet';
+import { OSMDService } from 'services/OSMDService';
+import { useMemo } from 'react';
+import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import { isLoadedSheet } from 'utils/Sheet';
 
 const margin = 20;
 
@@ -21,25 +25,45 @@ const Title = styled.div`
   margin-bottom: ${margin}px;
 `;
 
-const key = 'osmd-sheet-key';
+const sheetKey = 'osmd-sheet-key';
 
 export default function SheetRoute() {
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
+  const sheet = useSelector(
+    (state: State) => state.audio.sheets[sheetKey] ?? null,
+  );
+  const osmd = useMemo(
+    () => (isLoadedSheet(sheet) ? (sheet.osmd as OSMD) : null),
+    [sheet],
+  );
 
   return (
     <Main>
       <Title>
-        <LoadSheet key={key}></LoadSheet>
+        <LoadSheet sheetKey={sheetKey}></LoadSheet>
       </Title>
-      <Button
-        onClick={() => {
-          dispatch(setPianoVisibility(true));
-        }}
-      >
-        피아노 열기
-      </Button>
-      <Viewer key={key}></Viewer>
+      <Space direction="horizontal" size={8}>
+        <Button
+          onClick={() => {
+            dispatch(setPianoVisibility(true));
+          }}
+        >
+          피아노 열기
+        </Button>
+        <Button
+          onClick={() => {
+            if (osmd !== null) {
+              const os = new OSMDService(osmd);
+              console.log(os.getNoteSchedules());
+            }
+          }}
+          disabled={osmd === null}
+        >
+          노트 스케쥴 가져오기
+        </Button>
+      </Space>
+      <Viewer sheetKey={sheetKey}></Viewer>
       <Piano
         lower={noteToMidiKeyNumber(piano.min)}
         upper={noteToMidiKeyNumber(piano.max)}

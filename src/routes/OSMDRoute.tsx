@@ -7,11 +7,10 @@ import {
 } from '@ant-design/icons';
 import LoadSheet from 'components/LoadSheet';
 import SegmentViewer from 'components/SegmentViewer';
-import { useFrontAudioService } from 'hooks/useFrontAudioService';
 import { useAudioContext } from 'hooks/useAudioContext';
 
 const margin = 20;
-const key = 'osmd-main-key';
+const sheetKey = 'osmd-main-key';
 const Main = styled.div`
   padding: ${margin}px 50px ${margin}px 50px;
 `;
@@ -25,7 +24,7 @@ export default function OSMDRoute() {
     <Main>
       <Space direction="vertical" size={10} style={{ width: '100%' }}>
         <Typography.Text>OSMD Component Test Page</Typography.Text>
-        <LoadSheet key={key}></LoadSheet>
+        <LoadSheet sheetKey={sheetKey}></LoadSheet>
         {isLoaded ? (
           <Space direction="horizontal" size={8}>
             <CheckCircleOutlined></CheckCircleOutlined>
@@ -44,7 +43,7 @@ export default function OSMDRoute() {
         >
           Preload Audio Context
         </Button>
-        <SegmentViewer key={key}></SegmentViewer>
+        <SegmentViewer sheetKey={sheetKey}></SegmentViewer>
       </Space>
     </Main>
   );

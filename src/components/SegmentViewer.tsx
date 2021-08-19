@@ -2,17 +2,18 @@ import { Button, Typography } from 'antd';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { State } from 'modules/State';
 import { useSelector } from 'react-redux';
+import { isLoadedSheet } from 'utils/Sheet';
 import Viewer from './Viewer';
 
 type SegmentViewerProps = {
-  key: string;
+  sheetKey: string;
 };
-export default function SegmentViewer({ key }: SegmentViewerProps) {
+export default function SegmentViewer({ sheetKey }: SegmentViewerProps) {
   const audio = useSelector((state: State) => state.audio);
   const { frontPlaybackService, getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService();
 
-  const sheet = audio.sheets[key] ?? null;
+  const sheet = audio.sheets[sheetKey] ?? null;
 
   return (
     <div
@@ -43,7 +44,7 @@ export default function SegmentViewer({ key }: SegmentViewerProps) {
         <Button
           onClick={async () => {
             let service = frontPlaybackService;
-            const sheet = audio.sheets[key];
+            const sheet = audio.sheets[sheetKey];
             if (frontPlaybackService === null) {
               service = await getOrCreateFrontPlaybackServiceWithGesture(
                 sheet.osmd,
@@ -51,7 +52,7 @@ export default function SegmentViewer({ key }: SegmentViewerProps) {
             }
             service?.play();
           }}
-          disabled={sheet === null || !sheet.loaded}
+          disabled={!isLoadedSheet(sheet)}
         >
           Play Audio
         </Button>
@@ -71,7 +72,7 @@ export default function SegmentViewer({ key }: SegmentViewerProps) {
             height: 250,
           }}
         >
-          <Viewer key={key}></Viewer>
+          <Viewer sheetKey={sheetKey}></Viewer>
         </div>
       </div>
     </div>

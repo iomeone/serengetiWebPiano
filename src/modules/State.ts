@@ -4,7 +4,7 @@ import { Note } from 'utils/Note';
 
 export type AudioState = {
   sheets: {
-    [key: string]: Sheet;
+    [sheetKey: string]: Sheet;
   };
   audioContext: IAudioContext | null;
 };

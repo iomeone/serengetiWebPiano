@@ -10,7 +10,7 @@ type Props = {
   onVisibleChange: (visible: boolean) => void;
   file?: UploadFile<any> | null;
   onFileChange?: (file: UploadFile<any> | null) => void;
-  key: string;
+  sheetKey: string;
 };
 
 export default function LoadSheetModal({
@@ -18,7 +18,7 @@ export default function LoadSheetModal({
   onVisibleChange,
   file,
   onFileChange,
-  key,
+  sheetKey,
 }: Props) {
   const [myFile, setMyFile] = useState<UploadFile<any> | null>(null);
 
@@ -42,15 +42,14 @@ export default function LoadSheetModal({
     <Modal
       visible={visible}
       title="MusicXML 파일 업로드"
-      onOk={async () => {
+      onOk={() => {
         if (myFile === null) {
           message.error('업로드 완료 후 버튼을 눌러주세요.');
           return;
         }
 
         onVisibleChange(false);
-
-        await dispatch(loadSheetThunk(key, myFile.originFileObj as File));
+        dispatch(loadSheetThunk(sheetKey, myFile.originFileObj as File));
       }}
       onCancel={() => {
         onVisibleChange(false);
