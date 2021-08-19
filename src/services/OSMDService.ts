@@ -1,5 +1,4 @@
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { Fraction } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
 
 type NoteSchedule = {
