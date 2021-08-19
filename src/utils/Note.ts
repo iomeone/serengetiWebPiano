@@ -54,13 +54,13 @@ export const midiKeyNumberToBetterNoteName = (
 export const parseNoteNameToNote = (noteName: string): Note => {
   const noteReg = /^([A-Za-z]+)([0-9]+)$/;
   const ret = noteReg.exec(noteName);
-  if (ret === null || ret.length < 3) throw 'parse failed';
+  if (ret === null || ret.length < 3) throw new Error('parse failed');
 
   const className = ret[1];
   const pitchClass = pitchClassArr.findIndex((str) => str === className);
-  if (pitchClass === -1) throw 'parse failed';
+  if (pitchClass === -1) throw new Error('parse failed');
   const octave = parseInt(ret[2]);
-  if (isNaN(octave)) throw 'parse failed';
+  if (isNaN(octave)) throw new Error('parse failed');
 
   return { pitchClass, octave };
 };
@@ -119,13 +119,13 @@ export function diatonicNumberToNote(diatonicNumber: number): Note {
 export const parseNoteNameToDiatonicNumber = (noteName: string): number => {
   const noteReg = /^([A-Za-z]+)([0-9]+)$/;
   const ret = noteReg.exec(noteName);
-  if (ret === null || ret.length < 3) throw 'parse failed';
+  if (ret === null || ret.length < 3) throw new Error('parse failed');
 
   const className = ret[1];
   const pitchClass = pitchClassArr.findIndex((str) => str === className);
-  if (pitchClass === -1) throw 'parse failed';
+  if (pitchClass === -1) throw new Error('parse failed');
   const octave = parseInt(ret[2]);
-  if (isNaN(octave)) throw 'parse failed';
+  if (isNaN(octave)) throw new Error('parse failed');
 
   return noteToDiatonicNumber({ pitchClass, octave });
 };
