@@ -2,12 +2,7 @@ import { Space, Typography, Button, Breadcrumb } from 'antd';
 import { Footer, Header } from 'antd/lib/layout/layout';
 import styled from 'styled-components';
 import { HomeOutlined, SettingOutlined } from '@ant-design/icons';
-import { Sheet } from 'models/Sheet';
 import React, { useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { State } from 'modules/State';
-import LoadSheetModal from 'components/LoadSheetModal';
-import Viewer from 'components/Viewer';
 import SettingsModal from 'components/SettingsModal';
 import {
   Route,
@@ -77,9 +72,7 @@ const routeMap: BreadCrumbMap = {
 };
 
 function App() {
-  const [loadModal, setLoadModal] = useState(false);
   const [settingsModal, setSettingsModal] = useState(false);
-
   const location = useLocation();
   const pathSnippets = useMemo(
     () => location.pathname.split('/').filter((i) => i),
@@ -113,10 +106,6 @@ function App() {
 
   return (
     <Screen>
-      <LoadSheetModal
-        visible={loadModal}
-        onVisibleChange={setLoadModal}
-      ></LoadSheetModal>
       <SettingsModal
         visible={settingsModal}
         onVisibleChange={setSettingsModal}
