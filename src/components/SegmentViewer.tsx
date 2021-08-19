@@ -43,9 +43,10 @@ export default function SegmentViewer({ key }: SegmentViewerProps) {
         <Button
           onClick={async () => {
             let service = frontPlaybackService;
-            if (frontPlaybackService !== null) {
+            const sheet = audio.sheets[key];
+            if (frontPlaybackService === null) {
               service = await getOrCreateFrontPlaybackServiceWithGesture(
-                audio.sheets[key].osmd,
+                sheet.osmd,
               );
             }
             service?.play();
