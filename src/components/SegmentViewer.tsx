@@ -1,4 +1,5 @@
 import { Button, Typography } from 'antd';
+import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { State } from 'modules/State';
 import { useSelector } from 'react-redux';
 import Viewer from './Viewer';
@@ -8,6 +9,10 @@ type SegmentViewerProps = {
 };
 export default function SegmentViewer({ key }: SegmentViewerProps) {
   const audio = useSelector((state: State) => state.audio);
+  const { frontPlaybackService, getOrCreateFrontPlaybackServiceWithGesture } =
+    useFrontPlaybackService();
+
+  const sheet = audio.sheets[key] ?? null;
 
   return (
     <div
@@ -35,7 +40,21 @@ export default function SegmentViewer({ key }: SegmentViewerProps) {
         >
           OSMD Viewer
         </Typography.Text>
-        <Button disabled={audio.sheets[key] === undefined}>Play Audio</Button>
+        <Button
+          onClick={async () => {
+            let service = frontPlaybackService;
+            const sheet = audio.sheets[key];
+            if (frontPlaybackService === null) {
+              service = await getOrCreateFrontPlaybackServiceWithGesture(
+                sheet.osmd,
+              );
+            }
+            service?.play();
+          }}
+          disabled={sheet === null || !sheet.loaded}
+        >
+          Play Audio
+        </Button>
       </div>
       <div
         style={{

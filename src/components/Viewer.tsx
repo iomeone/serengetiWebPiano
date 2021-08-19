@@ -5,9 +5,10 @@ import { addSheet } from 'modules/audio';
 
 type ViewerProps = {
   key: string;
+  hidden?: boolean;
 };
 
-export default function Viewer({ key }: ViewerProps) {
+export default function Viewer({ key, hidden }: ViewerProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
 
@@ -31,5 +32,12 @@ export default function Viewer({ key }: ViewerProps) {
     }
   }, [osmdDivRef, dispatch, key]);
 
-  return <div ref={osmdDivRef}></div>;
+  return (
+    <div
+      ref={osmdDivRef}
+      style={{
+        display: hidden === true ? 'none' : 'block',
+      }}
+    ></div>
+  );
 }

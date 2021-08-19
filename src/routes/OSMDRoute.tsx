@@ -8,6 +8,7 @@ import {
 import LoadSheet from 'components/LoadSheet';
 import SegmentViewer from 'components/SegmentViewer';
 import { useFrontAudioService } from 'hooks/useFrontAudioService';
+import { useAudioContext } from 'hooks/useAudioContext';
 
 const margin = 20;
 const key = 'osmd-main-key';
@@ -16,11 +17,9 @@ const Main = styled.div`
 `;
 
 export default function OSMDRoute() {
-  const {
-    frontAudioService: audioService,
-    getOrCreateFrontAudioServiceWithGesture: preloadWithGesture,
-  } = useFrontAudioService();
-  const isLoaded = useMemo(() => audioService !== null, [audioService]);
+  const { audioContext, getOrCreateAudioContextWithGesture } =
+    useAudioContext();
+  const isLoaded = useMemo(() => audioContext !== null, [audioContext]);
 
   return (
     <Main>
@@ -30,7 +29,7 @@ export default function OSMDRoute() {
         {isLoaded ? (
           <Space direction="horizontal" size={8}>
             <CheckCircleOutlined></CheckCircleOutlined>
-            <Typography.Text>Audio Service is ready.</Typography.Text>
+            <Typography.Text>Audio Context is ready.</Typography.Text>
           </Space>
         ) : (
           <Space direction="horizontal" size={8}>
@@ -40,10 +39,10 @@ export default function OSMDRoute() {
         )}
         <Button
           onClick={() => {
-            preloadWithGesture();
+            getOrCreateAudioContextWithGesture();
           }}
         >
-          preload audio service
+          Preload Audio Context
         </Button>
         <SegmentViewer key={key}></SegmentViewer>
       </Space>

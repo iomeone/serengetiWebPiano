@@ -9,7 +9,7 @@ type FrontAudioServiceRes = {
 
 export function useFrontAudioService(): FrontAudioServiceRes {
   const { getOrCreateAudioContextWithGesture } = useAudioContext();
-  const [frontAudioService, setAudioService] =
+  const [frontAudioService, setFrontAudioService] =
     useState<FrontAudioService | null>(null);
 
   const getOrCreateFrontAudioServiceWithGesture =
@@ -17,7 +17,7 @@ export function useFrontAudioService(): FrontAudioServiceRes {
       const audioContext = await getOrCreateAudioContextWithGesture();
       const fas = new FrontAudioService();
       await fas.init(audioContext);
-      setAudioService(fas);
+      setFrontAudioService(fas);
       return fas;
     };
 
