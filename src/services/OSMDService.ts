@@ -3,16 +3,9 @@ import { Fraction } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
 
 type NoteSchedule = {
-  notes: Note[];
+  note: Note;
   timing: number;
-};
-
-type MidiKeyNumberSchedule = {
-  midiKeyNumbers: number[];
-  timing: number;
-  timeSignature: Fraction;
-  length: Fraction;
-  bpm: number;
+  length: number;
 };
 
 export class OSMDService {
@@ -24,7 +17,7 @@ export class OSMDService {
   }
 
   public getNoteSchedules(): NoteSchedule[] {
-    const allNoteSchedules: MidiKeyNumberSchedule[] = [];
+    const allNoteSchedules: NoteSchedule[] = [];
     this.osmd.cursor.reset();
     const iterator = this.osmd.cursor.iterator;
 
@@ -38,17 +31,15 @@ export class OSMDService {
           // make sure our note is not silent
           if (note !== null && note.halfTone !== 0) {
             const midiKeyNumber = note.halfTone + 12; // see issue #224
+            const numBeats =
+              iterator.CurrentMeasure.ActiveTimeSignature.Denominator;
             const timing =
-              (iterator.currentTimeStamp.RealValue * 4 * 60) / this.bpm;
-            const bpm = iterator.CurrentBpm;
-            const timeSignature = iterator.CurrentMeasure.ActiveTimeSignature;
-            const length = note.Length;
+              (iterator.currentTimeStamp.RealValue * numBeats * 60) / this.bpm;
+            const length = (note.Length.RealValue * numBeats * 60) / this.bpm;
             allNoteSchedules.push({
-              midiKeyNumbers: [midiKeyNumber],
+              note: midiKeyNumberToNote(midiKeyNumber),
               timing,
-              timeSignature,
               length,
-              bpm,
             });
           }
         }
@@ -56,11 +47,6 @@ export class OSMDService {
       iterator.moveToNext();
     }
 
-    return allNoteSchedules.map((note) => ({
-      ...note,
-      notes: note.midiKeyNumbers.map((midiKeyNumber) =>
-        midiKeyNumberToNote(midiKeyNumber),
-      ),
-    }));
+    return allNoteSchedules;
   }
 }
