@@ -7,7 +7,6 @@ import {
 } from '@ant-design/icons';
 import LoadSheet from 'components/LoadSheet';
 import SegmentViewer from 'components/SegmentViewer';
-import { useFrontAudioService } from 'hooks/useFrontAudioService';
 import { useAudioContext } from 'hooks/useAudioContext';
 
 const margin = 20;
