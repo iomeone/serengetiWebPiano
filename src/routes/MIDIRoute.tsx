@@ -6,8 +6,12 @@ import { Alert, Button, Space, Spin, Typography } from 'antd';
 import { useFrontMIDIAudio } from 'hooks/useFrontMIDIAudio';
 import { State } from 'modules/State';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { setPianoVisibility } from 'modules/piano';
+import Piano from 'components/Piano';
+import { noteToMidiKeyNumber } from 'utils/Note';
+import { useBinaryPressedKeys } from 'hooks/useBinaryPressedKeys';
 
 const margin = 20;
 
@@ -19,10 +23,20 @@ const Main = styled.div`
 `;
 
 export default function MIDIRoute() {
+  const piano = useSelector((state: State) => state.piano);
+  const dispatch = useDispatch();
   const audioContext = useSelector((state: State) => state.audio.audioContext);
   const isLoaded = useMemo(() => audioContext !== null, [audioContext]);
+  const { onKeyUp, onKeyDown, pressedKeys } = useBinaryPressedKeys();
   const { initWithGesture, isMIDIConnected, isMIDISupported } =
-    useFrontMIDIAudio(null, null);
+    useFrontMIDIAudio(
+      (note: number) => {
+        onKeyDown(note);
+      },
+      (note: number) => {
+        onKeyUp(note);
+      },
+    );
 
   return (
     <Main>
@@ -83,6 +97,18 @@ export default function MIDIRoute() {
         >
           Activate MIDI Piano
         </Button>
+        <Button
+          onClick={() => {
+            dispatch(setPianoVisibility(true));
+          }}
+        >
+          피아노 열기
+        </Button>
+        <Piano
+          lower={noteToMidiKeyNumber(piano.min)}
+          upper={noteToMidiKeyNumber(piano.max)}
+          pressedKeys={pressedKeys}
+        />
       </Space>
     </Main>
   );
