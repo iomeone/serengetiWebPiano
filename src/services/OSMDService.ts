@@ -2,7 +2,8 @@ import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { Fraction } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
 
-type NoteSchedule = {
+// 여기에서 export?
+export type NoteSchedule = {
   note: Note;
   timing: number;
   length: number;
@@ -10,14 +11,30 @@ type NoteSchedule = {
 
 export class OSMDService {
   private osmd: OSMD;
-  private bpm: number = 120;
+  private _bpm: number = 120;
+  private _signiture: Fraction;
 
   constructor(osmd: OSMD) {
     this.osmd = osmd;
+
+    this.osmd.cursor.reset();
+    const iterator = this.osmd.cursor.iterator;
+    this._bpm = iterator.CurrentMeasure.TempoInBPM;
+    this._signiture = iterator.CurrentMeasure.ActiveTimeSignature;
+    console.log(this._signiture);
+  }
+  public setBPM(bpm: number) {
+    this._bpm = bpm;
+  }
+  public setSigniture(signiture:Fraction){
+    this._signiture = signiture;
+  }
+  public getBpm() : number {
+    return this._bpm;
   }
 
-  public setBPM(bpm: number) {
-    this.bpm = bpm;
+  public getSigniture() : Fraction{
+    return this._signiture;
   }
 
   public getNoteSchedules(): NoteSchedule[] {
@@ -25,21 +42,26 @@ export class OSMDService {
     this.osmd.cursor.reset();
     const iterator = this.osmd.cursor.iterator;
 
+
     while (!iterator.EndReached) {
       const voices = iterator.CurrentVoiceEntries;
-      for (var i = 0; i < voices.length; i++) {
+      for (let i = 0; i < voices.length; i++) {
         const v = voices[i];
         const notes = v.Notes;
-        for (var j = 0; j < notes.length; j++) {
+        for (let j = 0; j < notes.length; j++) {
           const note = notes[j];
           // make sure our note is not silent
           if (note !== null && note.halfTone !== 0) {
             const midiKeyNumber = note.halfTone + 12; // see issue #224
-            const numBeats =
-              iterator.CurrentMeasure.ActiveTimeSignature.Denominator;
-            const timing =
-              (iterator.currentTimeStamp.RealValue * numBeats * 60) / this.bpm;
-            const length = (note.Length.RealValue * numBeats * 60) / this.bpm;
+            
+            const timing = iterator.currentTimeStamp.RealValue;
+            const length = note.Length.RealValue;
+            // const numBeats =
+            //   iterator.CurrentMeasure.ActiveTimeSignature.Denominator;
+            // const timing =
+            //   (iterator.currentTimeStamp.RealValue * numBeats * 60) / this._bpm;
+            // const length = (note.Length.RealValue * numBeats * 60) / this._bpm;
+            
             allNoteSchedules.push({
               note: midiKeyNumberToNote(midiKeyNumber),
               timing,
