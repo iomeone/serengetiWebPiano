@@ -6,6 +6,9 @@ import { Player } from 'soundfont-player';
 export class FrontAudioService implements IAudioService {
   private static instMidiName = 'acoustic_grand_piano' as const;
   private player: Player | null = null;
+  public get Player() {
+    return this.player;
+  }
 
   public async init(audioContext: IAudioContext) {
     this.player = await Soundfont.instrument(

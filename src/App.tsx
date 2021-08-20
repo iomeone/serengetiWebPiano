@@ -15,6 +15,7 @@ import {
 import MainRoute from 'routes/MainRoute';
 import SheetRoute from 'routes/SheetRoute';
 import OSMDRoute from 'routes/OSMDRoute';
+import MIDIRoute from 'routes/MIDIRoute';
 
 const Main = styled.div`
   display: flex;
@@ -68,6 +69,10 @@ const routeMap: BreadCrumbMap = {
   '/osmd': {
     routeName: 'OSMD Component',
     component: OSMDRoute,
+  },
+  '/midi': {
+    routeName: 'MIDI',
+    component: MIDIRoute,
   },
 };
 
