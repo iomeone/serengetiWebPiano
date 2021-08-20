@@ -39,9 +39,9 @@ export const loadSheetThunk =
     } catch {
       return;
     }
+    osmd.render();
     dispatch(_setTitle(sheetKey, file.name));
     dispatch(_setLoaded(sheetKey, true));
-    osmd.render();
   };
 
 export const loadTestSheetThunk =
@@ -54,9 +54,9 @@ export const loadTestSheetThunk =
     } catch {
       return;
     }
+    osmd.render();
     dispatch(_setTitle(sheetKey, 'test data'));
     dispatch(_setLoaded(sheetKey, true));
-    osmd.render();
   };
 
 export const audioReducer = (
