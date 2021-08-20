@@ -25,6 +25,12 @@ const items: RouteCard[] = [
     description:
       'OpenSheetMusicDisplay를 이용하여 마크업 형식으로 저장되는 교육 자료에 삽입될 연습용 악보 컴포넌트를 개발 및 테스트합니다. 피아노 연주, 커서 이동, 자동 연주 기능 등이 적용됩니다.',
   },
+  {
+    title: 'MIDI',
+    path: '/midi',
+    description:
+      'Web MIDI API를 이용하여 디지털 피아노와 컴퓨터를 직접 연결하고 MIDI 입력을 처리합니다. 키보드를 직접 연결하여 연주하고 현재 연주되는 음을 표시할 수 있습니다.',
+  },
 ];
 
 export default function MainRoute() {

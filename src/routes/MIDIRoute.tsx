@@ -1,0 +1,89 @@
+import {
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
+import { Alert, Button, Space, Spin, Typography } from 'antd';
+import { useFrontMIDIAudio } from 'hooks/useFrontMIDIAudio';
+import { State } from 'modules/State';
+import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+const margin = 20;
+
+const Main = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: ${margin}px 50px ${margin}px 50px;
+`;
+
+export default function MIDIRoute() {
+  const audioContext = useSelector((state: State) => state.audio.audioContext);
+  const isLoaded = useMemo(() => audioContext !== null, [audioContext]);
+  const { initWithGesture, isMIDIConnected, isMIDISupported } =
+    useFrontMIDIAudio(null, null);
+
+  return (
+    <Main>
+      <Space direction="vertical" size={8}>
+        <Typography.Text
+          style={{
+            fontWeight: 'bold',
+          }}
+        >
+          MIDI
+        </Typography.Text>
+        {(() => {
+          switch (isMIDISupported) {
+            case true:
+              return (
+                <Alert
+                  type="success"
+                  message="이 브라우저는 MIDI 입력을 지원합니다."
+                ></Alert>
+              );
+            case false:
+              return (
+                <Alert
+                  type="error"
+                  message="이 브라우저는 MIDI 입력을 지원하지 않습니다."
+                ></Alert>
+              );
+            case null:
+              return <Spin></Spin>;
+          }
+        })()}
+        {isMIDIConnected ? (
+          <Space direction="horizontal" size={8}>
+            <CheckCircleOutlined></CheckCircleOutlined>
+            <Typography.Text>MIDI Device is ready.</Typography.Text>
+          </Space>
+        ) : (
+          <Space direction="horizontal" size={8}>
+            <ExclamationCircleOutlined></ExclamationCircleOutlined>
+            <Typography.Text>MIDI Device is not connected.</Typography.Text>
+          </Space>
+        )}
+        {isLoaded ? (
+          <Space direction="horizontal" size={8}>
+            <CheckCircleOutlined></CheckCircleOutlined>
+            <Typography.Text>Audio Context is ready.</Typography.Text>
+          </Space>
+        ) : (
+          <Space direction="horizontal" size={8}>
+            <ExclamationCircleOutlined></ExclamationCircleOutlined>
+            <Typography.Text>Audio Service is not loaded.</Typography.Text>
+          </Space>
+        )}
+        <Button
+          onClick={() => {
+            initWithGesture();
+          }}
+        >
+          Activate MIDI Piano
+        </Button>
+      </Space>
+    </Main>
+  );
+}
