@@ -1,4 +1,4 @@
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import { Fraction, OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
 
 // 여기에서 export?
@@ -25,14 +25,14 @@ export class OSMDService {
   public setBPM(bpm: number) {
     this._bpm = bpm;
   }
-  public setSigniture(signiture:Fraction){
+  public setSigniture(signiture: Fraction) {
     this._signiture = signiture;
   }
-  public getBpm() : number {
+  public getBpm(): number {
     return this._bpm;
   }
 
-  public getSigniture() : Fraction{
+  public getSigniture(): Fraction {
     return this._signiture;
   }
 
@@ -40,7 +40,6 @@ export class OSMDService {
     const allNoteSchedules: NoteSchedule[] = [];
     this.osmd.cursor.reset();
     const iterator = this.osmd.cursor.iterator;
-
 
     while (!iterator.EndReached) {
       const voices = iterator.CurrentVoiceEntries;
@@ -52,7 +51,7 @@ export class OSMDService {
           // make sure our note is not silent
           if (note !== null && note.halfTone !== 0) {
             const midiKeyNumber = note.halfTone + 12; // see issue #224
-            
+
             const timing = iterator.currentTimeStamp.RealValue;
             const length = note.Length.RealValue;
             // const numBeats =
@@ -60,7 +59,7 @@ export class OSMDService {
             // const timing =
             //   (iterator.currentTimeStamp.RealValue * numBeats * 60) / this._bpm;
             // const length = (note.Length.RealValue * numBeats * 60) / this._bpm;
-            
+
             allNoteSchedules.push({
               note: midiKeyNumberToNote(midiKeyNumber),
               timing,
