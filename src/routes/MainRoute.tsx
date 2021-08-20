@@ -31,6 +31,12 @@ const items: RouteCard[] = [
     description:
       'Web MIDI API를 이용하여 디지털 피아노와 컴퓨터를 직접 연결하고 MIDI 입력을 처리합니다. 키보드를 직접 연결하여 연주하고 현재 연주되는 음을 표시할 수 있습니다.',
   },
+  {
+    title: 'Piano Roll',
+    path: '/pianoRoll',
+    description:
+      '음표와 쉼표를 띄우는 것이 아니라 음을 막대의 길이로 시간을 나타내는 방식을 사용하여 악보를 표시하는 악보 뷰어를 개발하고 테스트합니다.',
+  },
 ];
 
 export default function MainRoute() {

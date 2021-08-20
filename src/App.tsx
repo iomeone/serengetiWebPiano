@@ -16,6 +16,7 @@ import MainRoute from 'routes/MainRoute';
 import SheetRoute from 'routes/SheetRoute';
 import OSMDRoute from 'routes/OSMDRoute';
 import MIDIRoute from 'routes/MIDIRoute';
+import PianoRollRoute from 'routes/PianoRollRoute';
 
 const Main = styled.div`
   display: flex;
@@ -73,6 +74,10 @@ const routeMap: BreadCrumbMap = {
   '/midi': {
     routeName: 'MIDI',
     component: MIDIRoute,
+  },
+  '/pianoRoll': {
+    routeName: 'Piano Roll',
+    component: PianoRollRoute,
   },
 };
 
