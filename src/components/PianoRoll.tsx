@@ -182,6 +182,9 @@ export default function PianoRoll({
     
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
     context.fillRect(x, y, width, height);
+
+    context.fillStyle = "#000000";
+    context.fillText(noteToBetterNoteName(noteSchedule.note), x + 4, y + 11);
   };
 
   const drawStartScreen = (context: CanvasRenderingContext2D) => {
