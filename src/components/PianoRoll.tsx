@@ -71,7 +71,6 @@ export default function PianoRoll({
   }, [timeSigniture, bpm]);
 
   const songLength = useMemo(() => {
-    //TODO: calc songLength;
     if (noteSchedules !== null && timeSigniture !== null && bpm !== null) {
       let lastPoint = 0;
       for (let i = 0; i < noteSchedules.length; i++) {
