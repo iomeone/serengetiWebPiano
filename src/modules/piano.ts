@@ -5,14 +5,14 @@ import inistialState from './initialState';
 import { Note } from 'utils/Note';
 
 export const SET_PIANO_VISIBILITY = '@PIANO/SET_PIANO_VISIBILITY';
-export const SET_PIANO_RANGE = '@PIANO/SET_PIANO_RANGE';
-
 export const setPianoVisibility = (visibility: boolean) =>
   action(SET_PIANO_VISIBILITY, { visibility });
-type SetPianoVisibility = ActionType<typeof setPianoVisibility>;
+export type SetPianoVisibility = ActionType<typeof setPianoVisibility>;
+
+export const SET_PIANO_RANGE = '@PIANO/SET_PIANO_RANGE';
 export const setPianoRange = (range: [Note, Note]) =>
   action(SET_PIANO_RANGE, { range });
-type SetPianoRange = ActionType<typeof setPianoRange>;
+export type SetPianoRange = ActionType<typeof setPianoRange>;
 export type PianoActions = SetPianoVisibility | SetPianoRange;
 
 export const pianoReducer = (
