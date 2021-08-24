@@ -15,7 +15,6 @@ export function useWidth(): WidthRes {
   );
   const dispatch = useDispatch();
 
-  // eslint-disable-next-line
   const handleResize = useCallback(() => {
     const width = window.innerWidth;
     let mode: WidthMode = WidthMode.Desktop;
@@ -28,9 +27,9 @@ export function useWidth(): WidthRes {
     }
     dispatch(setWidth(width));
     dispatch(setWidthMode(mode));
+    // eslint-disable-next-line
   }, []);
 
-  // eslint-disable-next-line
   useEffect(() => {
     if (!ready) {
       window.addEventListener('resize', handleResize);
@@ -42,6 +41,7 @@ export function useWidth(): WidthRes {
         window.removeEventListener('resize', handleResize);
       };
     }
+    // eslint-disable-next-line
   }, []);
 
   return { width, widthMode };
