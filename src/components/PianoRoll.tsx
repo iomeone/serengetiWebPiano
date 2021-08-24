@@ -5,14 +5,22 @@ import Restart from '../assets/restart.svg';
 import Start from '../assets/start.svg';
 import styled from 'styled-components';
 import { FrontAudioService } from 'services/FrontAudioService';
-import { Fraction, NoteType, OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import {
+  Fraction,
+  NoteType,
+  OpenSheetMusicDisplay as OSMD,
+} from 'opensheetmusicdisplay';
 import { Button } from 'antd';
 import { useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import { IAudioContext } from 'standardized-audio-context';
 import PlaybackEngine from 'osmd-audio-player';
 import { NoteSchedule } from 'services/OSMDService';
-import { midiKeyNumberToKeyType, noteToDiatonicNumber } from 'utils/Note';
+import {
+  midiKeyNumberToKeyType,
+  noteToDiatonicNumber,
+  noteToBetterNoteName,
+} from 'utils/Note';
 
 type Props = {
   state: PlayState;
@@ -83,7 +91,7 @@ export default function PianoRoll({
     } else {
       return 0;
     }
-  }, [noteSchedules,velocity]);
+  }, [noteSchedules, velocity]);
 
   useEffect(() => {
     //prepare pianoroll
@@ -122,7 +130,7 @@ export default function PianoRoll({
     drawCursor(context, 50);
 
     noteSchedules.forEach((schedule) => {
-      drawNote(context, playTime, 50, bottom,timeSigniture, schedule);
+      drawNote(context, playTime, 50, bottom, timeSigniture, schedule);
     });
   };
 
@@ -141,8 +149,7 @@ export default function PianoRoll({
     }
   };
   const drawCursor = (context: CanvasRenderingContext2D, cursorX: number) => {
-    
-    context.strokeStyle = "";
+    context.strokeStyle = '';
     context.beginPath(); // Start a new path
     context.moveTo(cursorX, 0); // Move the pen to (30, 50)
     context.lineTo(cursorX, context.canvas.height); // Draw a line to (150, 100)
@@ -158,19 +165,20 @@ export default function PianoRoll({
   ) => {
     // midikey => color,y
 
-    const Barcolor = ['#ee2f27',
-      "#f07e28",
-      "#f9a11b",
-      "#f8d308",
-      "#f2ef16",
-      "#a1ce37",
-      "#4bb748",
-      "#38afd1",
-      "#2d76bb",
-      "#38479c",
-      "#6d429b",
-      "#c52a90"];
-
+    const Barcolor = [
+      '#ee2f27',
+      '#f07e28',
+      '#f9a11b',
+      '#f8d308',
+      '#f2ef16',
+      '#a1ce37',
+      '#4bb748',
+      '#38afd1',
+      '#2d76bb',
+      '#38479c',
+      '#6d429b',
+      '#c52a90',
+    ];
 
     const width = (measureLength * noteSchedule.length) / timeSigniture;
     const height = 15;
@@ -178,12 +186,15 @@ export default function PianoRoll({
       cursorX +
       measureLength *
         (noteSchedule.timing / timeSigniture - playTime * velocity);
-    const  y = bottomY + 30 - leading / 2 * (noteToDiatonicNumber(noteSchedule.note)- 24);
-    
+    const y =
+      bottomY +
+      30 -
+      (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
+
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
     context.fillRect(x, y, width, height);
 
-    context.fillStyle = "#000000";
+    context.fillStyle = '#000000';
     context.fillText(noteToBetterNoteName(noteSchedule.note), x + 4, y + 11);
   };
 
