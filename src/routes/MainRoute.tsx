@@ -1,10 +1,12 @@
 import { Card, List, Space, Typography } from 'antd';
 import styled from 'styled-components';
+import { Size } from 'constants/layout';
 
-const margin = 20;
+const hMargin = Size.hMargin;
+const margin = Size.margin;
 
 const Main = styled.div`
-  padding: ${margin}px 50px ${margin}px 50px;
+  padding: ${margin}px ${hMargin}px ${margin}px ${hMargin}px;
 `;
 
 type RouteCard = {
@@ -36,6 +38,12 @@ const items: RouteCard[] = [
     path: '/pianoRoll',
     description:
       '음표와 쉼표를 띄우는 것이 아니라 음을 막대의 길이로 시간을 나타내는 방식을 사용하여 악보를 표시하는 악보 뷰어를 개발하고 테스트합니다.',
+  },
+  {
+    title: 'Worksheet',
+    path: '/worksheet',
+    description:
+      '글, 영상, 악보 등을 통해 사용자가 피아노를 학습할 수 있도록 하는 인터랙티브 E-book 콘텐츠를 표시하기 위한 포맷을 정하고, 이를 표시하는 기능을 개발 및 테스트합니다.',
   },
 ];
 
