@@ -2,7 +2,6 @@ import { Button, Space } from 'antd';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
-import Viewer from 'components/Viewer';
 import { noteToMidiKeyNumber } from 'utils/Note';
 import Piano from 'components/Piano';
 import { setPianoVisibility } from 'modules/piano';
