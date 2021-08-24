@@ -8,6 +8,7 @@ import {
 
 type BinaryPressedKeysRes = {
   pressedKeys: Note[];
+  pressedBinaryKeys: boolean[];
   onKeyDown: (midiKeyNumber: number) => void;
   onKeyUp: (midiKeyNumber: number) => void;
 };
@@ -46,5 +47,5 @@ export function useBinaryPressedKeys(): BinaryPressedKeysRes {
     return pressed;
   }, [pressedBinaryKeys]);
 
-  return { pressedKeys, onKeyDown, onKeyUp };
+  return { pressedKeys, pressedBinaryKeys, onKeyDown, onKeyUp };
 }
