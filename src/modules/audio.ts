@@ -44,19 +44,29 @@ export const loadSheetThunk =
     dispatch(_setLoaded(sheetKey, true));
   };
 
-export const loadTestSheetThunk =
-  (sheetKey: string) => async (dispatch: Function, getState: () => State) => {
+export const loadSheetWithUrlThunk =
+  (sheetKey: string, title: string, url: string) =>
+  async (dispatch: Function, getState: () => State) => {
     const osmd = getState().audio.sheets[sheetKey].osmd;
     try {
-      await osmd.load(
-        'https://opensheetmusicdisplay.github.io/demo/sheets/MuzioClementi_SonatinaOpus36No3_Part1.xml',
-      );
+      await osmd.load(url);
     } catch {
       return;
     }
     osmd.render();
-    dispatch(_setTitle(sheetKey, 'test data'));
+    dispatch(_setTitle(sheetKey, title));
     dispatch(_setLoaded(sheetKey, true));
+  };
+
+export const loadTestSheetThunk =
+  (sheetKey: string) => async (dispatch: Function, getState: () => State) => {
+    dispatch(
+      loadSheetWithUrlThunk(
+        sheetKey,
+        'sonatina',
+        'https://opensheetmusicdisplay.github.io/demo/sheets/MuzioClementi_SonatinaOpus36No3_Part1.xml',
+      ),
+    );
   };
 
 export const audioReducer = (
