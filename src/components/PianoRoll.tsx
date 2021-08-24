@@ -1,26 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { NotePlayOption } from 'services/IAudioService';
-import { CaretRightOutlined } from '@ant-design/icons';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Restart from '../assets/restart.svg';
 import Start from '../assets/start.svg';
 import styled from 'styled-components';
-import { FrontAudioService } from 'services/FrontAudioService';
-import {
-  Fraction,
-  NoteType,
-  OpenSheetMusicDisplay as OSMD,
-} from 'opensheetmusicdisplay';
-import { Button } from 'antd';
-import { useSelector } from 'react-redux';
-import { State } from 'modules/State';
-import { IAudioContext } from 'standardized-audio-context';
-import PlaybackEngine from 'osmd-audio-player';
+import { Fraction } from 'opensheetmusicdisplay';
 import { NoteSchedule } from 'services/OSMDService';
-import {
-  midiKeyNumberToKeyType,
-  noteToDiatonicNumber,
-  noteToBetterNoteName,
-} from 'utils/Note';
+import { noteToDiatonicNumber, noteToBetterNoteName } from 'utils/Note';
 
 type Props = {
   state: PlayState;
