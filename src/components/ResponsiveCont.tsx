@@ -10,8 +10,10 @@ const Cont = styled.div`
   justify-self: end;
 `;
 
-const Inner = styled.div`
-  ${(props: { mode: WidthMode }) => {
+type InnerProps = { mode: WidthMode };
+
+const Inner = styled.div<InnerProps>`
+  ${(props) => {
     switch (props.mode) {
       case WidthMode.Desktop:
         return css`
