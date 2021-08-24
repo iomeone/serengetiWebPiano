@@ -1,3 +1,4 @@
+import { WidthMode } from 'constants/layout';
 import { Sheet } from 'models/Sheet';
 import { IAudioContext } from 'standardized-audio-context';
 import { Note } from 'utils/Note';
@@ -15,7 +16,14 @@ export type PianoState = {
   max: Note;
 };
 
+export type LayoutState = {
+  ready: boolean;
+  width: number;
+  widthMode: WidthMode;
+};
+
 export type State = {
   audio: AudioState;
   piano: PianoState;
+  layout: LayoutState;
 };
