@@ -8,11 +8,18 @@ import {
 import LoadSheet from 'components/LoadSheet';
 import SegmentViewer from 'components/SegmentViewer';
 import { useAudioContext } from 'hooks/useAudioContext';
+import { Size } from 'constants/layout';
 
-const margin = 20;
 const sheetKey = 'osmd-main-key';
+
+const hMargin = Size.hMargin;
+const margin = Size.margin;
+
 const Main = styled.div`
-  padding: ${margin}px 50px ${margin}px 50px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: ${margin}px ${hMargin}px ${margin}px ${hMargin}px;
 `;
 
 export default function OSMDRoute() {

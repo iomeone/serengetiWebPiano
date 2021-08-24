@@ -12,14 +12,16 @@ import { useMemo } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { isLoadedSheet } from 'utils/Sheet';
 import PianoRollViewer from 'components/PianoRollViewer';
+import { Size } from 'constants/layout';
 
-const margin = 20;
+const hMargin = Size.hMargin;
+const margin = Size.margin;
 
 const Main = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: ${margin}px 50px ${margin}px 50px;
+  padding: ${margin}px ${hMargin}px ${margin}px ${hMargin}px;
 `;
 
 const Title = styled.div`
