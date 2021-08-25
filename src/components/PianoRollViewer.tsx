@@ -6,7 +6,7 @@ import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { isLoadedSheet } from 'utils/Sheet';
 import PianoRoll, { PlayState } from './PianoRoll';
 import Viewer from './Viewer';
-import { OSMDService } from 'services/OSMDService';
+import { getBPM, getNoteSchedules, getTimeSignature } from 'utils/OSMD';
 
 type SegmentViewerProps = {
   sheetKey: string;
@@ -20,15 +20,16 @@ export default function PianoRollViewer({ sheetKey }: SegmentViewerProps) {
     () => (isLoadedSheet(sheet) ? (sheet.osmd as OSMD) : null),
     [sheet],
   );
-  //TODO new 서비스 => use서비스
-  const osmdService = useMemo(() => {
-    if (osmd !== null) {
-      return new OSMDService(osmd);
-    } else {
-      return null;
-    }
-  }, [osmd]);
 
+  const noteSchedules = useMemo(
+    () => (osmd !== null ? getNoteSchedules(osmd) : null),
+    [osmd],
+  );
+  const bpm = useMemo(() => (osmd !== null ? getBPM(osmd) : null), [osmd]);
+  const timeSigniture = useMemo(
+    () => (osmd !== null ? getTimeSignature(osmd) : null),
+    [osmd],
+  );
   return (
     <div
       style={{
@@ -67,13 +68,10 @@ export default function PianoRollViewer({ sheetKey }: SegmentViewerProps) {
         }}
       >
         <Viewer hidden={true} sheetKey={sheetKey}></Viewer>
-        {
-          //TODO:  이 더러운 props를 바꾸는 방법 1. osmdService 자체를 넣어준다 2.
-        }
         <PianoRoll
-          noteSchedules={osmdService ? osmdService.getNoteSchedules() : null}
-          bpm={osmdService ? osmdService.getBpm() : null}
-          timeSigniture={osmdService ? osmdService.getSigniture() : null}
+          noteSchedules={noteSchedules}
+          bpm={bpm}
+          timeSigniture={timeSigniture}
           state={PlayState.PREPARE}
         ></PianoRoll>
       </div>
