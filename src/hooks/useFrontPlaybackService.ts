@@ -1,29 +1,64 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { FrontPlaybackService } from 'services/FrontPlaybackService';
 import { useAudioContext } from './useAudioContext';
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import { useDispatch, useSelector } from 'react-redux';
+import { State } from 'modules/State';
+import { Sheet } from 'models/Sheet';
+import { PlaybackServiceType } from 'services/IPlaybackService';
+import { setPlaybackService } from 'modules/audio';
 
 type FrontPlaybackServiceRes = {
-  frontPlaybackService: FrontPlaybackService | null;
-  getOrCreateFrontPlaybackServiceWithGesture: (
-    osmd: OSMD,
-  ) => Promise<FrontPlaybackService>;
+  getOrCreateFrontPlaybackServiceWithGesture: () => Promise<FrontPlaybackService | null>;
 };
 
-export function useFrontPlaybackService(): FrontPlaybackServiceRes {
+export function useFrontPlaybackService(
+  sheetKey: string,
+): FrontPlaybackServiceRes {
   const { getOrCreateAudioContextWithGesture } = useAudioContext();
-  const [frontPlaybackService, setFrontPlaybackService] =
-    useState<FrontPlaybackService | null>(null);
+  const sheet: Sheet | null = useSelector(
+    (state: State) => state.audio.sheets[sheetKey] ?? null,
+  );
+  const playbackService = useMemo(
+    () => (sheet !== null ? sheet.playbackService : null),
+    [sheet],
+  );
+  const playbackServiceType = useMemo(
+    () => (sheet !== null ? sheet.playbackServiceType : null),
+    [sheet],
+  );
+  const dispatch = useDispatch();
 
-  const getOrCreateFrontPlaybackServiceWithGesture = async (
-    osmd: OSMD,
-  ): Promise<FrontPlaybackService> => {
-    const audioContext = await getOrCreateAudioContextWithGesture();
-    const fps = new FrontPlaybackService();
-    await fps.init(osmd, audioContext);
-    setFrontPlaybackService(fps);
-    return fps;
-  };
+  const createFrontPlaybackService =
+    async (): Promise<FrontPlaybackService> => {
+      const service = new FrontPlaybackService();
+      await service.init(
+        sheet.osmd,
+        await getOrCreateAudioContextWithGesture(),
+      );
 
-  return { frontPlaybackService, getOrCreateFrontPlaybackServiceWithGesture };
+      dispatch(
+        setPlaybackService(sheetKey, service, PlaybackServiceType.FrontService),
+      );
+
+      return service;
+    };
+
+  const getOrCreateFrontPlaybackServiceWithGesture =
+    async (): Promise<FrontPlaybackService | null> => {
+      console.log(sheet);
+
+      if (playbackService !== null) {
+        if (playbackServiceType !== PlaybackServiceType.FrontService) {
+          playbackService.stop();
+
+          return await createFrontPlaybackService();
+        } else {
+          return playbackService as FrontPlaybackService;
+        }
+      } else {
+        return await createFrontPlaybackService();
+      }
+    };
+
+  return { getOrCreateFrontPlaybackServiceWithGesture };
 }

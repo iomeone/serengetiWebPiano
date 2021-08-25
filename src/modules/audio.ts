@@ -5,6 +5,10 @@ import inistialState from './initialState';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { IAudioContext } from 'standardized-audio-context';
 import { Sheet } from 'models/Sheet';
+import {
+  IPlaybackService,
+  PlaybackServiceType,
+} from 'services/IPlaybackService';
 
 export const ADD_SHEET = '@AUDIO/ADD_SHEET';
 export const addSheet = (sheetKey: string, osmd: OSMD) =>
@@ -26,36 +30,52 @@ export const setAudioContext = (audioContext: IAudioContext) =>
   action(SET_AUDIO_CONTEXT, { audioContext });
 export type SetAudioContext = ActionType<typeof setAudioContext>;
 
-export type AudioActions = AddSheet | SetTitle | SetLoaded | SetAudioContext;
+export const SET_PLAYBACK_SERVICE = '@AUDIO/SET_PLAYBACK_SERVICE';
+export const setPlaybackService = (
+  sheetKey: string,
+  playbackService: IPlaybackService | null,
+  serviceType: PlaybackServiceType | null,
+) => action(SET_PLAYBACK_SERVICE, { sheetKey, playbackService, serviceType });
+export type SetPlaybackService = ActionType<typeof setPlaybackService>;
+
+export type AudioActions =
+  | AddSheet
+  | SetTitle
+  | SetLoaded
+  | SetAudioContext
+  | SetPlaybackService;
 
 /* thunks */
-
-export const loadSheetThunk =
-  (sheetKey: string, file: File) =>
-  async (dispatch: Function, getState: () => State) => {
-    const osmd = getState().audio.sheets[sheetKey].osmd;
-    try {
-      await osmd.load(await file.text());
-    } catch {
-      return;
-    }
-    osmd.render();
-    dispatch(_setTitle(sheetKey, file.name));
-    dispatch(_setLoaded(sheetKey, true));
-  };
 
 export const loadSheetWithUrlThunk =
   (sheetKey: string, title: string, url: string) =>
   async (dispatch: Function, getState: () => State) => {
-    const osmd = getState().audio.sheets[sheetKey].osmd;
+    const sheet = getState().audio.sheets[sheetKey];
+    const osmd = sheet.osmd;
+
+    if (sheet.playbackService !== null) {
+      sheet.playbackService.stop();
+    }
+
+    dispatch(_setTitle(sheetKey, 'loading...'));
+    dispatch(_setLoaded(sheetKey, false));
+    dispatch(setPlaybackService(sheetKey, null, null));
+
     try {
       await osmd.load(url);
     } catch {
       return;
     }
     osmd.render();
+
     dispatch(_setTitle(sheetKey, title));
     dispatch(_setLoaded(sheetKey, true));
+  };
+
+export const loadSheetThunk =
+  (sheetKey: string, file: File) =>
+  async (dispatch: Function, getState: () => State) => {
+    dispatch(loadSheetWithUrlThunk(sheetKey, file.name, await file.text()));
   };
 
 export const loadTestSheetThunk =
@@ -81,6 +101,8 @@ export const audioReducer = (
           osmd: payload.osmd as any,
           title: null,
           loaded: false,
+          playbackService: null,
+          playbackServiceType: null,
         };
         draft.sheets[payload.sheetKey] = sheet;
       });
@@ -103,6 +125,15 @@ export const audioReducer = (
       const { payload } = action as SetAudioContext;
       return produce<AudioState>(state, (draft) => {
         draft.audioContext = payload.audioContext;
+      });
+    }
+    case SET_PLAYBACK_SERVICE: {
+      const { payload } = action as SetPlaybackService;
+      return produce<AudioState>(state, (draft) => {
+        draft.sheets[payload.sheetKey].playbackService =
+          payload.playbackService;
+        draft.sheets[payload.sheetKey].playbackServiceType =
+          payload.serviceType;
       });
     }
     default:
