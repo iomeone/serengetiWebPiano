@@ -4,10 +4,14 @@ import { useAudioContext } from './useAudioContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import { Sheet } from 'models/Sheet';
-import { PlaybackServiceType } from 'services/IPlaybackService';
+import {
+  IPlaybackService,
+  PlaybackServiceType,
+} from 'services/IPlaybackService';
 import { setPlaybackService } from 'modules/audio';
 
 type FrontPlaybackServiceRes = {
+  playbackService: IPlaybackService | null;
   getOrCreateFrontPlaybackServiceWithGesture: () => Promise<FrontPlaybackService | null>;
 };
 
@@ -45,8 +49,6 @@ export function useFrontPlaybackService(
 
   const getOrCreateFrontPlaybackServiceWithGesture =
     async (): Promise<FrontPlaybackService | null> => {
-      console.log(sheet);
-
       if (playbackService !== null) {
         if (playbackServiceType !== PlaybackServiceType.FrontService) {
           playbackService.stop();
@@ -60,5 +62,5 @@ export function useFrontPlaybackService(
       }
     };
 
-  return { getOrCreateFrontPlaybackServiceWithGesture };
+  return { playbackService, getOrCreateFrontPlaybackServiceWithGesture };
 }
