@@ -3,8 +3,8 @@ import Restart from '../assets/restart.svg';
 import Start from '../assets/start.svg';
 import styled from 'styled-components';
 import { Fraction } from 'opensheetmusicdisplay';
-import { NoteSchedule } from 'services/OSMDService';
 import { noteToDiatonicNumber, noteToBetterNoteName } from 'utils/Note';
+import { NoteSchedule } from 'utils/OSMD';
 
 type Props = {
   state: PlayState;
@@ -38,7 +38,6 @@ const ImgStart = new Image();
 ImgStart.src = Start;
 
 const measureLength = 500;
-const height = 15;
 const leading = 15;
 
 export default function PianoRoll({
@@ -75,7 +74,7 @@ export default function PianoRoll({
     } else {
       return 0;
     }
-  }, [noteSchedules, velocity]);
+  }, [noteSchedules, velocity, timeSigniture, bpm]);
 
   useEffect(() => {
     //prepare pianoroll
@@ -97,7 +96,7 @@ export default function PianoRoll({
         }
         break;
     }
-  }, [myState]);
+  }, [myState, onFinish]);
 
   const drawRoll = (
     context: CanvasRenderingContext2D,
@@ -259,11 +258,16 @@ export default function PianoRoll({
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [drawRoll]);
+  }, [
+    drawRoll,
+    myState,
+    noteSchedules,
+    pauseTime,
+    songLength,
+    startTime,
+    timeSigniture,
+  ]);
 
-  const prepareRoll = () => {
-    //
-  };
   const startRoll = () => {
     setMyState(PlayState.PLAYING);
     setStartTime(Date.now());
