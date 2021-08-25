@@ -7,10 +7,6 @@ import { noteToMidiKeyNumber } from 'utils/Note';
 import Piano from 'components/Piano';
 import { setPianoVisibility } from 'modules/piano';
 import LoadSheet from 'components/LoadSheet';
-import { OSMDService } from 'services/OSMDService';
-import { useMemo } from 'react';
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { isLoadedSheet } from 'utils/Sheet';
 import { Size } from 'constants/layout';
 
 const hMargin = Size.hMargin;
@@ -32,13 +28,6 @@ const sheetKey = 'osmd-sheet-key';
 export default function SheetRoute() {
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
-  const sheet = useSelector(
-    (state: State) => state.audio.sheets[sheetKey] ?? null,
-  );
-  const osmd = useMemo(
-    () => (isLoadedSheet(sheet) ? (sheet.osmd as OSMD) : null),
-    [sheet],
-  );
 
   return (
     <Main>
@@ -52,17 +41,6 @@ export default function SheetRoute() {
           }}
         >
           피아노 열기
-        </Button>
-        <Button
-          onClick={() => {
-            if (osmd !== null) {
-              const os = new OSMDService(osmd);
-              console.log(os.getNoteSchedules());
-            }
-          }}
-          disabled={osmd === null}
-        >
-          노트 스케쥴 가져오기
         </Button>
       </Space>
       <Viewer sheetKey={sheetKey}></Viewer>
