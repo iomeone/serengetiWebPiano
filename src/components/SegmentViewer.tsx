@@ -1,12 +1,14 @@
-import { Button, Spin, Typography } from 'antd';
+import { Button, Space, Spin, Typography } from 'antd';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { loadSheetWithUrlThunk } from 'modules/audio';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { PlaybackState } from 'services/IPlaybackService';
 import styled from 'styled-components';
 import { isLoadedSheet } from 'utils/Sheet';
 import Viewer from './Viewer';
+import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
 
 const SheetCont = styled.div`
   width: 100%;
@@ -75,8 +77,27 @@ export default function SegmentViewer({
     }
   }, [sheet]);
 
+  const [playbackState, setPlaybackState] = useState<PlaybackState>(
+    PlaybackState.INIT,
+  );
+
   const height = oneStaff ? 110 : 220;
   const viewerTitle = title ?? 'OSMD Viewer';
+
+  const play = async () => {
+    const service = await getOrCreateFrontPlaybackServiceWithGesture();
+    service?.play();
+  };
+
+  const pause = async () => {
+    const service = await getOrCreateFrontPlaybackServiceWithGesture();
+    service?.pause();
+  };
+
+  const stop = async () => {
+    const service = await getOrCreateFrontPlaybackServiceWithGesture();
+    service?.stop();
+  };
 
   return (
     <div
@@ -104,15 +125,17 @@ export default function SegmentViewer({
         >
           {viewerTitle}
         </Typography.Text>
-        <Button
-          onClick={async () => {
-            const service = await getOrCreateFrontPlaybackServiceWithGesture();
-            service?.play();
-          }}
-          disabled={!isLoadedSheet(sheet)}
-        >
-          Play Audio
-        </Button>
+        <Space direction="horizontal" size={8}>
+          <Button onClick={play} type="text" shape="circle">
+            <IoPlay />
+          </Button>
+          <Button onClick={pause} type="text" shape="circle">
+            <IoPause />
+          </Button>
+          <Button onClick={stop} type="text" shape="circle">
+            <IoStop />
+          </Button>
+        </Space>
       </div>
       <SheetCont>
         <Inner height={height}>
