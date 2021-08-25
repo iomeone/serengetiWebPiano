@@ -240,7 +240,7 @@ export default class PlaybackEngine {
       this.currentIterationStep < this.iterationSteps
     )
       ++schedulerStep;
-    this.scheduler.setIterationStep(Math.max(schedulerStep - 1, 0));
+    this.scheduler.setIterationStep(schedulerStep);
   }
 
   setBpm(bpm: number) {
