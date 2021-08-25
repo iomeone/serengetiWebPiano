@@ -54,19 +54,20 @@ export default function SegmentViewer({
   oneStaff,
 }: SegmentViewerProps) {
   const audio = useSelector((state: State) => state.audio);
-  const { frontPlaybackService, getOrCreateFrontPlaybackServiceWithGesture } =
-    useFrontPlaybackService();
+  const { getOrCreateFrontPlaybackServiceWithGesture } =
+    useFrontPlaybackService(sheetKey);
 
   const sheet = audio.sheets[sheetKey] ?? null;
+  const isLoaded = isLoadedSheet(sheet);
 
   const [isSheetLoading, setIsSheetLoading] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
-    if (!isLoadedSheet(sheet) && url !== undefined && title !== undefined) {
+    if (!isLoaded && url !== undefined && title !== undefined) {
       setIsSheetLoading(true);
       dispatch(loadSheetWithUrlThunk(sheetKey, title, url));
     }
-  }, [url, title, sheet, dispatch, sheetKey]);
+  }, [url, title, isLoaded, dispatch, sheetKey]);
 
   useEffect(() => {
     if (isLoadedSheet(sheet)) {
@@ -105,13 +106,7 @@ export default function SegmentViewer({
         </Typography.Text>
         <Button
           onClick={async () => {
-            let service = frontPlaybackService;
-            const sheet = audio.sheets[sheetKey];
-            if (frontPlaybackService === null) {
-              service = await getOrCreateFrontPlaybackServiceWithGesture(
-                sheet.osmd,
-              );
-            }
+            const service = await getOrCreateFrontPlaybackServiceWithGesture();
             service?.play();
           }}
           disabled={!isLoadedSheet(sheet)}
