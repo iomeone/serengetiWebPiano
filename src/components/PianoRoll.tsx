@@ -1,18 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NotePlayOption } from 'services/IAudioService';
-import { CaretRightOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import Restart from '../assets/restart.svg';
 import Start from '../assets/start.svg';
 import styled from 'styled-components';
 import { FrontAudioService } from 'services/FrontAudioService';
 import { Fraction, NoteType, OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { Button } from 'antd';
-import { useSelector } from 'react-redux';
+import { Alert, Button, Space, Spin, Typography } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import { IAudioContext } from 'standardized-audio-context';
 import PlaybackEngine from 'osmd-audio-player';
 import { NoteSchedule } from 'services/OSMDService';
-import { midiKeyNumberToKeyType, noteToDiatonicNumber } from 'utils/Note';
+import { midiKeyNumberToKeyType, Note, noteToBetterNoteName, noteToDiatonicNumber, noteToMidiKeyNumber } from 'utils/Note';
+import { setPianoRange, setPianoVisibility } from 'modules/piano';
+import { useBinaryPressedKeys } from 'hooks/useBinaryPressedKeys';
+import { useFrontMIDIAudio } from 'hooks/useFrontMIDIAudio';
+import Piano from './Piano';
 
 type Props = {
   state: PlayState;
@@ -20,11 +24,18 @@ type Props = {
   noteSchedules: NoteSchedule[] | null;
   bpm: number | null;
   timeSigniture: Fraction | null;
+  playMode: PlayMode;
 };
+
+export enum PlayMode {
+  HOLD,
+  NONHOLD
+}
 
 export enum PlayState {
   PREPARE,
   PLAYING,
+  HOLD,
   PAUSE,
   FINISH,
 }
@@ -53,6 +64,7 @@ export default function PianoRoll({
   noteSchedules,
   state,
   bpm,
+  playMode,
   timeSigniture,
   onFinish,
 }: Props) {
@@ -61,6 +73,25 @@ export default function PianoRoll({
 
   const [startTime, setStartTime] = useState<number>(0);
   const [pauseTime, setPauseTime] = useState<number>(0);
+  const [holdTime, setHoldTime] = useState<number>(0);
+
+  const [holdTiming, setHoldTiming] = useState<number>(-1);
+  const [holdNote, setHoldNote] = useState<Note[]>([]);
+
+  const piano = useSelector((state: State) => state.piano);
+  const dispatch = useDispatch();
+  const audioContext = useSelector((state: State) => state.audio.audioContext);
+  const isLoaded = useMemo(() => audioContext !== null, [audioContext]);
+  const { onKeyUp, onKeyDown, pressedKeys } = useBinaryPressedKeys();
+  const { initWithGesture, isMIDIConnected, isMIDISupported } =
+    useFrontMIDIAudio(
+      (note: number) => {
+        onKeyDown(note);
+      },
+      (note: number) => {
+        onKeyUp(note);
+      },
+    );
 
   const velocity = useMemo(() => {
     if (timeSigniture !== null && bpm !== null) {
@@ -88,7 +119,32 @@ export default function PianoRoll({
   useEffect(() => {
     //prepare pianoroll
     console.log(noteSchedules);
+    nextHold();
   }, [noteSchedules]);
+
+  useEffect(()=>{
+    if(playMode === PlayMode.HOLD){
+      //console.log(pressedKeys);
+      if(pressedKeys.length !== holdNote.length) {
+        console.log(false);
+      } else {
+        holdNote.sort((a, b)=>{
+          return noteToMidiKeyNumber(a)- noteToMidiKeyNumber(b);
+        });
+        
+        let check = true;
+        for(let i = 0; i < holdNote.length; i++){
+          if(noteToMidiKeyNumber(holdNote[i]) !== noteToMidiKeyNumber(pressedKeys[i])){
+            check = false;
+            break;
+          }
+        }
+        if(check){
+          unholdRoll();
+        }
+      }
+    }
+  },[pressedKeys]);
 
   useEffect(() => {
     setMyState(state);
@@ -98,6 +154,9 @@ export default function PianoRoll({
     switch (+myState) {
       case PlayState.PAUSE:
         setPauseTime(Date.now());
+        break;
+      case PlayState.HOLD:
+        setHoldTime(()=>Date.now());
         break;
       case PlayState.FINISH:
         if (onFinish !== undefined) {
@@ -178,7 +237,7 @@ export default function PianoRoll({
       cursorX +
       measureLength *
         (noteSchedule.timing / timeSigniture - playTime * velocity);
-    const  y = bottomY + 30 - leading / 2 * (noteToDiatonicNumber(noteSchedule.note)- 24);
+    const  y = bottomY + 30 + 15 / 2 - leading / 2 * (noteToDiatonicNumber(noteSchedule.note)- 24);
     
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
     context.fillRect(x, y, width, height);
@@ -232,21 +291,33 @@ export default function PianoRoll({
           case PlayState.PAUSE:
             playTime = pauseTime - startTime;
             break;
+          case PlayState.HOLD:
+            playTime = holdTiming / velocity;
+            break;
           case PlayState.PLAYING:
             playTime = Date.now() - startTime;
+            if(playMode === PlayMode.HOLD  && playTime >= holdTiming/velocity){
+              playTime = holdTiming / velocity;
+            }
             break;
           case PlayState.FINISH:
             playTime = songLength;
             break;
         }
-
-        if (playTime > songLength) {
-          finishRoll();
-        }
+        
+        
         if (noteSchedules !== null && timeSigniture !== null)
           drawRoll(context, playTime, timeSigniture.RealValue, noteSchedules);
 
         animationFrameId = window.requestAnimationFrame(render);
+        
+        if (playTime > songLength) {
+          finishRoll();
+        }
+
+        if(myState === PlayState.PLAYING && playMode === PlayMode.HOLD  && playTime >= holdTiming/velocity){
+          holdRoll();
+        }
 
         switch (+myState) {
           case PlayState.PREPARE:
@@ -264,7 +335,7 @@ export default function PianoRoll({
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [drawRoll]);
+  }, [drawRoll,myState]);
 
   const prepareRoll = () => {
     //
@@ -279,11 +350,40 @@ export default function PianoRoll({
   };
   const restartRoll = () => {
     setMyState(PlayState.PLAYING);
-    setStartTime(Date.now() - (pauseTime - startTime));
+    setStartTime(()=>Date.now() - (pauseTime - startTime));
   };
+  const holdRoll = () => {
+    setMyState(PlayState.HOLD);
+    setHoldTime(()=>Date.now());
+  }
+  const unholdRoll = () => {
+    nextHold();
+    setMyState(PlayState.PLAYING);
+    setStartTime(()=>Date.now() - (holdTime - startTime));
+  };
+
   const finishRoll = () => {
     setMyState(PlayState.FINISH);
   };
+
+  const nextHold = () => {
+    if(noteSchedules !== null){
+      for(let i = 0; i < noteSchedules.length; i++){
+        if(holdTiming < noteSchedules[i].timing){
+          setHoldNote(()=>{
+            const notes = [];
+            for(let j = i; noteSchedules[i].timing === noteSchedules[j].timing; j++){
+              notes.push(noteSchedules[j].note);
+            }
+            console.log(notes);
+            return notes;
+          })
+          setHoldTiming(()=>noteSchedules[i].timing);
+          break;
+        }
+      }
+    }
+  }
 
   const onClick = () => {
     switch (+myState) {
@@ -301,8 +401,77 @@ export default function PianoRoll({
   };
 
   return (
+    <>
+    {(() => {
+      switch (isMIDISupported) {
+        case true:
+          return (
+            <Alert
+              type="success"
+              message="이 브라우저는 MIDI 입력을 지원합니다."
+            ></Alert>
+          );
+        case false:
+          return (
+            <Alert
+              type="error"
+              message="이 브라우저는 MIDI 입력을 지원하지 않습니다."
+            ></Alert>
+          );
+        case null:
+          return <Spin></Spin>;
+      }
+    })()}
+    {isMIDIConnected ? (
+      <Space direction="horizontal" size={8}>
+        <CheckCircleOutlined></CheckCircleOutlined>
+        <Typography.Text>MIDI Device is ready.</Typography.Text>
+      </Space>
+    ) : (
+      <Space direction="horizontal" size={8}>
+        <ExclamationCircleOutlined></ExclamationCircleOutlined>
+        <Typography.Text>MIDI Device is not connected.</Typography.Text>
+      </Space>
+    )}
+    {isLoaded ? (
+      <Space direction="horizontal" size={8}>
+        <CheckCircleOutlined></CheckCircleOutlined>
+        <Typography.Text>Audio Context is ready.</Typography.Text>
+      </Space>
+    ) : (
+      <Space direction="horizontal" size={8}>
+        <ExclamationCircleOutlined></ExclamationCircleOutlined>
+        <Typography.Text>Audio Service is not loaded.</Typography.Text>
+      </Space>
+    )}
+    <Button
+      onClick={() => {
+        initWithGesture();
+      }}
+    >
+      Activate MIDI Piano
+    </Button>
+    <Button
+      onClick={() => {
+        dispatch(setPianoVisibility(true));
+      }}
+    >
+      피아노 열기
+    </Button>
+    <Piano
+      lower={noteToMidiKeyNumber(piano.min)}
+      upper={noteToMidiKeyNumber(piano.max)}
+      pressedKeys={pressedKeys}
+    />
     <Wrap>
+      <Button onClick={()=>{
+        holdRoll();
+      }}>hold</Button>
+      <Button onClick={()=>{
+        unholdRoll();
+      }}>unhold</Button>
       <Canvas width={900} height={300} ref={canvasRef} onClick={onClick} />
     </Wrap>
+    </>
   );
 }
