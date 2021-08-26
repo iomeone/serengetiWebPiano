@@ -125,17 +125,19 @@ export default function SegmentViewer({
         >
           {viewerTitle}
         </Typography.Text>
-        <Space direction="horizontal" size={8}>
-          <Button onClick={play} type="text" shape="circle">
-            <IoPlay />
-          </Button>
-          <Button onClick={pause} type="text" shape="circle">
-            <IoPause />
-          </Button>
-          <Button onClick={stop} type="text" shape="circle">
-            <IoStop />
-          </Button>
-        </Space>
+        {isLoaded && (
+          <Space direction="horizontal" size={8}>
+            <Button onClick={play} type="text" shape="circle">
+              <IoPlay />
+            </Button>
+            <Button onClick={pause} type="text" shape="circle">
+              <IoPause />
+            </Button>
+            <Button onClick={stop} type="text" shape="circle">
+              <IoStop />
+            </Button>
+          </Space>
+        )}
       </div>
       <SheetCont>
         <Inner height={height}>
