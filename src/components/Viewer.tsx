@@ -94,6 +94,8 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
       const index = Math.min(sheet.currentMeasureInd , measureBoxes.length - 1);
       if(measureBoxes[index].right - positionX > window.innerWidth) {
         setPositionX(measureBoxes[index].left - 50);
+      } else if( measureBoxes[index].right - positionX < 0 ){
+        setPositionX(measureBoxes[index].left - 50);
       }
        
     }
