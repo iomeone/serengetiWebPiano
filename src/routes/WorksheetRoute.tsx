@@ -43,10 +43,7 @@ const worksheet: (Paragraph | Sheet)[] = [
     type: ContentType.Paragraph,
     content: [
       ['무지성 피아노 배우기'],
-      [
-        '1단계: 오른손 연습',
-        '오른손을 연습합니다. 돌을 먹는 형벌을 맛보시게... 그리 쉽지 않을 거요.',
-      ],
+      ['1단계: 오른손 연습', '오른손을 연습합니다.'],
     ],
   },
   {
@@ -58,12 +55,7 @@ const worksheet: (Paragraph | Sheet)[] = [
   },
   {
     type: ContentType.Paragraph,
-    content: [
-      [
-        '2단계: 왼손 연습',
-        '왼손을 연습합니다. 치치를 먹는 형벌을 맛보시게... 그리 쉽지 않을 거요.',
-      ],
-    ],
+    content: [['2단계: 왼손 연습', '왼손을 연습하세요']],
   },
   {
     type: ContentType.Sheet,
@@ -74,7 +66,7 @@ const worksheet: (Paragraph | Sheet)[] = [
   },
   {
     type: ContentType.Paragraph,
-    content: [['3단계: 양손 연습', '나 사바나는 매 순간 강해지고 있다고...']],
+    content: [['3단계: 양손 연습', '양손을 연습하세요 ㅋㅋ']],
   },
   {
     type: ContentType.Sheet,
