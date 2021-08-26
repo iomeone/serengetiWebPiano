@@ -1,13 +1,20 @@
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import {
+  MusicPartManagerIterator,
+  OpenSheetMusicDisplay as OSMD,
+} from 'opensheetmusicdisplay';
 import PlaybackEngine from 'osmdAudioPlayer';
 import { IPlaybackService, PlaybackState } from './IPlaybackService';
 import { IAudioContext } from 'standardized-audio-context';
-import { PlaybackState as EnginePlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
+import {
+  PlaybackEvent,
+  PlaybackState as EnginePlaybackState,
+} from 'osmdAudioPlayer/PlaybackEngine';
 
 export class FrontPlaybackService implements IPlaybackService {
   private osmd: OSMD | null = null;
   private engine: PlaybackEngine | null = null;
   private bpm: number = 120;
+
   public async init(osmd: OSMD, audioContext: IAudioContext) {
     this.osmd = osmd;
     this.engine = new PlaybackEngine(audioContext);
@@ -18,17 +25,17 @@ export class FrontPlaybackService implements IPlaybackService {
     if (this.engine !== null) {
       this.engine.setBpm(this.bpm);
       this.engine.play();
-    }
+    } else throw new Error('osmd or playback engine is not initalized');
   }
   public pause() {
     if (this.engine !== null) {
       this.engine.pause();
-    }
+    } else throw new Error('osmd or playback engine is not initalized');
   }
   public stop() {
     if (this.engine !== null) {
       this.engine.stop();
-    }
+    } else throw new Error('osmd or playback engine is not initalized');
   }
 
   public jumpToMeasure(measureInd: number) {
@@ -37,22 +44,42 @@ export class FrontPlaybackService implements IPlaybackService {
       this.engine.jumpToMeasure(measureInd);
       this.engine.play();
       this.osmd.cursor.show();
+    } else {
+      throw new Error('osmd or playback engine is not initalized');
     }
   }
 
-  public getState(): PlaybackState | null {
+  public addIteratorListener(
+    listener: (iterator: MusicPartManagerIterator) => void,
+  ) {
     if (this.engine !== null) {
-      switch (this.engine.state) {
-        case EnginePlaybackState.INIT:
-          return PlaybackState.INIT;
-        case EnginePlaybackState.PLAYING:
-          return PlaybackState.PLAYING;
-        case EnginePlaybackState.PAUSED:
-          return PlaybackState.PAUSED;
-        case EnginePlaybackState.STOPPED:
-          return PlaybackState.STOPPED;
-      }
+      this.engine.on(PlaybackEvent.ITERATION, listener);
     }
-    return null;
+  }
+
+  public addPlaybackStateListener(listener: (state: PlaybackState) => void) {
+    if (this.engine !== null) {
+      this.engine.on(
+        PlaybackEvent.STATE_CHANGE,
+        (state: EnginePlaybackState) => {
+          let res: PlaybackState | null = null;
+          switch (state) {
+            case EnginePlaybackState.INIT:
+              res = PlaybackState.INIT;
+              break;
+            case EnginePlaybackState.PLAYING:
+              res = PlaybackState.PLAYING;
+              break;
+            case EnginePlaybackState.PAUSED:
+              res = PlaybackState.PAUSED;
+              break;
+            case EnginePlaybackState.STOPPED:
+              res = PlaybackState.STOPPED;
+              break;
+          }
+          listener(res);
+        },
+      );
+    }
   }
 }
