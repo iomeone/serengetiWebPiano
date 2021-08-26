@@ -123,6 +123,20 @@ export const cleanupSheetThunk =
     dispatch(deleteSheet(sheetKey));
   };
 
+export const stopOtherPlaybackServicesThunk =
+  (sheetKey: string) => async (dispatch: Function, getState: () => State) => {
+    const sheets = getState().audio.sheets;
+    const sheet = sheets[sheetKey];
+    if (sheet === undefined) return;
+
+    Object.entries(sheets).map(([key, sheet]) => {
+      if (key !== sheetKey && sheet.playbackService !== null) {
+        if (sheet.playbackState === PlaybackState.PLAYING)
+          sheet.playbackService.pause();
+      }
+    });
+  };
+
 export const audioReducer = (
   state: AudioState = inistialState.audio,
   action: AudioActions,

@@ -1,6 +1,9 @@
 import { Button, Space, Spin, Typography } from 'antd';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
-import { loadSheetWithUrlThunk } from 'modules/audio';
+import {
+  loadSheetWithUrlThunk,
+  stopOtherPlaybackServicesThunk,
+} from 'modules/audio';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -81,6 +84,7 @@ export default function SegmentViewer({
   const viewerTitle = title ?? 'OSMD Viewer';
 
   const play = async () => {
+    dispatch(stopOtherPlaybackServicesThunk(sheetKey));
     const service = await getOrCreateFrontPlaybackServiceWithGesture();
     service?.play();
   };
