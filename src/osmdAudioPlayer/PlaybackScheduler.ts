@@ -26,6 +26,9 @@ export default class PlaybackScheduler {
   private lastTickOffset: number = 300; // Hack to get the initial notes play better
   private playing: boolean = false;
 
+  private lastPausedAudioContextTime: number = 0;
+  private pausedTimespan: number = 0;
+
   private noteSchedulingCallback: NoteSchedulingCallback;
 
   constructor(
@@ -46,7 +49,12 @@ export default class PlaybackScheduler {
 
   get audioContextTime() {
     if (!this.audioContext) return 0;
-    return (this.audioContext.currentTime - this.audioContextStartTime) * 1000;
+    return (
+      (this.audioContext.currentTime -
+        this.audioContextStartTime -
+        this.pausedTimespan) *
+      1000
+    );
   }
 
   get tickDuration() {
@@ -83,11 +91,14 @@ export default class PlaybackScheduler {
 
   pause() {
     this.playing = false;
+    this.lastPausedAudioContextTime = this.audioContext.currentTime;
   }
 
   resume() {
     this.playing = true;
     this.currentTickTimestamp = this.audioContextTime;
+    this.pausedTimespan +=
+      this.audioContext.currentTime - this.lastPausedAudioContextTime;
   }
 
   reset() {
@@ -97,6 +108,9 @@ export default class PlaybackScheduler {
     this.stepQueueIndex = 0;
     clearInterval(this.scheduleInterval);
     this.schedulerIntervalHandle = null;
+
+    this.lastPausedAudioContextTime = 0;
+    this.pausedTimespan = 0;
   }
 
   loadNotes(currentVoiceEntries: VoiceEntry[]) {

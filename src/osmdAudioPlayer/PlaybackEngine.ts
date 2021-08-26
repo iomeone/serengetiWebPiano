@@ -47,6 +47,7 @@ export default class PlaybackEngine {
   private scheduler: PlaybackScheduler | null;
   private instrumentPlayer: InstrumentPlayer;
   private events: EventEmitter<PlaybackEvent>;
+  private compensateDelay: number;
 
   private iterationSteps: number;
   private currentIterationStep: number;
@@ -59,12 +60,13 @@ export default class PlaybackEngine {
   public scoreInstruments: Instrument[] = [];
   public ready: boolean = false;
 
+  private skipCursorIteration = true;
+
   constructor(
     context: IAudioContext = new AudioContext(),
     instrumentPlayer: InstrumentPlayer = new SoundfontPlayer(),
   ) {
     this.ac = context;
-    this.ac.suspend();
 
     this.instrumentPlayer = instrumentPlayer;
     this.instrumentPlayer.init(this.ac);
@@ -76,8 +78,8 @@ export default class PlaybackEngine {
     this.cursor = null;
     this.sheet = null;
     this.denominator = null;
-
     this.scheduler = null;
+    this.compensateDelay = 50;
 
     this.iterationSteps = 0;
     this.currentIterationStep = 0;
@@ -183,8 +185,6 @@ export default class PlaybackEngine {
     if (this.cursor === null) throw Error('Cursor is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
-    await this.ac.resume();
-
     if (
       this.state === PlaybackState.INIT ||
       this.state === PlaybackState.STOPPED
@@ -206,6 +206,7 @@ export default class PlaybackEngine {
     this.scheduler.reset();
     this.cursor.reset();
     this.currentIterationStep = 0;
+    this.skipCursorIteration = true;
     this.cursor.hide();
   }
 
@@ -214,7 +215,6 @@ export default class PlaybackEngine {
     if (this.scheduler === null) throw Error('Scheduler is null');
 
     this.setState(PlaybackState.PAUSED);
-    this.ac.suspend();
     this.stopPlayers();
     this.scheduler.setIterationStep(this.currentIterationStep);
     this.scheduler.pause();
@@ -235,11 +235,7 @@ export default class PlaybackEngine {
       ++this.currentIterationStep;
     }
     let schedulerStep = this.currentIterationStep;
-    if (
-      this.currentIterationStep > 0 &&
-      this.currentIterationStep < this.iterationSteps
-    )
-      ++schedulerStep;
+    this.skipCursorIteration = true;
     this.scheduler.setIterationStep(schedulerStep);
   }
 
@@ -311,8 +307,8 @@ export default class PlaybackEngine {
     this.timeoutHandles.push(
       window.setTimeout(
         () => this.iterationCallback(),
-        Math.max(0, audioDelay * 1000 - 35),
-      ), // Subtracting 35 milliseconds to compensate for update delay
+        Math.max(0, audioDelay * 1000 - this.compensateDelay),
+      ),
       window.setTimeout(
         () => this.events.emit(PlaybackEvent.ITERATION, notes),
         audioDelay * 1000,
@@ -347,7 +343,11 @@ export default class PlaybackEngine {
     if (this.cursor === null) throw Error('Cursor is null');
 
     if (this.state !== PlaybackState.PLAYING) return;
-    if (this.currentIterationStep > 0) this.cursor.next();
+    if (this.skipCursorIteration) {
+      this.skipCursorIteration = false;
+    } else {
+      this.cursor.next();
+    }
     ++this.currentIterationStep;
   }
 }
