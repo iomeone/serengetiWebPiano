@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { isLoadedSheet } from 'utils/Sheet';
-import PianoRoll, { PlayState } from './PianoRoll';
+import PianoRoll, { PlayMode, PlayState } from './PianoRoll';
 import Viewer from './Viewer';
 import { getBPM, getNoteSchedules, getTimeSignature } from 'utils/OSMD';
 
@@ -73,6 +73,7 @@ export default function PianoRollViewer({ sheetKey }: SegmentViewerProps) {
           bpm={bpm}
           timeSigniture={timeSigniture}
           state={PlayState.PREPARE}
+          playMode={PlayMode.HOLD}
         ></PianoRoll>
       </div>
     </div>
