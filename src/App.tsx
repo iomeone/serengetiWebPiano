@@ -17,6 +17,10 @@ import SheetRoute from 'routes/SheetRoute';
 import OSMDRoute from 'routes/OSMDRoute';
 import MIDIRoute from 'routes/MIDIRoute';
 import PianoRollRoute from 'routes/PianoRollRoute';
+import WorksheetRoute from 'routes/WorksheetRoute';
+import { Size } from 'constants/layout';
+
+const hMargin = Size.hMargin;
 
 const Main = styled.div`
   display: flex;
@@ -46,7 +50,7 @@ const HeaderCont = styled.div`
 
 const BreadCrumbCont = styled.div`
   background-color: #f1f1f1;
-  padding: 10px 50px 10px 50px;
+  padding: ${`10px ${hMargin}px 10px ${hMargin}px;`};
 `;
 
 type BreadcrumbItem = {
@@ -78,6 +82,10 @@ const routeMap: BreadCrumbMap = {
   '/pianoRoll': {
     routeName: 'Piano Roll',
     component: PianoRollRoute,
+  },
+  '/worksheet': {
+    routeName: 'Worksheet',
+    component: WorksheetRoute,
   },
 };
 

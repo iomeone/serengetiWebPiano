@@ -1,3 +1,4 @@
+import { WidthMode } from 'constants/layout';
 import { State } from 'modules/State';
 import { parseNoteNameToNote } from 'utils/Note';
 
@@ -10,6 +11,11 @@ const inistialState: State = {
     visibility: true,
     min: parseNoteNameToNote('A0'),
     max: parseNoteNameToNote('C8'),
+  },
+  layout: {
+    ready: false,
+    width: 0,
+    widthMode: WidthMode.Desktop,
   },
 };
 

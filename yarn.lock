@@ -2755,14 +2755,6 @@ audio-loader@^0.5.0:
   resolved "https://registry.yarnpkg.com/audio-loader/-/audio-loader-0.5.0.tgz#9c125d1b25c33cd9626084054d9f6b7f31ddc908"
   integrity sha1-nBJdGyXDPNliYIQFTZ9rfzHdyQg=
 
-automation-events@^2.0.19:
-  version "2.0.19"
-  resolved "https://registry.yarnpkg.com/automation-events/-/automation-events-2.0.19.tgz#b9969baee3897ded9d5f4ba9cfb4b18565176b12"
-  integrity sha512-6RUNmFkmTYXq/W+ovdwLdqqj44rGh9+dGjg4qLaktVHYT1+c+PdlYAkaCn/H2AaqprW9NZhK+jsXT4t8izPV+w==
-  dependencies:
-    "@babel/runtime" "^7.11.2"
-    tslib "^2.0.1"
-
 automation-events@^4.0.5:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/automation-events/-/automation-events-4.0.5.tgz#76474d8acf886e547abb5bcd795b3f02943806ef"
@@ -8080,17 +8072,6 @@ open@^7.0.2:
     is-docker "^2.0.0"
     is-wsl "^2.1.1"
 
-opensheetmusicdisplay@^0.8.4:
-  version "0.8.7"
-  resolved "https://registry.yarnpkg.com/opensheetmusicdisplay/-/opensheetmusicdisplay-0.8.7.tgz#73e1fff4ebfa761224db870184dbf14d96b93939"
-  integrity sha512-KBfWrhKhCTR2GaG9xnj9bIgYJd2/k3YZdQ9FPQDjbfVttMTD/CNBf1VNBU0cSZfU4pkRPpF16It+uACxK+wYQg==
-  dependencies:
-    "@types/vexflow" "^3.0.0"
-    jszip "3.4.0"
-    loglevel "^1.6.8"
-    typescript-collections "^1.3.3"
-    vexflow "1.2.93"
-
 opensheetmusicdisplay@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/opensheetmusicdisplay/-/opensheetmusicdisplay-1.0.0.tgz#db8b7f201ff05ef81e63db8fec0bdf02aa8c3aa7"
@@ -8152,15 +8133,6 @@ os-browserify@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/os-browserify/-/os-browserify-0.3.0.tgz#854373c7f5c2315914fc9bfc6bd8238fdda1ec27"
   integrity sha1-hUNzx/XCMVkU/Jv8a9gjj92h7Cc=
-
-osmd-audio-player@^0.6.4:
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/osmd-audio-player/-/osmd-audio-player-0.6.4.tgz#f5c25ba380c3542df834bd2fe15e5a9f1a06c8a7"
-  integrity sha512-Eq/RmGi1GZKNF5XKtcnRkuRnzjJddl6s0wzmvmUcX9y0WMs0DIiGh7VEQfnrp7ywvQJBEYP4flPuLS+c/TYJog==
-  dependencies:
-    opensheetmusicdisplay "^0.8.4"
-    soundfont-player "^0.12.0"
-    standardized-audio-context "^24.1.25"
 
 p-each-series@^2.1.0:
   version "2.2.0"
@@ -9806,6 +9778,11 @@ react-error-overlay@^6.0.9:
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.9.tgz#3c743010c9359608c375ecd6bc76f35d93995b0a"
   integrity sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==
 
+react-icons@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-4.2.0.tgz#6dda80c8a8f338ff96a1851424d63083282630d0"
+  integrity sha512-rmzEDFt+AVXRzD7zDE21gcxyBizD/3NqjbX6cmViAgdqfJ2UiLer8927/QhhrXQV7dEj/1EGuOTPp7JnLYVJKQ==
+
 react-is@^16.12.0, react-is@^16.13.1, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
@@ -10968,15 +10945,6 @@ stackframe@^1.1.1:
   resolved "https://registry.yarnpkg.com/stackframe/-/stackframe-1.2.0.tgz#52429492d63c62eb989804c11552e3d22e779303"
   integrity sha512-GrdeshiRmS1YLMYgzF16olf2jJ/IzxXY9lhKOskuVziubpTYcYqyOwYeJKzQkwy7uN0fYSsbsC4RQaXf9LCrYA==
 
-standardized-audio-context@^24.1.25:
-  version "24.1.26"
-  resolved "https://registry.yarnpkg.com/standardized-audio-context/-/standardized-audio-context-24.1.26.tgz#6c549a275cf071ba827efe21d2ea08f9bdc996fd"
-  integrity sha512-Grm5EZGcg7hDmLZWbyZ/93dBzlRii9HUmRjmyyatissEzdBPxeA4Ptt9VjtYnd0mEOzxxbS222SxpbYnV57JFA==
-  dependencies:
-    "@babel/runtime" "^7.11.2"
-    automation-events "^2.0.19"
-    tslib "^2.0.1"
-
 standardized-audio-context@^25.3.2:
   version "25.3.2"
   resolved "https://registry.yarnpkg.com/standardized-audio-context/-/standardized-audio-context-25.3.2.tgz#4c64ac3b0f065ba45827c6bacaa6027f1840ad2b"
@@ -11537,11 +11505,6 @@ tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
-
-tslib@^2.0.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
-  integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
 
 tslib@^2.0.3:
   version "2.1.0"

@@ -12,14 +12,16 @@ import { setPianoVisibility } from 'modules/piano';
 import Piano from 'components/Piano';
 import { noteToMidiKeyNumber } from 'utils/Note';
 import { useBinaryPressedKeys } from 'hooks/useBinaryPressedKeys';
+import { Size } from 'constants/layout';
 
-const margin = 20;
+const hMargin = Size.hMargin;
+const margin = Size.margin;
 
 const Main = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: ${margin}px 50px ${margin}px 50px;
+  padding: ${margin}px ${hMargin}px ${margin}px ${hMargin}px;
 `;
 
 export default function MIDIRoute() {

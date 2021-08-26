@@ -1,7 +1,28 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addSheet } from 'modules/audio';
+import { State } from 'modules/State';
+import { Sheet } from 'models/Sheet';
+import { isLoadedSheet } from 'utils/Sheet';
+import styled from 'styled-components';
+import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
+import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
+
+const Cont = styled.div`
+  position: relative;
+`;
+
+type BoxProps = {
+  selected: boolean;
+};
+
+const Box = styled.div<BoxProps>`
+  position: absolute;
+  background-color: ${(props) =>
+    props.selected ? '#91d5ff66' : 'transparent'};
+  cursor: pointer;
+`;
 
 type ViewerProps = {
   sheetKey: string;
@@ -11,6 +32,14 @@ type ViewerProps = {
 export default function Viewer({ sheetKey, hidden }: ViewerProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
+  const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
+  const [hoveringBoxInd, setHoveringBoxInd] = useState<number | null>(null);
+  const { getOrCreateFrontPlaybackServiceWithGesture } =
+    useFrontPlaybackService(sheetKey);
+
+  const sheet: Sheet | null = useSelector(
+    (state: State) => state.audio.sheets[sheetKey] ?? null,
+  );
 
   useEffect(() => {
     if (osmdDivRef.current !== null) {
@@ -32,12 +61,49 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     }
   }, [osmdDivRef, dispatch, sheetKey]);
 
+  useEffect(() => {
+    if (isLoadedSheet(sheet)) {
+      setMeasureBoxes(getMeasureBoundingBoxes(sheet.osmd));
+    }
+  }, [sheet]);
+
+  useEffect(() => {
+    if (measureBoxes !== null) {
+    }
+  }, [measureBoxes]);
+
   return (
-    <div
-      ref={osmdDivRef}
-      style={{
-        display: hidden === true ? 'none' : 'block',
-      }}
-    ></div>
+    <Cont>
+      <div
+        ref={osmdDivRef}
+        style={{
+          display: hidden === true ? 'none' : 'block',
+        }}
+      ></div>
+      {measureBoxes !== null &&
+        measureBoxes.map((box, ind) => (
+          <Box
+            onClick={async () => {
+              const service =
+                await getOrCreateFrontPlaybackServiceWithGesture();
+              service?.jumpToMeasure(ind);
+            }}
+            onMouseEnter={() => {
+              setHoveringBoxInd(ind);
+            }}
+            onMouseLeave={() => {
+              setHoveringBoxInd(null);
+            }}
+            key={ind}
+            selected={ind === hoveringBoxInd}
+            style={{
+              left: box.left,
+              top: box.top,
+              width: box.right - box.left,
+              height: box.bottom - box.top,
+            }}
+          ></Box>
+        ))}
+    </Cont>
   );
 }

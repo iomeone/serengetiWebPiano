@@ -11,12 +11,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { State } from 'modules/State';
 import { IAudioContext } from 'standardized-audio-context';
 import PlaybackEngine from 'osmd-audio-player';
-import { NoteSchedule } from 'services/OSMDService';
+import { NoteSchedule } from 'utils/OSMD';
 import { midiKeyNumberToKeyType, Note, noteToBetterNoteName, noteToDiatonicNumber, noteToMidiKeyNumber } from 'utils/Note';
 import { setPianoRange, setPianoVisibility } from 'modules/piano';
 import { useBinaryPressedKeys } from 'hooks/useBinaryPressedKeys';
 import { useFrontMIDIAudio } from 'hooks/useFrontMIDIAudio';
 import Piano from './Piano';
+
 
 type Props = {
   state: PlayState;
@@ -57,7 +58,6 @@ const ImgStart = new Image();
 ImgStart.src = Start;
 
 const measureLength = 500;
-const height = 15;
 const leading = 15;
 
 export default function PianoRoll({
@@ -114,7 +114,7 @@ export default function PianoRoll({
     } else {
       return 0;
     }
-  }, [noteSchedules,velocity]);
+  }, [noteSchedules, velocity, timeSigniture, bpm]);
 
   useEffect(() => {
     //prepare pianoroll
@@ -164,7 +164,7 @@ export default function PianoRoll({
         }
         break;
     }
-  }, [myState]);
+  }, [myState, onFinish]);
 
   const drawRoll = (
     context: CanvasRenderingContext2D,
@@ -181,7 +181,7 @@ export default function PianoRoll({
     drawCursor(context, 50);
 
     noteSchedules.forEach((schedule) => {
-      drawNote(context, playTime, 50, bottom,timeSigniture, schedule);
+      drawNote(context, playTime, 50, bottom, timeSigniture, schedule);
     });
   };
 
@@ -200,8 +200,7 @@ export default function PianoRoll({
     }
   };
   const drawCursor = (context: CanvasRenderingContext2D, cursorX: number) => {
-    
-    context.strokeStyle = "";
+    context.strokeStyle = '';
     context.beginPath(); // Start a new path
     context.moveTo(cursorX, 0); // Move the pen to (30, 50)
     context.lineTo(cursorX, context.canvas.height); // Draw a line to (150, 100)
@@ -217,19 +216,20 @@ export default function PianoRoll({
   ) => {
     // midikey => color,y
 
-    const Barcolor = ['#ee2f27',
-      "#f07e28",
-      "#f9a11b",
-      "#f8d308",
-      "#f2ef16",
-      "#a1ce37",
-      "#4bb748",
-      "#38afd1",
-      "#2d76bb",
-      "#38479c",
-      "#6d429b",
-      "#c52a90"];
-
+    const Barcolor = [
+      '#ee2f27',
+      '#f07e28',
+      '#f9a11b',
+      '#f8d308',
+      '#f2ef16',
+      '#a1ce37',
+      '#4bb748',
+      '#38afd1',
+      '#2d76bb',
+      '#38479c',
+      '#6d429b',
+      '#c52a90',
+    ];
 
     const width = (measureLength * noteSchedule.length) / timeSigniture;
     const height = 15;
@@ -238,11 +238,10 @@ export default function PianoRoll({
       measureLength *
         (noteSchedule.timing / timeSigniture - playTime * velocity);
     const  y = bottomY + 30 + 15 / 2 - leading / 2 * (noteToDiatonicNumber(noteSchedule.note)- 24);
-    
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
     context.fillRect(x, y, width, height);
 
-    context.fillStyle = "#000000";
+    context.fillStyle = '#000000';
     context.fillText(noteToBetterNoteName(noteSchedule.note), x + 4, y + 11);
   };
 
@@ -335,11 +334,16 @@ export default function PianoRoll({
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [drawRoll,myState]);
+  }, [
+    drawRoll,
+    myState,
+    noteSchedules,
+    pauseTime,
+    songLength,
+    startTime,
+    timeSigniture,
+  ]);
 
-  const prepareRoll = () => {
-    //
-  };
   const startRoll = () => {
     setMyState(PlayState.PLAYING);
     setStartTime(Date.now());
