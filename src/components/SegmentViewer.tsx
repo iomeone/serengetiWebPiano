@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { isLoadedSheet } from 'utils/Sheet';
 import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
+import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
 
 const SheetCont = styled.div`
   width: 100%;
@@ -120,19 +121,44 @@ export default function SegmentViewer({
         >
           {viewerTitle}
         </Typography.Text>
-        {isLoaded && (
-          <Space direction="horizontal" size={8}>
-            <Button onClick={play} type="text" shape="circle">
-              <IoPlay />
-            </Button>
-            <Button onClick={pause} type="text" shape="circle">
-              <IoPause />
-            </Button>
-            <Button onClick={stop} type="text" shape="circle">
-              <IoStop />
-            </Button>
-          </Space>
-        )}
+        {(() => {
+          if (isLoaded) {
+            switch (sheet.playbackState) {
+              case null:
+                return (
+                  <Space direction="horizontal" size={8}>
+                    <Button onClick={play} type="text" shape="circle">
+                      <IoPlay />
+                    </Button>
+                  </Space>
+                );
+              case PlaybackState.INIT:
+              case PlaybackState.PAUSED:
+              case PlaybackState.STOPPED:
+                return (
+                  <Space direction="horizontal" size={8}>
+                    <Button onClick={play} type="text" shape="circle">
+                      <IoPlay />
+                    </Button>
+                    <Button onClick={stop} type="text" shape="circle">
+                      <IoStop />
+                    </Button>
+                  </Space>
+                );
+              case PlaybackState.PLAYING:
+                return (
+                  <Space direction="horizontal" size={8}>
+                    <Button onClick={pause} type="text" shape="circle">
+                      <IoPause />
+                    </Button>
+                    <Button onClick={stop} type="text" shape="circle">
+                      <IoStop />
+                    </Button>
+                  </Space>
+                );
+            }
+          }
+        })()}
       </div>
       <SheetCont>
         <Inner height={height}>
