@@ -44,6 +44,7 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
   useEffect(() => {
     if (osmdDivRef.current !== null) {
       const osmd = new OSMD(osmdDivRef.current, {
+        autoResize: false,
         backend: 'svg',
         drawLyricist: false,
         drawLyrics: false,
@@ -76,6 +77,7 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     return () => {
       dispatch(cleanupSheetThunk(sheetKey));
     };
+    //eslint-disable-next-line
   }, []);
 
   return (
