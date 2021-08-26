@@ -13,8 +13,13 @@ import styled from 'styled-components';
 import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 
-const Cont = styled.div`
+type ContProps = {
+  x: number;
+}
+
+const Cont = styled.div<ContProps>`
   position: relative;
+  transform: translateX(-${(props) => props.x}px);
 `;
 
 type BoxProps = {
@@ -36,11 +41,11 @@ type ViewerProps = {
 export default function Viewer({ sheetKey, hidden }: ViewerProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
+  const [positionX,setPositionX] = useState(0);
   const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
   const [hoveringBoxInd, setHoveringBoxInd] = useState<number | null>(null);
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
-
   const sheet: Sheet | null = useSelector(
     (state: State) => state.audio.sheets[sheetKey] ?? null,
   );
@@ -84,8 +89,18 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     //eslint-disable-next-line
   }, []);
 
+  useEffect(()=>{
+    if(sheet !== null && sheet.currentMeasureInd !== null && measureBoxes !== null){
+      const index = Math.min(sheet.currentMeasureInd , measureBoxes.length - 1);
+      if(measureBoxes[index].right - positionX > window.innerWidth) {
+        setPositionX(measureBoxes[index].left - 50);
+      }
+       
+    }
+  },[sheet?.currentMeasureInd]);
+
   return (
-    <Cont>
+    <Cont x={positionX}>
       <div
         ref={osmdDivRef}
         style={{
