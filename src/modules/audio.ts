@@ -129,7 +129,7 @@ export const stopOtherPlaybackServicesThunk =
     const sheet = sheets[sheetKey];
     if (sheet === undefined) return;
 
-    Object.entries(sheets).map(([key, sheet]) => {
+    Object.entries(sheets).forEach(([key, sheet]) => {
       if (key !== sheetKey && sheet.playbackService !== null) {
         if (sheet.playbackState === PlaybackState.PLAYING)
           sheet.playbackService.pause();
