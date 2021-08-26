@@ -34,7 +34,6 @@ export function useWidth(): WidthRes {
     if (!ready) {
       window.addEventListener('resize', handleResize);
       handleResize();
-      console.log('ready');
       dispatch(setReady(true));
 
       return () => {
