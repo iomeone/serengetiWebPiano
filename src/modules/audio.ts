@@ -15,6 +15,11 @@ export const addSheet = (sheetKey: string, osmd: OSMD) =>
   action(ADD_SHEET, { sheetKey, osmd });
 export type AddSheet = ActionType<typeof addSheet>;
 
+export const DELETE_SHEET = '@AUDIO/DELETE_SHEET';
+export const deleteSheet = (sheetKey: string) =>
+  action(DELETE_SHEET, { sheetKey });
+export type DeleteSheet = ActionType<typeof deleteSheet>;
+
 export const SET_TITLE = '@AUDIO/SET_TITLE';
 export const _setTitle = (sheetKey: string, title: string) =>
   action(SET_TITLE, { sheetKey, title });
@@ -40,6 +45,7 @@ export type SetPlaybackService = ActionType<typeof setPlaybackService>;
 
 export type AudioActions =
   | AddSheet
+  | DeleteSheet
   | SetTitle
   | SetLoaded
   | SetAudioContext
@@ -89,6 +95,18 @@ export const loadTestSheetThunk =
     );
   };
 
+export const cleanupSheetThunk =
+  (sheetKey: string) => async (dispatch: Function, getState: () => State) => {
+    const sheet = getState().audio.sheets[sheetKey];
+    if (sheet === undefined) return;
+
+    if (sheet.playbackService !== null) {
+      sheet.playbackService.stop();
+      dispatch(setPlaybackService(sheetKey, null, null));
+    }
+    dispatch(deleteSheet(sheetKey));
+  };
+
 export const audioReducer = (
   state: AudioState = inistialState.audio,
   action: AudioActions,
@@ -105,6 +123,12 @@ export const audioReducer = (
           playbackServiceType: null,
         };
         draft.sheets[payload.sheetKey] = sheet;
+      });
+    }
+    case DELETE_SHEET: {
+      const { payload } = action as DeleteSheet;
+      return produce<AudioState>(state, (draft) => {
+        delete draft.sheets[payload.sheetKey];
       });
     }
     case SET_TITLE: {

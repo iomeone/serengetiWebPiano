@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { useDispatch, useSelector } from 'react-redux';
-import { addSheet } from 'modules/audio';
+import { addSheet, cleanupSheetThunk } from 'modules/audio';
 import { State } from 'modules/State';
 import { Sheet } from 'models/Sheet';
 import { isLoadedSheet } from 'utils/Sheet';
@@ -71,6 +71,12 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     if (measureBoxes !== null) {
     }
   }, [measureBoxes]);
+
+  useLayoutEffect(() => {
+    return () => {
+      dispatch(cleanupSheetThunk(sheetKey));
+    };
+  }, []);
 
   return (
     <Cont>
