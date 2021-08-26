@@ -8,6 +8,7 @@ import { Sheet } from 'models/Sheet';
 import {
   IPlaybackService,
   PlaybackServiceType,
+  PlaybackState,
 } from 'services/IPlaybackService';
 
 export const ADD_SHEET = '@AUDIO/ADD_SHEET';
@@ -43,13 +44,29 @@ export const setPlaybackService = (
 ) => action(SET_PLAYBACK_SERVICE, { sheetKey, playbackService, serviceType });
 export type SetPlaybackService = ActionType<typeof setPlaybackService>;
 
+export const SET_PLAYBACK_STATE = '@AUDIO/SET_PLAYBACK_STATE';
+export const setPlaybackState = (
+  sheetKey: string,
+  playbackState: PlaybackState | null,
+) => action(SET_PLAYBACK_STATE, { sheetKey, playbackState });
+export type SetPlaybackState = ActionType<typeof setPlaybackState>;
+
+export const SET_CURRENT_MEASURE_IND = '@AUDIO/SET_CURRENT_MEASURE_IND';
+export const setCurrentMeasureInd = (
+  sheetKey: string,
+  currentMeasureInd: number | null,
+) => action(SET_CURRENT_MEASURE_IND, { sheetKey, currentMeasureInd });
+export type SetCurrentMeasureInd = ActionType<typeof setCurrentMeasureInd>;
+
 export type AudioActions =
   | AddSheet
   | DeleteSheet
   | SetTitle
   | SetLoaded
   | SetAudioContext
-  | SetPlaybackService;
+  | SetPlaybackService
+  | SetPlaybackState
+  | SetCurrentMeasureInd;
 
 /* thunks */
 
@@ -102,7 +119,6 @@ export const cleanupSheetThunk =
 
     if (sheet.playbackService !== null) {
       sheet.playbackService.stop();
-      dispatch(setPlaybackService(sheetKey, null, null));
     }
     dispatch(deleteSheet(sheetKey));
   };
@@ -121,6 +137,8 @@ export const audioReducer = (
           loaded: false,
           playbackService: null,
           playbackServiceType: null,
+          currentMeasureInd: null,
+          playbackState: null,
         };
         draft.sheets[payload.sheetKey] = sheet;
       });
@@ -158,6 +176,19 @@ export const audioReducer = (
           payload.playbackService;
         draft.sheets[payload.sheetKey].playbackServiceType =
           payload.serviceType;
+      });
+    }
+    case SET_PLAYBACK_STATE: {
+      const { payload } = action as SetPlaybackState;
+      return produce<AudioState>(state, (draft) => {
+        draft.sheets[payload.sheetKey].playbackState = payload.playbackState;
+      });
+    }
+    case SET_CURRENT_MEASURE_IND: {
+      const { payload } = action as SetCurrentMeasureInd;
+      return produce<AudioState>(state, (draft) => {
+        draft.sheets[payload.sheetKey].currentMeasureInd =
+          payload.currentMeasureInd;
       });
     }
     default:

@@ -1,6 +1,7 @@
 import {
   IPlaybackService,
   PlaybackServiceType,
+  PlaybackState,
 } from 'services/IPlaybackService';
 
 export type Sheet = {
@@ -9,4 +10,6 @@ export type Sheet = {
   loaded: boolean;
   playbackService: IPlaybackService | null;
   playbackServiceType: PlaybackServiceType | null;
+  currentMeasureInd: number | null;
+  playbackState: PlaybackState | null;
 };

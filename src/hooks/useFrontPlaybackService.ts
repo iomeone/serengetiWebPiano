@@ -7,8 +7,13 @@ import { Sheet } from 'models/Sheet';
 import {
   IPlaybackService,
   PlaybackServiceType,
+  PlaybackState,
 } from 'services/IPlaybackService';
-import { setPlaybackService } from 'modules/audio';
+import {
+  setCurrentMeasureInd,
+  setPlaybackService,
+  setPlaybackState,
+} from 'modules/audio';
 
 type FrontPlaybackServiceRes = {
   playbackService: IPlaybackService | null;
@@ -43,6 +48,13 @@ export function useFrontPlaybackService(
       dispatch(
         setPlaybackService(sheetKey, service, PlaybackServiceType.FrontService),
       );
+      dispatch(setPlaybackState(sheetKey, PlaybackState.INIT));
+      service.addPlaybackStateListener((state) => {
+        dispatch(setPlaybackState(sheetKey, state));
+      });
+      service.addIteratorListener((iterator) => {
+        dispatch(setCurrentMeasureInd(sheetKey, iterator.CurrentMeasureIndex));
+      });
 
       return service;
     };
