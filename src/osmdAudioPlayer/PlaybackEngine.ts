@@ -18,7 +18,7 @@ import {
   getNoteVolume,
   getNoteArticulationStyle,
 } from './internals/noteHelpers';
-import { EventEmitter } from './internals/EventEmitter';
+import { EventEmitter } from '../utils/EventEmitter';
 import { AudioContext, IAudioContext } from 'standardized-audio-context';
 
 export enum PlaybackState {
@@ -310,7 +310,7 @@ export default class PlaybackEngine {
         Math.max(0, audioDelay * 1000 - this.compensateDelay),
       ),
       window.setTimeout(
-        () => this.events.emit(PlaybackEvent.ITERATION, notes),
+        () => this.events.emit(PlaybackEvent.ITERATION, this.cursor?.Iterator),
         audioDelay * 1000,
       ),
     );
