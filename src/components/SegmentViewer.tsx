@@ -4,7 +4,6 @@ import { loadSheetWithUrlThunk } from 'modules/audio';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { PlaybackState } from 'services/IPlaybackService';
 import styled from 'styled-components';
 import { isLoadedSheet } from 'utils/Sheet';
 import Viewer from './Viewer';
@@ -76,10 +75,6 @@ export default function SegmentViewer({
       setIsSheetLoading(false);
     }
   }, [sheet]);
-
-  const [playbackState, setPlaybackState] = useState<PlaybackState>(
-    PlaybackState.INIT,
-  );
 
   const height = oneStaff ? 110 : 220;
   const viewerTitle = title ?? 'OSMD Viewer';
