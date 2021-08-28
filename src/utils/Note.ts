@@ -134,3 +134,26 @@ export const diatonicNumberToNoteName = (diatonicNumber: number): string => {
   const note = diatonicNumberToNote(diatonicNumber);
   return pitchClassArr[note.pitchClass] + note.octave;
 };
+
+const noteA0 = parseNoteNameToNote('A0');
+const noteA0MidiKeyNumber = noteToMidiKeyNumber(noteA0);
+
+export const noteArrayToBinaryKeys = (notes: Note[]):boolean[] =>{
+  const binaryKeys = Array.from({length: 88}, () => false);
+  notes.forEach((note:Note)=>{
+    binaryKeys[noteToMidiKeyNumber(note) - noteA0MidiKeyNumber] = true;
+  });
+  return binaryKeys;
+}
+
+export const isEqualNoteArray = (a: Note[],b: Note[]) =>{
+  const binaryKeys_A = noteArrayToBinaryKeys(a); 
+  const binaryKeys_B = noteArrayToBinaryKeys(b);
+  // A0 아래는 같은지 확인할 수 없음 
+  binaryKeys_A.forEach((value,index)=>{
+    if(value !== binaryKeys_B[index]){
+      return false;
+    }
+  })
+  return true;
+}
