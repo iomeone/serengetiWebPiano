@@ -145,3 +145,15 @@ export const noteArrayToBinaryKeys = (notes: Note[]):boolean[] =>{
   });
   return binaryKeys;
 }
+
+export const isEqualNoteArray = (a: Note[],b: Note[]) =>{
+  const binaryKeys_A = noteArrayToBinaryKeys(a); 
+  const binaryKeys_B = noteArrayToBinaryKeys(b);
+  // A0 아래는 같은지 확인할 수 없음 
+  binaryKeys_A.forEach((value,index)=>{
+    if(value !== binaryKeys_B[index]){
+      return false;
+    }
+  })
+  return true;
+}
