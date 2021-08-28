@@ -136,7 +136,7 @@ export const diatonicNumberToNoteName = (diatonicNumber: number): string => {
 };
 
 const noteA0 = parseNoteNameToNote('A0');
-const noteA0MidiKeyNumber = noteToMidiKeyNumber(noteA0);
+export const noteA0MidiKeyNumber = noteToMidiKeyNumber(noteA0);
 
 export const noteArrayToBinaryKeys = (notes: Note[]):boolean[] =>{
   const binaryKeys = Array.from({length: 88}, () => false);
