@@ -337,8 +337,6 @@ export default class PlaybackEngine {
   private iterationCallback(stepIndex: number) {
     if (this.cursor === null) throw Error('Cursor is null');
     if (this.state !== PlaybackState.PLAYING) return;
-
-    console.log(this.currentIterationStep, stepIndex);
     while (this.currentIterationStep < stepIndex) {
       this.cursor.next();
       ++this.currentIterationStep;
