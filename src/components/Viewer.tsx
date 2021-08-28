@@ -93,7 +93,7 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
         setPositionX(measureBoxes[index].left - 50);
       }
     }
-  }, [sheet?.currentMeasureInd]);
+  }, [isSheetLoaded, sheet?.currentMeasureInd, measureBoxes]);
 
   return (
     <Cont x={positionX}>
