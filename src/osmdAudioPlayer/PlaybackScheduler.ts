@@ -2,7 +2,11 @@ import StepQueue from './internals/StepQueue';
 import { VoiceEntry } from 'opensheetmusicdisplay/build/dist/src';
 import { IAudioContext } from 'standardized-audio-context';
 
-type NoteSchedulingCallback = (delay: number, notes: any) => void;
+type NoteSchedulingCallback = (
+  delay: number,
+  stepIndex: number,
+  notes: any,
+) => void;
 
 export default class PlaybackScheduler {
   public denominator: number;
@@ -23,11 +27,8 @@ export default class PlaybackScheduler {
   private schedulePeriod: number = 500;
   private tickDenominator: number = 1024;
 
-  private lastTickOffset: number = 300; // Hack to get the initial notes play better
+  private lastTickOffset: number = 500; // Hack to get the initial notes play better
   private playing: boolean = false;
-
-  private lastPausedAudioContextTime: number = 0;
-  private pausedTimespan: number = 0;
 
   private noteSchedulingCallback: NoteSchedulingCallback;
 
@@ -49,12 +50,7 @@ export default class PlaybackScheduler {
 
   get audioContextTime() {
     if (!this.audioContext) return 0;
-    return (
-      (this.audioContext.currentTime -
-        this.audioContextStartTime -
-        this.pausedTimespan) *
-      1000
-    );
+    return (this.audioContext.currentTime - this.audioContextStartTime) * 1000;
   }
 
   get tickDuration() {
@@ -71,16 +67,18 @@ export default class PlaybackScheduler {
   }
 
   start() {
-    this.playing = true;
     this.stepQueue.sort();
     this.audioContextStartTime = this.audioContext.currentTime;
     this.currentTickTimestamp = this.audioContextTime;
+
     if (!this.schedulerIntervalHandle) {
       this.schedulerIntervalHandle = window.setInterval(
         () => this.scheduleIterationStep(),
         this.scheduleInterval,
       );
     }
+
+    this.playing = true;
   }
 
   setIterationStep(step: number) {
@@ -89,16 +87,12 @@ export default class PlaybackScheduler {
     this.currentTick = this.stepQueue.steps[this.stepQueueIndex].tick;
   }
 
-  pause() {
-    this.playing = false;
-    this.lastPausedAudioContextTime = this.audioContext.currentTime;
+  getIterationStep() {
+    return this.stepQueueIndex;
   }
 
-  resume() {
-    this.playing = true;
-    this.currentTickTimestamp = this.audioContextTime;
-    this.pausedTimespan +=
-      this.audioContext.currentTime - this.lastPausedAudioContextTime;
+  pause() {
+    this.playing = false;
   }
 
   reset() {
@@ -108,9 +102,6 @@ export default class PlaybackScheduler {
     this.stepQueueIndex = 0;
     clearInterval(this.scheduleInterval);
     this.schedulerIntervalHandle = null;
-
-    this.lastPausedAudioContextTime = 0;
-    this.pausedTimespan = 0;
   }
 
   loadNotes(currentVoiceEntries: VoiceEntry[]) {
@@ -137,6 +128,7 @@ export default class PlaybackScheduler {
     this.currentTickTimestamp = this.audioContextTime;
 
     let nextTick = this.stepQueue.steps[this.stepQueueIndex]?.tick;
+
     while (this.nextTickAvailableAndWithinSchedulePeriod(nextTick)) {
       let step = this.stepQueue.steps[this.stepQueueIndex];
 
@@ -144,7 +136,11 @@ export default class PlaybackScheduler {
       if (timeToTick < 0) timeToTick = 0;
 
       this.scheduledTicks.add(step.tick);
-      this.noteSchedulingCallback(timeToTick / 1000, step.notes);
+      this.noteSchedulingCallback(
+        timeToTick / 1000,
+        this.stepQueueIndex,
+        step.notes,
+      );
 
       this.stepQueueIndex++;
       nextTick = this.stepQueue.steps[this.stepQueueIndex]?.tick;
@@ -157,12 +153,12 @@ export default class PlaybackScheduler {
     }
   }
 
-  private nextTickAvailableAndWithinSchedulePeriod(nextTick: any) {
+  private nextTickAvailableAndWithinSchedulePeriod(
+    nextTick: number | undefined,
+  ) {
     return (
       nextTick &&
-      this.currentTickTimestamp +
-        (nextTick - this.currentTick) * this.tickDuration <=
-        this.currentTickTimestamp + this.schedulePeriod
+      (nextTick - this.currentTick) * this.tickDuration <= this.schedulePeriod
     );
   }
 }
