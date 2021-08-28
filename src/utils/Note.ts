@@ -134,3 +134,14 @@ export const diatonicNumberToNoteName = (diatonicNumber: number): string => {
   const note = diatonicNumberToNote(diatonicNumber);
   return pitchClassArr[note.pitchClass] + note.octave;
 };
+
+const noteA0 = parseNoteNameToNote('A0');
+const noteA0MidiKeyNumber = noteToMidiKeyNumber(noteA0);
+
+export const noteArrayToBinaryKeys = (notes: Note[]):boolean[] =>{
+  const binaryKeys = Array.from({length: 88}, () => false);
+  notes.forEach((note:Note)=>{
+    binaryKeys[noteToMidiKeyNumber(note) - noteA0MidiKeyNumber] = true;
+  });
+  return binaryKeys;
+}
