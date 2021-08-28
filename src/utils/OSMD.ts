@@ -20,11 +20,11 @@ export type Rect = {
 };
 
 export function getTimeSignature(osmd: OSMD) {
-  return osmd.cursor.iterator.CurrentMeasure.ActiveTimeSignature;
+  return osmd.Sheet.SourceMeasures[0].ActiveTimeSignature;
 }
 
 export function getBPM(osmd: OSMD) {
-  return osmd.cursor.iterator.CurrentMeasure.TempoInBPM;
+  return osmd.Sheet.DefaultStartTempoInBpm;
 }
 
 export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
