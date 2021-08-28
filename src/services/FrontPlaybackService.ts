@@ -13,7 +13,6 @@ import {
 export class FrontPlaybackService implements IPlaybackService {
   private osmd: OSMD | null = null;
   private engine: PlaybackEngine | null = null;
-  private bpm: number = 120;
 
   public async init(osmd: OSMD, audioContext: IAudioContext) {
     this.osmd = osmd;
@@ -23,7 +22,6 @@ export class FrontPlaybackService implements IPlaybackService {
 
   public play() {
     if (this.engine !== null) {
-      this.engine.setBpm(this.bpm);
       this.engine.play();
     } else throw new Error('osmd or playback engine is not initalized');
   }
