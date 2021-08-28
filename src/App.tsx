@@ -165,8 +165,8 @@ function App() {
         </BreadCrumbCont>
         <Switch>
           <Route path="/" exact component={MainRoute} />
-          {Object.entries(routeMap).map(([route, { component }], _) => (
-            <Route path={route} exact component={component} />
+          {Object.entries(routeMap).map(([route, { component }], key) => (
+            <Route key={key} path={route} exact component={component} />
           ))}
           <Redirect to="/"></Redirect>
         </Switch>

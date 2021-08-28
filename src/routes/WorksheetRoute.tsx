@@ -87,11 +87,11 @@ export default function WorksheetRoute() {
         marginTop: 30,
       }}
     >
-      {worksheet.map((content) => {
+      {worksheet.map((content, contentKey) => {
         switch (content.type) {
           case ContentType.Paragraph: {
             return (
-              <ResponsiveCont>
+              <ResponsiveCont key={contentKey}>
                 <Space
                   direction="vertical"
                   size={20}
@@ -100,16 +100,17 @@ export default function WorksheetRoute() {
                     marginBottom: 50,
                   }}
                 >
-                  {content.content.map((lines) => (
+                  {content.content.map((lines, lineKey) => (
                     <Space
+                      key={lineKey}
                       direction="vertical"
                       size={8}
                       style={{
                         width: '100%',
                       }}
                     >
-                      {lines.map((line) => (
-                        <Typo>{line}</Typo>
+                      {lines.map((line, key) => (
+                        <Typo key={key}>{line}</Typo>
                       ))}
                     </Space>
                   ))}
@@ -120,6 +121,7 @@ export default function WorksheetRoute() {
           case ContentType.Sheet: {
             return (
               <div
+                key={contentKey}
                 style={{
                   marginBottom: 50,
                 }}
@@ -134,7 +136,7 @@ export default function WorksheetRoute() {
             );
           }
           default:
-            return <div></div>;
+            return <div key={contentKey}></div>;
         }
       })}
     </Space>

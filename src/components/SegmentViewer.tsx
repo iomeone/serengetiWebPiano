@@ -8,10 +8,11 @@ import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { isLoadedSheet } from 'utils/Sheet';
 import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
 import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
+import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
+import { useSheet } from 'hooks/useSheet';
 
 const SheetCont = styled.div`
   width: 100%;
@@ -20,15 +21,6 @@ const SheetCont = styled.div`
   background-color: white;
   padding-top: 10px;
   position: relative;
-`;
-
-type InnerProps = {
-  height: number;
-};
-
-const Inner = styled.div<InnerProps>`
-  width: 100000px;
-  height: ${(props) => props.height}px;
 `;
 
 type LoadingProps = {
@@ -62,8 +54,7 @@ export default function SegmentViewer({
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
 
-  const sheet = audio.sheets[sheetKey] ?? null;
-  const isLoaded = isLoadedSheet(sheet);
+  const { sheet, isLoaded } = useSheet(sheetKey);
 
   const [isSheetLoading, setIsSheetLoading] = useState(false);
   const dispatch = useDispatch();
@@ -75,13 +66,20 @@ export default function SegmentViewer({
   }, [url, title, isLoaded, dispatch, sheetKey]);
 
   useEffect(() => {
-    if (isLoadedSheet(sheet)) {
+    if (isLoaded) {
       setIsSheetLoading(false);
     }
-  }, [sheet]);
+  }, [isLoaded]);
 
   const height = oneStaff ? 110 : 220;
   const viewerTitle = title ?? 'OSMD Viewer';
+
+  const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
+  useEffect(() => {
+    if (isLoaded) {
+      setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
+    }
+  }, [sheet]);
 
   const play = async () => {
     dispatch(stopOtherPlaybackServicesThunk(sheetKey));
@@ -127,7 +125,7 @@ export default function SegmentViewer({
         </Typography.Text>
         {(() => {
           if (isLoaded) {
-            switch (sheet.playbackState) {
+            switch (sheet?.playbackState) {
               case null:
                 return (
                   <Space direction="horizontal" size={8}>
@@ -165,9 +163,14 @@ export default function SegmentViewer({
         })()}
       </div>
       <SheetCont>
-        <Inner height={height}>
+        <div
+          style={{
+            width: 100000,
+            height,
+          }}
+        >
           <Viewer sheetKey={sheetKey}></Viewer>
-        </Inner>
+        </div>
         <Loading isLoading={isSheetLoading}>
           <Spin size="large"></Spin>
         </Loading>

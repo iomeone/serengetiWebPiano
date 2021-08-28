@@ -4,6 +4,8 @@ import {
 } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
 
+const OSMD_UNIT = 10; // see Is it possible to center the music vertically and/or horizontally? -opensheetmusicdisplay issue #745;
+
 export type NoteSchedule = {
   note: Note;
   timing: number;
@@ -18,11 +20,11 @@ export type Rect = {
 };
 
 export function getTimeSignature(osmd: OSMD) {
-  return osmd.cursor.iterator.CurrentMeasure.ActiveTimeSignature;
+  return osmd.Sheet.SourceMeasures[0].ActiveTimeSignature;
 }
 
 export function getBPM(osmd: OSMD) {
-  return osmd.cursor.iterator.CurrentMeasure.TempoInBPM;
+  return osmd.Sheet.DefaultStartTempoInBpm;
 }
 
 export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
@@ -70,7 +72,6 @@ export function getMeasureBoundingBoxes(osmd: OSMD): Rect[] {
   return filtered.map((measures) =>
     measures.reduce(
       (acc, measure) => {
-        const unit = 10; // see Is it possible to center the music vertically and/or horizontally? -opensheetmusicdisplay issue #745;
         const { x, y } = measure.PositionAndShape.AbsolutePosition;
         const { width } = measure.PositionAndShape.BoundingRectangle;
         const { height } =
@@ -83,10 +84,10 @@ export function getMeasureBoundingBoxes(osmd: OSMD): Rect[] {
         const res = { left: 0, right: 0, top: 0, bottom: 0 };
 
         // acc와 rect의 모든 점을 포괄하는 가장 큰 직사각형 만들기
-        res.left = Math.min(acc.left, left * unit);
-        res.right = Math.max(acc.right, right * unit);
-        res.top = Math.min(acc.top, top * unit);
-        res.bottom = Math.max(acc.bottom, bottom * unit);
+        res.left = Math.min(acc.left, left * OSMD_UNIT);
+        res.right = Math.max(acc.right, right * OSMD_UNIT);
+        res.top = Math.min(acc.top, top * OSMD_UNIT);
+        res.bottom = Math.max(acc.bottom, bottom * OSMD_UNIT);
         return res;
       },
       { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity },
