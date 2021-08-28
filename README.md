@@ -3,7 +3,7 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Try it online here!
-http://sabana-serengeti.s3-website.ap-northeast-2.amazonaws.com/
+https://d3lutpt5vkh7di.cloudfront.net/
 
 ## Available Scripts
 

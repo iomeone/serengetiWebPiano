@@ -60,8 +60,6 @@ export default class PlaybackEngine {
   public scoreInstruments: Instrument[] = [];
   public ready: boolean = false;
 
-  private skipCursorIteration = true;
-
   constructor(
     context: IAudioContext = new AudioContext(),
     instrumentPlayer: InstrumentPlayer = new SoundfontPlayer(),
@@ -139,7 +137,8 @@ export default class PlaybackEngine {
       this.denominator,
       this.wholeNoteLength,
       this.ac,
-      (delay, notes) => this.notePlaybackCallback(delay, notes),
+      (delay, stepIndex, notes) =>
+        this.notePlaybackCallback(delay, stepIndex, notes),
     );
     this.countAndSetIterationSteps();
     this.ready = true;
@@ -185,14 +184,8 @@ export default class PlaybackEngine {
     if (this.cursor === null) throw Error('Cursor is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
-    if (
-      this.state === PlaybackState.INIT ||
-      this.state === PlaybackState.STOPPED
-    ) {
-      this.cursor.show();
-    }
-
     this.setState(PlaybackState.PLAYING);
+    this.cursor.show();
     this.scheduler.start();
   }
 
@@ -206,7 +199,6 @@ export default class PlaybackEngine {
     this.scheduler.reset();
     this.cursor.reset();
     this.currentIterationStep = 0;
-    this.skipCursorIteration = true;
     this.cursor.hide();
   }
 
@@ -235,7 +227,6 @@ export default class PlaybackEngine {
       ++this.currentIterationStep;
     }
     let schedulerStep = this.currentIterationStep;
-    this.skipCursorIteration = true;
     this.scheduler.setIterationStep(schedulerStep);
   }
 
@@ -265,7 +256,11 @@ export default class PlaybackEngine {
     this.cursor.reset();
   }
 
-  private notePlaybackCallback(audioDelay: any, notes: Note[]) {
+  private notePlaybackCallback(
+    audioDelay: any,
+    stepIndex: number,
+    notes: Note[],
+  ) {
     if (this.state !== PlaybackState.PLAYING) return;
     let scheduledNotes: Map<number, NotePlaybackInstruction[]> = new Map();
 
@@ -306,7 +301,7 @@ export default class PlaybackEngine {
 
     this.timeoutHandles.push(
       window.setTimeout(
-        () => this.iterationCallback(),
+        () => this.iterationCallback(stepIndex),
         Math.max(0, audioDelay * 1000 - this.compensateDelay),
       ),
       window.setTimeout(
@@ -339,15 +334,14 @@ export default class PlaybackEngine {
     this.timeoutHandles = [];
   }
 
-  private iterationCallback() {
+  private iterationCallback(stepIndex: number) {
     if (this.cursor === null) throw Error('Cursor is null');
-
     if (this.state !== PlaybackState.PLAYING) return;
-    if (this.skipCursorIteration) {
-      this.skipCursorIteration = false;
-    } else {
+
+    console.log(this.currentIterationStep, stepIndex);
+    while (this.currentIterationStep < stepIndex) {
       this.cursor.next();
+      ++this.currentIterationStep;
     }
-    ++this.currentIterationStep;
   }
 }
