@@ -185,14 +185,8 @@ export default class PlaybackEngine {
     if (this.cursor === null) throw Error('Cursor is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
-    if (
-      this.state === PlaybackState.INIT ||
-      this.state === PlaybackState.STOPPED
-    ) {
-      this.cursor.show();
-    }
-
     this.setState(PlaybackState.PLAYING);
+    this.cursor.show();
     this.scheduler.start();
   }
 
