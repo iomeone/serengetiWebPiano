@@ -1,6 +1,9 @@
 import { Space, Typography } from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import SegmentViewer from 'components/SegmentViewer';
+import SpinLayout from 'components/SpinLayout';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 type TypoProps = {
   children: React.ReactNode;
@@ -45,46 +48,17 @@ type Image = Content<ContentType.Image> & {
 
 type WorksheetElem = Paragraph | Sheet | Image;
 
-const worksheet: WorksheetElem[] = [
-  {
-    type: ContentType.Paragraph,
-    content: [
-      ['무지성 피아노 배우기'],
-      ['1단계: 오른손 연습', '오른손을 연습합니다.'],
-    ],
-  },
-  {
-    type: ContentType.Sheet,
-    key: 'dragon-spine-right-hand',
-    title: '드래곤 스파인: 오른손 연습',
-    url: 'worksheets/dragonSpine/rightHand.musicxml',
-    oneStaff: true,
-  },
-  {
-    type: ContentType.Paragraph,
-    content: [['2단계: 왼손 연습', '왼손을 연습합니다.']],
-  },
-  {
-    type: ContentType.Sheet,
-    key: 'dragon-spine-left-hand',
-    title: '드래곤 스파인: 왼손 연습',
-    url: 'worksheets/dragonSpine/leftHand.musicxml',
-    oneStaff: true,
-  },
-  {
-    type: ContentType.Paragraph,
-    content: [['3단계: 양손 연습', '양손 연습...']],
-  },
-  {
-    type: ContentType.Sheet,
-    key: 'dragon-spine-both-hands',
-    title: '드래곤 스파인: 양손 연습',
-    url: 'worksheets/dragonSpine/bothHands.musicxml',
-    oneStaff: false,
-  },
-];
-
 export default function WorksheetRoute() {
+  const [worksheet, setWorksheet] = useState<WorksheetElem[] | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const data = await fetch('worksheets/dragonSpine/data.json');
+      const text = await data.text();
+      setWorksheet(JSON.parse(text) as WorksheetElem[]);
+    })();
+  }, []);
+
   return (
     <Space
       direction="vertical"
@@ -94,65 +68,67 @@ export default function WorksheetRoute() {
         marginTop: 30,
       }}
     >
-      {worksheet.map((content, contentKey) => {
-        switch (content.type) {
-          case ContentType.Paragraph: {
-            return (
-              <ResponsiveCont key={contentKey}>
-                <Space
-                  direction="vertical"
-                  size={20}
+      {worksheet === null && <SpinLayout></SpinLayout>}
+      {worksheet !== null &&
+        worksheet.map((content, contentKey) => {
+          switch (content.type) {
+            case ContentType.Paragraph: {
+              return (
+                <ResponsiveCont key={contentKey}>
+                  <Space
+                    direction="vertical"
+                    size={20}
+                    style={{
+                      width: '100%',
+                      marginBottom: 50,
+                    }}
+                  >
+                    {content.content.map((lines, lineKey) => (
+                      <Space
+                        key={lineKey}
+                        direction="vertical"
+                        size={8}
+                        style={{
+                          width: '100%',
+                        }}
+                      >
+                        {lines.map((line, key) => (
+                          <Typo key={key}>{line}</Typo>
+                        ))}
+                      </Space>
+                    ))}
+                  </Space>
+                </ResponsiveCont>
+              );
+            }
+            case ContentType.Sheet: {
+              return (
+                <div
+                  key={contentKey}
                   style={{
-                    width: '100%',
                     marginBottom: 50,
                   }}
                 >
-                  {content.content.map((lines, lineKey) => (
-                    <Space
-                      key={lineKey}
-                      direction="vertical"
-                      size={8}
-                      style={{
-                        width: '100%',
-                      }}
-                    >
-                      {lines.map((line, key) => (
-                        <Typo key={key}>{line}</Typo>
-                      ))}
-                    </Space>
-                  ))}
-                </Space>
-              </ResponsiveCont>
-            );
+                  <SegmentViewer
+                    sheetKey={content.key}
+                    title={content.title}
+                    url={content.url}
+                    oneStaff={content.oneStaff}
+                  ></SegmentViewer>
+                </div>
+              );
+            }
+            case ContentType.Image: {
+              return (
+                <ResponsiveCont key={contentKey}>
+                  <img src={content.url}></img>
+                </ResponsiveCont>
+              );
+            }
+            default:
+              return <div key={contentKey}></div>;
           }
-          case ContentType.Sheet: {
-            return (
-              <div
-                key={contentKey}
-                style={{
-                  marginBottom: 50,
-                }}
-              >
-                <SegmentViewer
-                  sheetKey={content.key}
-                  title={content.title}
-                  url={content.url}
-                  oneStaff={content.oneStaff}
-                ></SegmentViewer>
-              </div>
-            );
-          }
-          case ContentType.Image: {
-            return (
-              <ResponsiveCont key={contentKey}>
-                <img src={content.url}></img>
-              </ResponsiveCont>
-            );
-          }
-          default:
-            return <div key={contentKey}></div>;
-        }
-      })}
+        })}
     </Space>
   );
 }
