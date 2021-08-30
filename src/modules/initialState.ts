@@ -17,6 +17,12 @@ const inistialState: State = {
     width: 0,
     widthMode: WidthMode.Desktop,
   },
+  editor: {
+    currentInd: null,
+    worksheetHistory: [[]],
+    undoable: false,
+    redoable: false,
+  },
 };
 
 export default inistialState;
