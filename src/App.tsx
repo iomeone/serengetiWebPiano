@@ -19,6 +19,7 @@ import MIDIRoute from 'routes/MIDIRoute';
 import PianoRollRoute from 'routes/PianoRollRoute';
 import WorksheetRoute from 'routes/WorksheetRoute';
 import { Size } from 'constants/layout';
+import EditorRoute from 'routes/EditorRoute';
 
 const hMargin = Size.hMargin;
 
@@ -96,6 +97,11 @@ const routeMap: BreadCrumbMap = {
   '/worksheet/:name': {
     routeName: 'Worksheet',
     component: WorksheetRoute,
+    exact: true,
+  },
+  '/editor': {
+    routeName: 'Editor',
+    component: EditorRoute,
     exact: true,
   },
 };

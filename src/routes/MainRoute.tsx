@@ -45,6 +45,11 @@ const items: RouteCard[] = [
     description:
       '글, 영상, 악보 등을 통해 사용자가 피아노를 학습할 수 있도록 하는 인터랙티브 E-book 콘텐츠를 표시하기 위한 포맷을 정하고, 이를 표시하는 기능을 개발 및 테스트합니다.',
   },
+  {
+    title: 'Editor',
+    path: '/editor',
+    description: 'Worksheet를 쉽게 생성하기 위한 도구 개발',
+  },
 ];
 
 export default function MainRoute() {
