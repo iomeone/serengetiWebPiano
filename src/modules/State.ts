@@ -1,5 +1,6 @@
 import { WidthMode } from 'constants/layout';
 import { Sheet } from 'models/Sheet';
+import { Worksheet } from 'models/Worksheet';
 import { IAudioContext } from 'standardized-audio-context';
 import { Note } from 'utils/Note';
 
@@ -22,8 +23,16 @@ export type LayoutState = {
   widthMode: WidthMode;
 };
 
+export type EditorState = {
+  worksheetHistory: Worksheet[];
+  currentInd: number | null;
+  undoable: boolean;
+  redoable: boolean;
+};
+
 export type State = {
   audio: AudioState;
   piano: PianoState;
   layout: LayoutState;
+  editor: EditorState;
 };
