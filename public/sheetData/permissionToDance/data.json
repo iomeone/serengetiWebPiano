@@ -8,7 +8,7 @@
   },
   {
     "type": "Image",
-    "path": "/image1.png",
+    "path": "image1.png",
     "title": "Image 1"
   }
 ]
