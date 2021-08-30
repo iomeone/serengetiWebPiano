@@ -10,7 +10,7 @@
     "type": "Sheet",
     "key": "dragon-spine-right-hand",
     "title": "드래곤 스파인: 오른손 연습",
-    "url": "worksheets/dragonSpine/rightHand.musicxml",
+    "url": "/sheetData/dragonSpine/rightHand.musicxml",
     "oneStaff": true
   },
   {
@@ -21,7 +21,7 @@
     "type": "Sheet",
     "key": "dragon-spine-left-hand",
     "title": "드래곤 스파인: 왼손 연습",
-    "url": "worksheets/dragonSpine/leftHand.musicxml",
+    "url": "/sheetData/dragonSpine/leftHand.musicxml",
     "oneStaff": true
   },
   {
@@ -32,7 +32,7 @@
     "type": "Sheet",
     "key": "dragon-spine-both-hands",
     "title": "드래곤 스파인: 양손 연습",
-    "url": "worksheets/dragonSpine/bothHands.musicxml",
+    "url": "/sheetData/dragonSpine/bothHands.musicxml",
     "oneStaff": false
   }
 ]
