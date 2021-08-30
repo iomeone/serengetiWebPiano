@@ -43,13 +43,13 @@ type Paragraph = Content<ContentType.Paragraph> & {
 type Sheet = Content<ContentType.Sheet> & {
   key: string;
   title: string;
-  url: string;
+  path: string;
   oneStaff: boolean;
 };
 
 type Image = Content<ContentType.Image> & {
   title: string;
-  url: string;
+  path: string;
 };
 
 type WorksheetElem = Paragraph | Sheet | Image;
@@ -80,15 +80,14 @@ const worksheetCards: WorksheetCard[] = [
 
 export default function WorksheetRoute() {
   const [worksheet, setWorksheet] = useState<WorksheetElem[] | null>(null);
-
   const { name } = useParams<WorksheetParam>();
   const history = useHistory();
 
   useEffect(() => {
     (async () => {
       if (name !== undefined) {
-        const jsonUrl = `/sheetData/${name}/data.json`;
-        const data = await fetch(jsonUrl);
+        const jsonpath = `/sheetData/${name}/data.json`;
+        const data = await fetch(jsonpath);
         try {
           const nextWorksheet = (await data.json()) as WorksheetElem[];
           setWorksheet(nextWorksheet);
@@ -120,35 +119,10 @@ export default function WorksheetRoute() {
   if (worksheet === null) return <SpinLayout></SpinLayout>;
   else {
     return (
-      <Space
-        direction="vertical"
-        size={0}
-        style={{
-          width: '100%',
-          marginTop: 30,
-        }}
-      >
-        <ResponsiveCont>
-          <Space direction="horizontal" size={8} align="center">
-            <Button
-              type="text"
-              shape="circle"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => {
-                history.push('/worksheet');
-              }}
-            ></Button>
-            <Typography.Text
-              style={{
-                fontSize: 16,
-              }}
-            >
-              {worksheetCard?.title}
-            </Typography.Text>
-          </Space>
-        </ResponsiveCont>
-        <Worksheet worksheet={worksheet}></Worksheet>
-      </Space>
+      <Worksheet
+        worksheet={worksheet}
+        card={worksheetCard as WorksheetCard}
+      ></Worksheet>
     );
   }
 }
@@ -198,77 +172,109 @@ function SelectWorksheet() {
 
 type WorksheetProps = {
   worksheet: WorksheetElem[];
+  card: WorksheetCard;
 };
-function Worksheet({ worksheet }: WorksheetProps) {
+function Worksheet({ worksheet, card }: WorksheetProps) {
+  const history = useHistory();
+
   return (
     <Space
       direction="vertical"
-      size={50}
+      size={0}
       style={{
         width: '100%',
         marginTop: 30,
       }}
     >
-      {worksheet.map((content, contentKey) => {
-        switch (content.type) {
-          case ContentType.Paragraph: {
-            return (
-              <ResponsiveCont key={contentKey}>
-                <Space
-                  direction="vertical"
-                  size={20}
-                  style={{
-                    width: '100%',
-                  }}
-                >
-                  {content.content.map((lines, lineKey) => (
-                    <Space
-                      key={lineKey}
-                      direction="vertical"
-                      size={8}
-                      style={{
-                        width: '100%',
-                      }}
-                    >
-                      {lines.map((line, key) => (
-                        <Typo key={key}>{line}</Typo>
-                      ))}
-                    </Space>
-                  ))}
-                </Space>
-              </ResponsiveCont>
-            );
+      <ResponsiveCont>
+        <Space direction="horizontal" size={8} align="center">
+          <Button
+            type="text"
+            shape="circle"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => {
+              history.push('/worksheet');
+            }}
+          ></Button>
+          <Typography.Text
+            style={{
+              fontSize: 16,
+            }}
+          >
+            {card.title}
+          </Typography.Text>
+        </Space>
+      </ResponsiveCont>
+
+      <Space
+        direction="vertical"
+        size={50}
+        style={{
+          width: '100%',
+          marginTop: 30,
+        }}
+      >
+        {worksheet.map((content, contentKey) => {
+          switch (content.type) {
+            case ContentType.Paragraph: {
+              return (
+                <ResponsiveCont key={contentKey}>
+                  <Space
+                    direction="vertical"
+                    size={20}
+                    style={{
+                      width: '100%',
+                    }}
+                  >
+                    {content.content.map((lines, lineKey) => (
+                      <Space
+                        key={lineKey}
+                        direction="vertical"
+                        size={8}
+                        style={{
+                          width: '100%',
+                        }}
+                      >
+                        {lines.map((line, key) => (
+                          <Typo key={key}>{line}</Typo>
+                        ))}
+                      </Space>
+                    ))}
+                  </Space>
+                </ResponsiveCont>
+              );
+            }
+            case ContentType.Sheet: {
+              return (
+                <div key={contentKey}>
+                  <SegmentViewer
+                    sheetKey={content.key}
+                    title={content.title}
+                    url={`/sheetData/${card.key}/${content.path}`}
+                    oneStaff={content.oneStaff}
+                  ></SegmentViewer>
+                </div>
+              );
+            }
+            case ContentType.Image: {
+              return (
+                <ResponsiveCont key={contentKey}>
+                  <img
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                    }}
+                    alt={content.title}
+                    src={`/sheetData/${card.key}/${content.path}`}
+                  ></img>
+                </ResponsiveCont>
+              );
+            }
+            default:
+              return <div key={contentKey}></div>;
           }
-          case ContentType.Sheet: {
-            return (
-              <div key={contentKey}>
-                <SegmentViewer
-                  sheetKey={content.key}
-                  title={content.title}
-                  url={content.url}
-                  oneStaff={content.oneStaff}
-                ></SegmentViewer>
-              </div>
-            );
-          }
-          case ContentType.Image: {
-            return (
-              <ResponsiveCont key={contentKey}>
-                <img
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                  }}
-                  alt={content.title}
-                  src={content.url}
-                ></img>
-              </ResponsiveCont>
-            );
-          }
-          default:
-            return <div key={contentKey}></div>;
-        }
-      })}
+        })}
+      </Space>
     </Space>
   );
 }
