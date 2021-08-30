@@ -1,24 +1,26 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { MdUndo, MdRedo } from 'react-icons/md';
-import { Button, Card, Empty, List, Space, Tooltip, Typography } from 'antd';
+import {
+  Button,
+  Card,
+  Empty,
+  List,
+  message,
+  Space,
+  Tooltip,
+  Typography,
+} from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
 import { useEditor } from 'hooks/useEditor';
 import { ContentType, WorksheetElem } from 'models/Worksheet';
-import styled from 'styled-components';
+import { index, Indexed } from 'utils/List';
+import Horizontal from 'components/Horizontal';
+import ParagraphElementEditor from 'components/ParagraphElementEditor';
+import { useEffect } from 'react';
+import { useControlKeys } from 'hooks/useControlKeys';
 
 const hMargin = Size.hMargin;
-
-const Horizontal = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-type Indexed<T> = {
-  content: T;
-  key: number;
-};
 
 export default function EditorRoute() {
   const { currentState, addElem, deleteElem } = useEditor();
@@ -37,12 +39,9 @@ export default function EditorRoute() {
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
           <List
-            dataSource={currentState.map((state, ind) => ({
-              key: ind,
-              content: state,
-            }))}
+            dataSource={index(currentState)}
             renderItem={(item: Indexed<WorksheetElem>) => (
-              <List.Item key={item.key}>
+              <List.Item>
                 <Card
                   style={{
                     width: '100%',
@@ -64,7 +63,10 @@ export default function EditorRoute() {
                     </Typography.Text>
                   }
                 >
-                  <WorksheetElement elem={item.content}></WorksheetElement>
+                  <WorksheetElementEditor
+                    elem={item.content}
+                    elemInd={item.key}
+                  ></WorksheetElementEditor>
                 </Card>
               </List.Item>
             )}
@@ -76,7 +78,7 @@ export default function EditorRoute() {
               addElem(ContentType.Paragraph);
             }}
           >
-            <PlusOutlined></PlusOutlined> 문단 추가
+            <PlusOutlined></PlusOutlined> 글 영역 추가
           </Button>
           <Button
             onClick={() => {
@@ -100,6 +102,34 @@ export default function EditorRoute() {
 
 function Header() {
   const { undo, redo, undoable, redoable } = useEditor();
+  const { ctrlZ, ctrlY } = useControlKeys();
+
+  useEffect(() => {
+    if (ctrlZ) {
+      undoWithMessage();
+    }
+  }, [ctrlZ]);
+
+  useEffect(() => {
+    if (ctrlY) {
+      redoWithMessage();
+    }
+  }, [ctrlY]);
+
+  const undoWithMessage = () => {
+    if (undoable) {
+      undo();
+      message.info('실행 취소');
+    }
+  };
+
+  const redoWithMessage = () => {
+    if (redoable) {
+      redo();
+      message.info('실행 취소 되돌리기');
+    }
+  };
+
   return (
     <Horizontal>
       <Typography.Text
@@ -117,7 +147,7 @@ function Header() {
             shape="circle"
             type="text"
             onClick={() => {
-              undo();
+              undoWithMessage();
             }}
           >
             <MdUndo></MdUndo>
@@ -129,7 +159,7 @@ function Header() {
             shape="circle"
             type="text"
             onClick={() => {
-              redo();
+              redoWithMessage();
             }}
           >
             <MdRedo></MdRedo>
@@ -143,7 +173,7 @@ function Header() {
 function contentTypeName(contentType: ContentType): string {
   switch (contentType) {
     case ContentType.Paragraph:
-      return '문단';
+      return '글 영역';
     case ContentType.Sheet:
       return '악보';
     case ContentType.Image:
@@ -152,13 +182,23 @@ function contentTypeName(contentType: ContentType): string {
       return '';
   }
 }
-type WorksheetElementProps = {
+
+type WorksheetElementEditorProps = {
   elem: WorksheetElem;
+  elemInd: number;
 };
-function WorksheetElement({ elem }: WorksheetElementProps) {
+function WorksheetElementEditor({
+  elem,
+  elemInd,
+}: WorksheetElementEditorProps) {
   switch (elem.type) {
     case ContentType.Paragraph:
-      return <div></div>;
+      return (
+        <ParagraphElementEditor
+          elem={elem}
+          elemInd={elemInd}
+        ></ParagraphElementEditor>
+      );
     case ContentType.Sheet:
       return <div></div>;
     case ContentType.Image:
