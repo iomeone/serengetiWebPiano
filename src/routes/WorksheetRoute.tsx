@@ -43,6 +43,7 @@ type Sheet = Content<ContentType.Sheet> & {
 };
 
 type Image = Content<ContentType.Image> & {
+  title: string;
   url: string;
 };
 
@@ -121,7 +122,7 @@ export default function WorksheetRoute() {
             case ContentType.Image: {
               return (
                 <ResponsiveCont key={contentKey}>
-                  <img src={content.url}></img>
+                  <img alt={content.title} src={content.url}></img>
                 </ResponsiveCont>
               );
             }
