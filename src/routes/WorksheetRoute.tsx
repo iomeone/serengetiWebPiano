@@ -4,6 +4,7 @@ import ResponsiveCont from 'components/ResponsiveCont';
 import SegmentViewer from 'components/SegmentViewer';
 import SpinLayout from 'components/SpinLayout';
 import { Size } from 'constants/layout';
+import { ContentType, WorksheetElem } from 'models/Worksheet';
 import { useEffect, useMemo } from 'react';
 import { useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
@@ -26,34 +27,6 @@ function Typo({ children }: TypoProps) {
   );
 }
 
-enum ContentType {
-  Paragraph = 'Paragraph',
-  Sheet = 'Sheet',
-  Image = 'Image',
-}
-
-type Content<T> = {
-  type: T;
-};
-
-type Paragraph = Content<ContentType.Paragraph> & {
-  content: string[][];
-};
-
-type Sheet = Content<ContentType.Sheet> & {
-  key: string;
-  title: string;
-  path: string;
-  oneStaff: boolean;
-};
-
-type Image = Content<ContentType.Image> & {
-  title: string;
-  path: string;
-};
-
-type WorksheetElem = Paragraph | Sheet | Image;
-
 type WorksheetParam = {
   name: string | undefined;
 };
@@ -63,6 +36,7 @@ type WorksheetCard = {
   title: string;
   description: string;
 };
+
 const worksheetCards: WorksheetCard[] = [
   {
     key: 'permissionToDance',
