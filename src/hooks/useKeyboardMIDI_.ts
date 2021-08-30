@@ -8,7 +8,7 @@ type KeyBoardMIDIRes = {
   pressedBinaryKeys: boolean[];
 };
 
-export const useKeyBoardMIDI = (): KeyBoardMIDIRes => {
+export const useKeyboardMIDI = (): KeyBoardMIDIRes => {
   const { pressedKeys, pressedBinaryKeys, onKeyDown, onKeyUp } =
     useBinaryPressedKeys();
 
