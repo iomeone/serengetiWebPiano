@@ -21,6 +21,7 @@ function Typo({ children }: TypoProps) {
 enum ContentType {
   Paragraph = 'Paragraph',
   Sheet = 'Sheet',
+  Image = 'Image',
 }
 
 type Content<T> = {
@@ -38,7 +39,13 @@ type Sheet = Content<ContentType.Sheet> & {
   oneStaff: boolean;
 };
 
-const worksheet: (Paragraph | Sheet)[] = [
+type Image = Content<ContentType.Image> & {
+  url: string;
+};
+
+type WorksheetElem = Paragraph | Sheet | Image;
+
+const worksheet: WorksheetElem[] = [
   {
     type: ContentType.Paragraph,
     content: [
@@ -133,6 +140,13 @@ export default function WorksheetRoute() {
                   oneStaff={content.oneStaff}
                 ></SegmentViewer>
               </div>
+            );
+          }
+          case ContentType.Image: {
+            return (
+              <ResponsiveCont key={contentKey}>
+                <img src={content.url}></img>
+              </ResponsiveCont>
             );
           }
           default:
