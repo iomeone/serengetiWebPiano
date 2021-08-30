@@ -71,7 +71,7 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     if (isSheetLoaded) {
       setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
     }
-  }, [sheet]);
+  }, [sheet, isSheetLoaded]);
 
   useLayoutEffect(() => {
     return () => {

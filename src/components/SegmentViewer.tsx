@@ -11,7 +11,6 @@ import styled from 'styled-components';
 import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
 import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
-import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
 import { useSheet } from 'hooks/useSheet';
 
 const SheetCont = styled.div`
@@ -50,7 +49,6 @@ export default function SegmentViewer({
   url,
   oneStaff,
 }: SegmentViewerProps) {
-  const audio = useSelector((state: State) => state.audio);
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
 
@@ -73,13 +71,6 @@ export default function SegmentViewer({
 
   const height = oneStaff ? 110 : 220;
   const viewerTitle = title ?? 'OSMD Viewer';
-
-  const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
-  useEffect(() => {
-    if (isLoaded) {
-      setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
-    }
-  }, [sheet]);
 
   const play = async () => {
     dispatch(stopOtherPlaybackServicesThunk(sheetKey));

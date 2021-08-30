@@ -60,6 +60,7 @@ type BreadcrumbItem = {
     | React.ComponentType<any>
     | undefined;
   extraIcon?: React.ReactNode;
+  exact: boolean;
 };
 
 type BreadCrumbMap = {
@@ -70,22 +71,32 @@ const routeMap: BreadCrumbMap = {
   '/sheet': {
     routeName: 'Sheet Music Viewer',
     component: SheetRoute,
+    exact: true,
   },
   '/osmd': {
     routeName: 'OSMD Component',
     component: OSMDRoute,
+    exact: true,
   },
   '/midi': {
     routeName: 'MIDI',
     component: MIDIRoute,
+    exact: true,
   },
   '/pianoRoll': {
     routeName: 'Piano Roll',
     component: PianoRollRoute,
+    exact: true,
   },
   '/worksheet': {
     routeName: 'Worksheet',
     component: WorksheetRoute,
+    exact: true,
+  },
+  '/worksheet/:name': {
+    routeName: 'Worksheet',
+    component: WorksheetRoute,
+    exact: true,
   },
 };
 
@@ -165,9 +176,16 @@ function App() {
         </BreadCrumbCont>
         <Switch>
           <Route path="/" exact component={MainRoute} />
-          {Object.entries(routeMap).map(([route, { component }], key) => (
-            <Route key={key} path={route} exact component={component} />
-          ))}
+          {Object.entries(routeMap).map(
+            ([route, { component, exact }], key) => (
+              <Route
+                key={key}
+                path={route}
+                exact={exact}
+                component={component}
+              />
+            ),
+          )}
           <Redirect to="/"></Redirect>
         </Switch>
       </Main>
