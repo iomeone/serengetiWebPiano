@@ -8,7 +8,7 @@ import { setPianoVisibility } from 'modules/piano';
 import LoadSheet from 'components/LoadSheet';
 import PianoRollViewer from 'components/PianoRollViewer';
 import { Size } from 'constants/layout';
-import { useKeyBoardMIDI } from 'hooks/useKeyBoardMIDI';
+import { useKeyboardMIDI } from 'hooks/useKeyboardMIDI_';
 
 const hMargin = Size.hMargin;
 const margin = Size.margin;
