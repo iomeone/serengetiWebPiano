@@ -49,7 +49,6 @@ export default function SegmentViewer({
   url,
   oneStaff,
 }: SegmentViewerProps) {
-  const audio = useSelector((state: State) => state.audio);
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
 
