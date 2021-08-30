@@ -1,8 +1,8 @@
-import produce, { current } from 'immer';
+import produce from 'immer';
 import { action, ActionType } from 'typesafe-actions';
-import { EditorState, State } from 'modules/State';
+import { EditorState } from 'modules/State';
 import inistialState from './initialState';
-import { ContentType, WorksheetElem, Image, Worksheet } from 'models/Worksheet';
+import { ContentType, WorksheetElem, Worksheet } from 'models/Worksheet';
 
 export const ADD_WORKSHEET_ELEM = '@EDITOR/ADD_WORKSHEET_ELEM';
 export const addWorksheetElem = (contentType: ContentType) =>
