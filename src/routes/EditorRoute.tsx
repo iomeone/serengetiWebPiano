@@ -32,6 +32,7 @@ export default function EditorRoute() {
         style={{
           marginTop: hMargin,
           width: '100%',
+          marginBottom: 100,
         }}
       >
         <Header></Header>
