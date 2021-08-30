@@ -29,7 +29,7 @@ const sheetKey = 'osmd-sheet-key';
 export default function PianoRollRoute() {
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
-  const {pressedKeys,pressedBinaryKeys} = useKeyBoardMIDI();
+  const { pressedKeys, pressedBinaryKeys } = useKeyBoardMIDI();
 
   return (
     <Main>
