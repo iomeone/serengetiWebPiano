@@ -65,6 +65,12 @@ type WorksheetCard = {
 };
 const worksheetCards: WorksheetCard[] = [
   {
+    key: 'permissionToDance',
+    title: 'Permission To Dance',
+    description:
+      'BTS의 Permission To Dance를 배웁니다. 현재 작성 및 테스트 중입니다.',
+  },
+  {
     key: 'dragonSpine',
     title: 'Dragon Spine',
     description:
@@ -81,7 +87,7 @@ export default function WorksheetRoute() {
   useEffect(() => {
     (async () => {
       if (name !== undefined) {
-        const jsonUrl = `/sheetData/dragonSpine/data.json`;
+        const jsonUrl = `/sheetData/${name}/data.json`;
         const data = await fetch(jsonUrl);
         try {
           const nextWorksheet = (await data.json()) as WorksheetElem[];
@@ -197,7 +203,7 @@ function Worksheet({ worksheet }: WorksheetProps) {
   return (
     <Space
       direction="vertical"
-      size={0}
+      size={50}
       style={{
         width: '100%',
         marginTop: 30,
@@ -213,7 +219,6 @@ function Worksheet({ worksheet }: WorksheetProps) {
                   size={20}
                   style={{
                     width: '100%',
-                    marginBottom: 50,
                   }}
                 >
                   {content.content.map((lines, lineKey) => (
@@ -236,12 +241,7 @@ function Worksheet({ worksheet }: WorksheetProps) {
           }
           case ContentType.Sheet: {
             return (
-              <div
-                key={contentKey}
-                style={{
-                  marginBottom: 50,
-                }}
-              >
+              <div key={contentKey}>
                 <SegmentViewer
                   sheetKey={content.key}
                   title={content.title}
@@ -254,7 +254,14 @@ function Worksheet({ worksheet }: WorksheetProps) {
           case ContentType.Image: {
             return (
               <ResponsiveCont key={contentKey}>
-                <img alt={content.title} src={content.url}></img>
+                <img
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                  }}
+                  alt={content.title}
+                  src={content.url}
+                ></img>
               </ResponsiveCont>
             );
           }
