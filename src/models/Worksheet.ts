@@ -34,6 +34,7 @@ export enum StaffType {
   BothHands = 'BothHands',
 }
 export type EditorSheet = Content<ContentType.Sheet> & {
+  title: string;
   key: string;
   file: File | null;
   musicxml: string | null;
