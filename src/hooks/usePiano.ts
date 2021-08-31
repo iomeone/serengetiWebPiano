@@ -5,7 +5,7 @@ import { binaryKeysToNoteArray, Note } from 'utils/Note';
 import { useBinaryPressedKeys } from './useBinaryPressedKeys';
 import { useFrontAudioService } from './useFrontAudioService';
 import { useFrontMIDIAudio } from './useFrontMIDIAudio';
-import { useKeyboardMIDI } from './useKeyboardMIDI_';
+import { useKeyboardMIDI } from './useKeyboardMIDI';
 
 type PianoRes = {
   preloadWithGesture: () => void;
