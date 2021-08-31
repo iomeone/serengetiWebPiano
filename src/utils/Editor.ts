@@ -1,16 +1,27 @@
 import {
   ContentType,
-  EditorWorksheet,
   Image,
   Paragraph,
   Sheet,
-  StaffType,
   Worksheet,
   WorksheetElem,
 } from 'models/Worksheet';
 import JsZip from 'jszip';
 import FileSaver from 'file-saver';
 import { message } from 'antd';
+import {
+  EditorImage,
+  EditorParagraph,
+  EditorSheet,
+  EditorWorksheet,
+  StaffType,
+} from 'models/EditorWorksheet';
+import {
+  EditorJsonImage,
+  EditorJsonParagraph,
+  EditorJsonSheet,
+  EditorJsonWorksheet,
+} from 'models/EditorJsonWorksheet';
 
 type DownloadInfo = {
   filename: string;
@@ -58,11 +69,12 @@ export function downloadAsWorksheetFiles(
         }
         break;
       case ContentType.Sheet:
-        if (elem.file !== null) {
-          const filename = makeFilename(elem.key, elem.file);
+        if (elem.musicxml !== null) {
+          const blob = new Blob([elem.musicxml]);
+          const filename = `${elem.key}.musicxml`;
           downloadInfoList.push({
             filename,
-            blob: elem.file,
+            blob: blob,
           });
         }
     }
@@ -97,7 +109,7 @@ function makeWorksheet(editorWorksheet: EditorWorksheet): Worksheet | null {
         } as Image);
         break;
       case ContentType.Sheet:
-        if (editorElem.file === null) {
+        if (editorElem.musicxml === null) {
           return null;
         }
         res.push({
@@ -105,10 +117,82 @@ function makeWorksheet(editorWorksheet: EditorWorksheet): Worksheet | null {
           title: editorElem.title,
           key: editorElem.key,
           oneStaff: editorElem.staffType !== StaffType.BothHands,
-          path: makeFilename(editorElem.key, editorElem.file),
+          path: `${editorElem.key}.musicxml`,
         } as Sheet);
         break;
     }
   }
   return res;
+}
+
+export function editorToJson(
+  editorWorksheet: EditorWorksheet,
+): EditorJsonWorksheet | null {
+  return editorWorksheet.map((editorElem) => {
+    switch (editorElem.type) {
+      case ContentType.Paragraph:
+        return editorElem as EditorJsonParagraph;
+      case ContentType.Image:
+        if (editorElem.file === null) {
+          return {
+            title: editorElem.title,
+            type: ContentType.Image,
+            encoded: null,
+            filename: null,
+          } as EditorJsonImage;
+        } else {
+          return {
+            title: editorElem.title,
+            type: ContentType.Image,
+            filename: editorElem.file?.name ?? null,
+            encoded: encodeImageFile(editorElem.file),
+          } as EditorJsonImage;
+        }
+      case ContentType.Sheet:
+        return editorElem as EditorJsonSheet;
+    }
+  });
+}
+
+export function jsonToEditor(
+  jsonWorksheet: EditorJsonWorksheet,
+): EditorWorksheet | null {
+  return jsonWorksheet.map((jsonElem) => {
+    switch (jsonElem.type) {
+      case ContentType.Paragraph:
+        return jsonElem as EditorParagraph;
+      case ContentType.Image:
+        if (jsonElem.encoded === null) {
+          return {
+            type: ContentType.Image,
+            title: jsonElem.title,
+            file: null,
+            previewUrl: null,
+          } as EditorImage;
+        } else {
+          const file = makeImageFile(
+            jsonElem.filename as string,
+            jsonElem.encoded,
+          );
+          return {
+            type: ContentType.Image,
+            title: jsonElem.title,
+            file: file,
+            previewUrl: URL.createObjectURL(file),
+          } as EditorImage;
+        }
+      case ContentType.Sheet:
+        return jsonElem as EditorSheet;
+    }
+  });
+}
+
+// TODO: 함수 구현하기
+function makeImageFile(filename: string, encoded: string): File {
+  return new File(['decoded'], filename);
+}
+
+// TODO: 함수 구현하기
+function encodeImageFile(file: File): string {
+  return 'encoded';
 }
