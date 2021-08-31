@@ -1,4 +1,4 @@
-import { Button, message, Space, Typography } from 'antd';
+import { Button, Space, Typography } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
@@ -18,10 +18,6 @@ export default function ImageElementEditor({
   const { updateElem } = useEditor();
 
   const submit = (title: string) => {
-    if (title.length === 0) {
-      message.error('제목을 입력해주세요.');
-      return;
-    }
     updateElem(
       elemInd,
       produce(elem, (draft) => {

@@ -1,5 +1,5 @@
 import { EditOutlined } from '@ant-design/icons';
-import { Button, Input, Space, Typography } from 'antd';
+import { Button, Input, message, Space, Typography } from 'antd';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import Horizontal from './Horizontal';
@@ -31,6 +31,10 @@ export default function TextEditor({ tag, title, onSubmit }: Props) {
     setMyTitle(nextTitle);
   };
   const submit = () => {
+    if (title.length === 0) {
+      message.error('제목을 입력해주세요.');
+      return;
+    }
     onSubmit(myTitle);
     setIsEditing(false);
   };
