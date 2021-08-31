@@ -9,7 +9,7 @@ import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
 import { useEditor } from 'hooks/useEditor';
 import { ContentType, EditorWorksheetElem } from 'models/Worksheet';
-import { index, Indexed } from 'utils/List';
+import { index } from 'utils/List';
 import Horizontal from 'components/Horizontal';
 import ParagraphElementEditor from 'components/ParagraphElementEditor';
 import { useEffect } from 'react';
