@@ -4,8 +4,8 @@ import { Note, noteToMidiKeyNumber } from 'utils/Note';
 import { useBinaryPressedKeys } from './useBinaryPressedKeys';
 
 type KeyBoardMIDIRes = {
-  pressedKeys: Note[];
-  pressedBinaryKeys: boolean[];
+  pressedKeysByKeyboard: Note[];
+  pressedBinaryKeysByKeyboard: boolean[];
 };
 
 export const useKeyboardMIDI = (): KeyBoardMIDIRes => {
@@ -37,5 +37,8 @@ export const useKeyboardMIDI = (): KeyBoardMIDIRes => {
     };
   }, []);
 
-  return { pressedKeys, pressedBinaryKeys };
+  return {
+    pressedKeysByKeyboard: pressedKeys,
+    pressedBinaryKeysByKeyboard: pressedBinaryKeys,
+  };
 };
