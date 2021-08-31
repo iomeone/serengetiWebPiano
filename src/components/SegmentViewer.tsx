@@ -4,9 +4,8 @@ import {
   loadSheetWithUrlThunk,
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
-import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
