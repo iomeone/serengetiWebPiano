@@ -2,12 +2,17 @@ import produce from 'immer';
 import { action, ActionType } from 'typesafe-actions';
 import { EditorState } from 'modules/State';
 import inistialState from './initialState';
+import { ContentType } from 'models/Worksheet';
 import {
-  ContentType,
   EditorWorksheetElem,
   EditorWorksheet,
   StaffType,
-} from 'models/Worksheet';
+} from 'models/EditorWorksheet';
+
+export const LOAD_STATE = '@EDITOR/LOAD_STATE';
+export const loadState = (editorState: EditorState) =>
+  action(LOAD_STATE, { editorState });
+export type LoadState = ActionType<typeof loadState>;
 
 export const SET_TITLE = '@EDITOR/SET_TITLE';
 export const setTitle = (title: string) => action(SET_TITLE, { title });
@@ -44,6 +49,7 @@ export const redo = () => action(REDO, {});
 export type Redo = ActionType<typeof redo>;
 
 export type EditorActions =
+  | LoadState
   | SetTitle
   | AddWorksheetElem
   | UpdateWorksheetElem
@@ -57,6 +63,10 @@ export const editorReducer = (
   action: EditorActions,
 ): EditorState => {
   switch (action.type) {
+    case LOAD_STATE: {
+      const { payload } = action as LoadState;
+      return payload.editorState;
+    }
     case SET_TITLE: {
       const { payload } = action as SetTitle;
       return produce(state, (draft) => {
@@ -156,7 +166,6 @@ function makeElement(
       return {
         type: ContentType.Sheet,
         title: `New Sheet ${elemNum}`,
-        file: null,
         key: '',
         measureRange: [0, 0],
         musicxml: null,

@@ -1,10 +1,9 @@
-import {
-  ContentType,
-  EditorWorksheet,
-  EditorWorksheetElem,
-} from 'models/Worksheet';
+import { EditorJsonWorksheet } from 'models/EditorJsonWorksheet';
+import { EditorWorksheet, EditorWorksheetElem } from 'models/EditorWorksheet';
+import { ContentType } from 'models/Worksheet';
 import {
   setTitle as setTitleActionCreator,
+  loadState,
   addWorksheetElem,
   deleteWorksheetElem,
   updateWorksheetElem,
@@ -12,15 +11,24 @@ import {
   undo as undoActionCreator,
   arrangeWorksheetElem,
 } from 'modules/editor';
-import { State } from 'modules/State';
+import { EditorState, State } from 'modules/State';
 import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { editorToJson, jsonToEditor } from 'utils/Editor';
+
+export enum LoadRes {
+  Error = 'Error',
+  Success = 'Success',
+  NoData = 'NoData',
+}
 
 type UseEditorRes = {
   currentState: EditorWorksheet | null;
   redoable: boolean;
   undoable: boolean;
   title: string;
+  loadEditor: () => LoadRes;
+  saveEditor: () => boolean;
   setTitle: (nextTitle: string) => void;
   redo: () => void;
   undo: () => void;
@@ -38,6 +46,56 @@ export function useEditor(): UseEditorRes {
   );
 
   const dispatch = useDispatch();
+  const loadEditor = () => {
+    if (localStorage.getItem('saved') !== 'true') return LoadRes.NoData;
+
+    const packStr = localStorage.getItem('editor');
+    if (packStr === null) return LoadRes.Error;
+    try {
+      const pack = JSON.parse(packStr) as Pack;
+
+      const worksheetHistory: EditorWorksheet[] = [];
+      for (const worksheet of pack.worksheetHistory) {
+        const editorWorksheet = jsonToEditor(worksheet);
+        if (editorWorksheet === null) {
+          console.log(worksheet);
+          return LoadRes.Error;
+        }
+        worksheetHistory.push(editorWorksheet);
+      }
+      const nextEditor: EditorState = {
+        ...pack,
+        worksheetHistory,
+      };
+      dispatch(loadState(nextEditor));
+    } catch (e) {
+      console.log(e);
+      return LoadRes.Error;
+    }
+
+    return LoadRes.Success;
+  };
+  const saveEditor = () => {
+    const jsonWorksheets: EditorJsonWorksheet[] = [];
+    for (const worksheet of editor.worksheetHistory) {
+      const jsonObj = editorToJson(worksheet);
+      if (jsonObj === null) return false;
+      jsonWorksheets.push(jsonObj);
+    }
+    try {
+      const pack: Pack = {
+        ...editor,
+        worksheetHistory: jsonWorksheets,
+      };
+      const packStr = JSON.stringify(pack);
+      localStorage.setItem('editor', packStr);
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+    localStorage.setItem('saved', 'true');
+    return true;
+  };
   const addElem = (contentType: ContentType) => {
     dispatch(addWorksheetElem(contentType));
   };
@@ -65,6 +123,8 @@ export function useEditor(): UseEditorRes {
     redoable: editor.redoable,
     undoable: editor.undoable,
     title: editor.title,
+    loadEditor,
+    saveEditor,
     setTitle,
     addElem,
     updateElem,
@@ -74,3 +134,11 @@ export function useEditor(): UseEditorRes {
     redo,
   };
 }
+
+type Pack = {
+  worksheetHistory: EditorJsonWorksheet[];
+  title: string;
+  currentInd: number | null;
+  undoable: boolean;
+  redoable: boolean;
+};
