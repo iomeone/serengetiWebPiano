@@ -50,6 +50,11 @@ const items: RouteCard[] = [
     path: '/editor',
     description: 'Worksheet를 쉽게 생성하기 위한 도구 개발',
   },
+  {
+    title: "OSMD Editor",
+    path:"/osmdEditor",
+    description: "악보 자르기 도구 개발"
+  }
 ];
 
 export default function MainRoute() {

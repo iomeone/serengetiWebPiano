@@ -20,6 +20,7 @@ import PianoRollRoute from 'routes/PianoRollRoute';
 import WorksheetRoute from 'routes/WorksheetRoute';
 import { Size } from 'constants/layout';
 import EditorRoute from 'routes/EditorRoute';
+import OSMDEditor from 'routes/OSMDEditorRoute'
 
 const hMargin = Size.hMargin;
 
@@ -102,6 +103,11 @@ const routeMap: BreadCrumbMap = {
   '/editor': {
     routeName: 'Editor',
     component: EditorRoute,
+    exact: true,
+  },
+  '/osmdEditor': {
+    routeName: 'OSMD Editor',
+    component: OSMDEditor,
     exact: true,
   },
 };
