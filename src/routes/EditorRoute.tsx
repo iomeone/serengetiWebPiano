@@ -188,9 +188,9 @@ function Header() {
   };
 
   const [saved, setSaved] = useState(true);
-  const save = () => {
+  const save = async () => {
     if (!saved && currentState !== null) {
-      if (saveEditor()) {
+      if (await saveEditor()) {
         message.success('저장되었습니다.');
         setSaved(true);
       } else {
