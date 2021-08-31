@@ -27,6 +27,10 @@ type DownloadInfo = {
   filename: string;
   blob: Blob;
 };
+type EncodedImageInfo = {
+  filename: string;
+  encoded: string;
+};
 
 const exportZip = (title: string, infoList: DownloadInfo[]) => {
   const zip = JsZip();
@@ -125,33 +129,40 @@ function makeWorksheet(editorWorksheet: EditorWorksheet): Worksheet | null {
   return res;
 }
 
-export function editorToJson(
+export async function editorToJson(
   editorWorksheet: EditorWorksheet,
-): EditorJsonWorksheet | null {
-  return editorWorksheet.map((editorElem) => {
+): Promise<EditorJsonWorksheet> {
+  const res: EditorJsonWorksheet = [];
+
+  for (const editorElem of editorWorksheet) {
     switch (editorElem.type) {
       case ContentType.Paragraph:
-        return editorElem as EditorJsonParagraph;
+        res.push(editorElem as EditorJsonParagraph);
+        break;
       case ContentType.Image:
         if (editorElem.file === null) {
-          return {
+          res.push({
             title: editorElem.title,
             type: ContentType.Image,
             encoded: null,
             filename: null,
-          } as EditorJsonImage;
+          } as EditorJsonImage);
         } else {
-          return {
+          const info = await encodeImageFile(editorElem.file);
+          res.push({
             title: editorElem.title,
             type: ContentType.Image,
-            filename: editorElem.file?.name ?? null,
-            encoded: encodeImageFile(editorElem.file),
-          } as EditorJsonImage;
+            filename: info.filename,
+            encoded: info.encoded,
+          } as EditorJsonImage);
         }
+        break;
       case ContentType.Sheet:
-        return editorElem as EditorJsonSheet;
+        res.push(editorElem as EditorJsonSheet);
+        break;
     }
-  });
+  }
+  return res;
 }
 
 export function jsonToEditor(
@@ -187,12 +198,20 @@ export function jsonToEditor(
   });
 }
 
-// TODO: 함수 구현하기
-function makeImageFile(filename: string, encoded: string): File {
-  return new File(['decoded'], filename);
+async function encodeImageFile(file: File): Promise<EncodedImageInfo> {
+  const fileText = await file.text();
+  return {
+    encoded: btoa(fileText),
+    filename: file.name,
+  };
 }
 
-// TODO: 함수 구현하기
-function encodeImageFile(file: File): string {
-  return 'encoded';
+function makeImageFile(filename: string, encoded: string): File {
+  const binary = atob(encoded);
+  let n = binary.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = binary.charCodeAt(n);
+  }
+  return new File([u8arr], filename);
 }
