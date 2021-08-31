@@ -31,7 +31,7 @@ export default function TextEditor({ tag, title, onSubmit }: Props) {
     setMyTitle(nextTitle);
   };
   const submit = () => {
-    if (title.length === 0) {
+    if (myTitle.length === 0) {
       message.error('제목을 입력해주세요.');
       return;
     }
