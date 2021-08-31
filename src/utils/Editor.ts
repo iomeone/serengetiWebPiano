@@ -199,9 +199,10 @@ export function jsonToEditor(
 }
 
 async function encodeImageFile(file: File): Promise<EncodedImageInfo> {
-  const fileText = await file.text();
+  const arrayBuffer = await file.arrayBuffer();
+  const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
   return {
-    encoded: btoa(fileText),
+    encoded: base64String,
     filename: file.name,
   };
 }
