@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
+import { Articulation, NotePlayOption } from 'services/IAudioService';
 import { keyBoardToNote } from 'utils/KeyMap';
 import { Note, noteToMidiKeyNumber } from 'utils/Note';
 import { useBinaryPressedKeys } from './useBinaryPressedKeys';
 
 type KeyBoardMIDIRes = {
-  pressedKeys: Note[];
-  pressedBinaryKeys: boolean[];
+  pressedKeysByKeyboard: Note[];
+  pressedBinaryKeysByKeyboard: boolean[];
 };
 
-export const useKeyboardMIDI = (): KeyBoardMIDIRes => {
+export const useKeyboardMIDI = (play: ((note: NotePlayOption)=>Promise<void>) | null): KeyBoardMIDIRes => {
   const { pressedKeys, pressedBinaryKeys, onKeyDown, onKeyUp } =
     useBinaryPressedKeys();
 
@@ -17,6 +18,13 @@ export const useKeyboardMIDI = (): KeyBoardMIDIRes => {
       const note = keyBoardToNote(key);
       if (note !== null) {
         onKeyDown(noteToMidiKeyNumber(note));
+        if(play !== null)
+        play({
+          articulation: Articulation.Legato,
+          duration: 1,
+          gain: 4,
+          midiKeyNumber:noteToMidiKeyNumber(note),
+        });
       }
     }
   };
@@ -37,5 +45,8 @@ export const useKeyboardMIDI = (): KeyBoardMIDIRes => {
     };
   }, []);
 
-  return { pressedKeys, pressedBinaryKeys };
+  return {
+    pressedKeysByKeyboard: pressedKeys,
+    pressedBinaryKeysByKeyboard: pressedBinaryKeys,
+  };
 };
