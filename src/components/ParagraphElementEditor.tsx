@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Input, List, message, Space, Typography } from 'antd';
+import { Button, Input, List, message, Space, Typography } from 'antd';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
 import { Paragraph } from 'models/Worksheet';
