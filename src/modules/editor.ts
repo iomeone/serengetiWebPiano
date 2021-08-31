@@ -105,18 +105,16 @@ export const editorReducer = (
           const elem = draft[payload.elemInd] ?? null;
           if (elem === null) return;
 
-          const res = [...draft];
           if (payload.elemInd < payload.destInd) {
             for (let i = payload.elemInd; i < payload.destInd; i++) {
-              res[i] = res[i + 1];
+              draft[i] = draft[i + 1];
             }
           } else {
             for (let i = payload.elemInd; i > payload.destInd; i--) {
-              res[i] = res[i - 1];
+              draft[i] = draft[i - 1];
             }
           }
-          res[payload.destInd] = elem;
-          draft = res;
+          draft[payload.destInd] = elem;
         });
       });
     }
