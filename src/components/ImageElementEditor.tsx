@@ -2,7 +2,7 @@ import { Button, Space, Typography } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorImage } from 'models/Worksheet';
+import { EditorImage } from 'models/EditorWorksheet';
 import ImageUploadArea from './ImageUploadArea';
 import TextEditor from './TextEditor';
 

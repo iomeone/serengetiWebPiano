@@ -7,7 +7,8 @@ import {
 import { Button, Space } from 'antd';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorParagraph, Paragraph } from 'models/Worksheet';
+import { EditorParagraph } from 'models/EditorWorksheet';
+import { Paragraph } from 'models/Worksheet';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
