@@ -121,7 +121,7 @@ function Header() {
         return;
       }
 
-      downloadAsWorksheetFiles(currentState);
+      downloadAsWorksheetFiles(title, currentState);
       message.success('Worksheet 다운로드 완료');
     }
   };

@@ -7,19 +7,21 @@ type DownloadInfo = {
   blob: Blob;
 };
 
-const exportZip = (infoList: DownloadInfo[]) => {
+const exportZip = (title: string, infoList: DownloadInfo[]) => {
   const zip = JsZip();
   infoList.forEach((info) => {
     zip.file(info.filename, info.blob);
   });
   zip.generateAsync({ type: 'blob' }).then((zipFile) => {
-    const currentDate = new Date().getTime();
-    const fileName = `combined-${currentDate}.zip`;
+    const fileName = `${title}.zip`;
     return FileSaver.saveAs(zipFile, fileName);
   });
 };
 
-export function downloadAsWorksheetFiles(editorWorksheet: EditorWorksheet) {
+export function downloadAsWorksheetFiles(
+  title: string,
+  editorWorksheet: EditorWorksheet,
+) {
   const downloadInfoList: DownloadInfo[] = [];
   editorWorksheet.forEach((elem) => {
     switch (elem.type) {
@@ -35,5 +37,5 @@ export function downloadAsWorksheetFiles(editorWorksheet: EditorWorksheet) {
         break;
     }
   });
-  exportZip(downloadInfoList);
+  exportZip(title, downloadInfoList);
 }
