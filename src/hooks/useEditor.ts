@@ -1,5 +1,10 @@
-import { ContentType, Worksheet, WorksheetElem } from 'models/Worksheet';
 import {
+  ContentType,
+  EditorWorksheet,
+  EditorWorksheetElem,
+} from 'models/Worksheet';
+import {
+  setTitle as setTitleActionCreator,
   addWorksheetElem,
   deleteWorksheetElem,
   updateWorksheetElem,
@@ -12,20 +17,22 @@ import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 type UseEditorRes = {
-  currentState: Worksheet | null;
+  currentState: EditorWorksheet | null;
   redoable: boolean;
   undoable: boolean;
+  title: string;
+  setTitle: (nextTitle: string) => void;
   redo: () => void;
   undo: () => void;
   addElem: (contentType: ContentType) => void;
-  updateElem: (elemInd: number, nextElem: WorksheetElem) => void;
+  updateElem: (elemInd: number, nextElem: EditorWorksheetElem) => void;
   deleteElem: (elemInd: number) => void;
   arrangeElem: (elemInd: number, destInd: number) => void;
 };
 
 export function useEditor(): UseEditorRes {
   const editor = useSelector((state: State) => state.editor);
-  const currentState: Worksheet | null = useMemo(
+  const currentState: EditorWorksheet | null = useMemo(
     () => editor.worksheetHistory[editor.currentInd ?? 0] ?? null,
     [editor.currentInd, editor.worksheetHistory],
   );
@@ -34,7 +41,7 @@ export function useEditor(): UseEditorRes {
   const addElem = (contentType: ContentType) => {
     dispatch(addWorksheetElem(contentType));
   };
-  const updateElem = (elemInd: number, nextElem: WorksheetElem) => {
+  const updateElem = (elemInd: number, nextElem: EditorWorksheetElem) => {
     dispatch(updateWorksheetElem(elemInd, nextElem));
   };
   const deleteElem = (elemInd: number) => {
@@ -49,11 +56,16 @@ export function useEditor(): UseEditorRes {
   const arrangeElem = (elemInd: number, destInd: number) => {
     dispatch(arrangeWorksheetElem(elemInd, destInd));
   };
+  const setTitle = (nextTitle: string) => {
+    dispatch(setTitleActionCreator(nextTitle));
+  };
 
   return {
     currentState,
     redoable: editor.redoable,
     undoable: editor.undoable,
+    title: editor.title,
+    setTitle,
     addElem,
     updateElem,
     deleteElem,

@@ -25,5 +25,26 @@ export type Image = Content<ContentType.Image> & {
 };
 
 export type WorksheetElem = Paragraph | Sheet | Image;
-
 export type Worksheet = WorksheetElem[];
+
+export type EditorParagraph = Paragraph;
+export enum StaffType {
+  RightHand = 'RightHand',
+  LeftHand = 'LeftHand',
+  BothHands = 'BothHands',
+}
+export type EditorSheet = Content<ContentType.Sheet> & {
+  key: string;
+  file: File | null;
+  musicxml: string | null;
+  staffType: StaffType;
+  measureRange: [number, number];
+};
+export type EditorImage = Content<ContentType.Image> & {
+  title: string;
+  file: File | null;
+  previewUrl: string | null;
+};
+
+export type EditorWorksheetElem = EditorParagraph | EditorSheet | EditorImage;
+export type EditorWorksheet = EditorWorksheetElem[];

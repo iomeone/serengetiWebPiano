@@ -1,4 +1,8 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import { MdUndo, MdRedo } from 'react-icons/md';
 import {
   Button,
@@ -13,17 +17,21 @@ import {
 import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
 import { useEditor } from 'hooks/useEditor';
-import { ContentType, WorksheetElem } from 'models/Worksheet';
+import { ContentType, EditorWorksheetElem } from 'models/Worksheet';
 import { index, Indexed } from 'utils/List';
 import Horizontal from 'components/Horizontal';
 import ParagraphElementEditor from 'components/ParagraphElementEditor';
 import { useEffect } from 'react';
 import { useControlKeys } from 'hooks/useControlKeys';
+import ImageElementEditor from 'components/ImageElementEditor';
+import TextEditor from 'components/TextEditor';
+import { setTitle } from 'modules/editor';
+import { downloadAsWorksheetFiles } from 'utils/Editor';
 
 const hMargin = Size.hMargin;
 
 export default function EditorRoute() {
-  const { currentState, addElem, deleteElem } = useEditor();
+  const { currentState, addElem, deleteElem, title, setTitle } = useEditor();
   return (
     <ResponsiveCont>
       <Space
@@ -36,12 +44,13 @@ export default function EditorRoute() {
         }}
       >
         <Header></Header>
+        <TextEditor tag="제목" title={title} onSubmit={setTitle}></TextEditor>
         {currentState === null || currentState.length === 0 ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
           <List
             dataSource={index(currentState)}
-            renderItem={(item: Indexed<WorksheetElem>) => (
+            renderItem={(item: Indexed<EditorWorksheetElem>) => (
               <List.Item>
                 <Card
                   style={{
@@ -102,8 +111,20 @@ export default function EditorRoute() {
 }
 
 function Header() {
-  const { undo, redo, undoable, redoable } = useEditor();
+  const { currentState, undo, redo, undoable, redoable, title } = useEditor();
   const { ctrlZ, ctrlY } = useControlKeys();
+
+  const download = () => {
+    if (currentState !== null) {
+      if (title.length === 0) {
+        message.error('제목을 입력해주세요');
+        return;
+      }
+
+      downloadAsWorksheetFiles(currentState);
+      message.success('Worksheet 다운로드 완료');
+    }
+  };
 
   useEffect(() => {
     if (ctrlZ) {
@@ -166,6 +187,18 @@ function Header() {
             <MdRedo></MdRedo>
           </Button>
         </Tooltip>
+        <Tooltip title="Download">
+          <Button
+            disabled={currentState === null}
+            shape="circle"
+            type="text"
+            onClick={() => {
+              download();
+            }}
+          >
+            <DownloadOutlined></DownloadOutlined>
+          </Button>
+        </Tooltip>
       </Space>
     </Horizontal>
   );
@@ -185,7 +218,7 @@ function contentTypeName(contentType: ContentType): string {
 }
 
 type WorksheetElementEditorProps = {
-  elem: WorksheetElem;
+  elem: EditorWorksheetElem;
   elemInd: number;
 };
 function WorksheetElementEditor({
@@ -203,6 +236,8 @@ function WorksheetElementEditor({
     case ContentType.Sheet:
       return <div></div>;
     case ContentType.Image:
-      return <div></div>;
+      return (
+        <ImageElementEditor elem={elem} elemInd={elemInd}></ImageElementEditor>
+      );
   }
 }
