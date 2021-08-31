@@ -18,6 +18,7 @@ const inistialState: State = {
     widthMode: WidthMode.Desktop,
   },
   editor: {
+    title: '',
     currentInd: null,
     worksheetHistory: [[]],
     undoable: false,

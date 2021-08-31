@@ -2,7 +2,16 @@ import produce from 'immer';
 import { action, ActionType } from 'typesafe-actions';
 import { EditorState } from 'modules/State';
 import inistialState from './initialState';
-import { ContentType, WorksheetElem, Worksheet } from 'models/Worksheet';
+import {
+  ContentType,
+  EditorWorksheetElem,
+  EditorWorksheet,
+  StaffType,
+} from 'models/Worksheet';
+
+export const SET_TITLE = '@EDITOR/SET_TITLE';
+export const setTitle = (title: string) => action(SET_TITLE, { title });
+export type SetTitle = ActionType<typeof setTitle>;
 
 export const ADD_WORKSHEET_ELEM = '@EDITOR/ADD_WORKSHEET_ELEM';
 export const addWorksheetElem = (contentType: ContentType) =>
@@ -10,8 +19,10 @@ export const addWorksheetElem = (contentType: ContentType) =>
 export type AddWorksheetElem = ActionType<typeof addWorksheetElem>;
 
 export const UPDATE_WORKSHEET_ELEM = '@EDITOR/UPDATE_WORKSHEET_ELEM';
-export const updateWorksheetElem = (elemInd: number, nextElem: WorksheetElem) =>
-  action(UPDATE_WORKSHEET_ELEM, { elemInd, nextElem });
+export const updateWorksheetElem = (
+  elemInd: number,
+  nextElem: EditorWorksheetElem,
+) => action(UPDATE_WORKSHEET_ELEM, { elemInd, nextElem });
 export type UpdateWorksheetElem = ActionType<typeof updateWorksheetElem>;
 
 export const DELETE_WORKSHEET_ELEM = '@EDITOR/DELETE_WORKSHEET_ELEM';
@@ -33,6 +44,7 @@ export const redo = () => action(REDO, {});
 export type Redo = ActionType<typeof redo>;
 
 export type EditorActions =
+  | SetTitle
   | AddWorksheetElem
   | UpdateWorksheetElem
   | DeleteWorksheetElem
@@ -45,10 +57,19 @@ export const editorReducer = (
   action: EditorActions,
 ): EditorState => {
   switch (action.type) {
+    case SET_TITLE: {
+      const { payload } = action as SetTitle;
+      return produce(state, (draft) => {
+        draft.title = payload.title;
+      });
+    }
     case ADD_WORKSHEET_ELEM: {
       const { payload } = action as AddWorksheetElem;
       return undoAndRedoableChangeState(state, (currentState) => {
-        const elem: WorksheetElem | null = makeElement(payload.contentType, 0);
+        const elem: EditorWorksheetElem | null = makeElement(
+          payload.contentType,
+          currentState?.length ?? 0,
+        );
         if (elem === null) throw new Error('Failed to make new element');
         if (currentState === null) {
           return [elem];
@@ -126,7 +147,7 @@ export const editorReducer = (
 function makeElement(
   contentType: ContentType,
   elemNum: number,
-): WorksheetElem | null {
+): EditorWorksheetElem | null {
   switch (contentType) {
     case ContentType.Paragraph:
       return {
@@ -136,15 +157,18 @@ function makeElement(
     case ContentType.Sheet:
       return {
         type: ContentType.Sheet,
-        key: '',
-        oneStaff: false,
-        path: '',
         title: `New Sheet ${elemNum}`,
+        file: null,
+        key: '',
+        measureRange: [0, 0],
+        musicxml: null,
+        staffType: StaffType.BothHands,
       };
     case ContentType.Image:
       return {
         type: ContentType.Image,
-        path: '',
+        file: null,
+        previewUrl: null,
         title: `New Image ${elemNum}`,
       };
     default:
@@ -155,8 +179,8 @@ function makeElement(
 function undoAndRedoableChangeState(
   state: EditorState,
   makeNextWorksheetState: (
-    currentWorksheetState: Worksheet | null,
-  ) => Worksheet | null,
+    currentWorksheetState: EditorWorksheet | null,
+  ) => EditorWorksheet | null,
 ) {
   return produce(state, (draft) => {
     const currentWorksheetState =

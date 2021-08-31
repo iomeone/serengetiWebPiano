@@ -1,16 +1,14 @@
 import { InboxOutlined } from '@ant-design/icons';
 import { message, Modal, Space, Typography, Upload } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
-import { loadSheetThunk } from 'modules/audio';
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 type Props = {
   visible: boolean;
   onVisibleChange: (visible: boolean) => void;
   file?: UploadFile<any> | null;
   onFileChange?: (file: UploadFile<any> | null) => void;
-  sheetKey: string;
+  onLoadFile: (file: UploadFile<any>) => void;
 };
 
 export default function LoadSheetModal({
@@ -18,7 +16,7 @@ export default function LoadSheetModal({
   onVisibleChange,
   file,
   onFileChange,
-  sheetKey,
+  onLoadFile,
 }: Props) {
   const [myFile, setMyFile] = useState<UploadFile<any> | null>(null);
 
@@ -36,20 +34,18 @@ export default function LoadSheetModal({
     [setMyFile, onFileChange],
   );
 
-  const dispatch = useDispatch();
-
   return (
     <Modal
       visible={visible}
       title="MusicXML 파일 업로드"
       onOk={() => {
-        if (myFile === null) {
+        if (myFile === null || myFile === undefined) {
           message.error('업로드 완료 후 버튼을 눌러주세요.');
           return;
         }
 
         onVisibleChange(false);
-        dispatch(loadSheetThunk(sheetKey, myFile.originFileObj as File));
+        onLoadFile(myFile);
       }}
       onCancel={() => {
         onVisibleChange(false);

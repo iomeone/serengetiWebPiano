@@ -52,6 +52,7 @@ export function useControlKeys(): UseControlKeysRes {
       window.removeEventListener('keydown', keyDownHandler);
       window.removeEventListener('keyup', keyUpHandler);
     };
+    //eslint-disable-next-line
   }, []);
 
   return {
