@@ -25,7 +25,6 @@ import { useEffect } from 'react';
 import { useControlKeys } from 'hooks/useControlKeys';
 import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
-import { setTitle } from 'modules/editor';
 import { downloadAsWorksheetFiles } from 'utils/Editor';
 
 const hMargin = Size.hMargin;
