@@ -16,6 +16,10 @@ type DownloadInfo = {
   filename: string;
   blob: Blob;
 };
+type EncodedImageInfo = {
+  filename: string;
+  encoded: string;
+}
 
 const exportZip = (title: string, infoList: DownloadInfo[]) => {
   const zip = JsZip();
@@ -111,4 +115,22 @@ function makeWorksheet(editorWorksheet: EditorWorksheet): Worksheet | null {
     }
   }
   return res;
+}
+
+export async function encodeImageFile(file: File):Promise<EncodedImageInfo>{
+  const fileText = await file.text();
+  return {
+    encoded:btoa(fileText),
+    filename: file.name
+  };
+}
+
+export function makeImageFile(filename: string, encoded: string): File {
+  const binary = atob(encoded);
+  let n = binary.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = binary.charCodeAt(n);
+  }
+  return new File([u8arr], filename);
 }
