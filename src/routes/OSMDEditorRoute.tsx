@@ -7,7 +7,7 @@ import { useState } from 'react';
 export default function OSMDEditorRoute() {
   const [loadModal, setLoadModal] = useState(false);
   const [sheetFile, setSheetFile] = useState<File | null>(null);
-   
+
   return (
     <>
       <LoadSheetModal
@@ -19,9 +19,6 @@ export default function OSMDEditorRoute() {
       ></LoadSheetModal>
       <ResponsiveCont>
         <Button 
-            style={{
-                margin:"auto 0px"
-            }}
           onClick={() => {
             setLoadModal(true);
           }}
