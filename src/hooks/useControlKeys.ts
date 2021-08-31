@@ -8,6 +8,7 @@ type UseControlKeysRes = {
   keys: KeyMap;
   ctrlZ: boolean;
   ctrlY: boolean;
+  ctrlS: boolean;
 };
 
 export function useControlKeys(): UseControlKeysRes {
@@ -26,9 +27,14 @@ export function useControlKeys(): UseControlKeysRes {
     }));
   };
 
-  const keyDownHandler = ({ key, repeat }: KeyboardEvent) => {
-    if (!repeat) {
-      onKeyDown(key);
+  const keyDownHandler = (e: KeyboardEvent) => {
+    if (!e.repeat) {
+      onKeyDown(e.key);
+    }
+
+    if (e.ctrlKey && e.code === 'KeyS') {
+      e.preventDefault();
+      e.stopPropagation();
     }
   };
 
@@ -36,14 +42,11 @@ export function useControlKeys(): UseControlKeysRes {
     onKeyUp(key);
   };
 
-  const ctrlZ = useMemo(
-    () => (keys['Control'] ?? false) && (keys['z'] ?? false),
-    [keys],
-  );
-  const ctrlY = useMemo(
-    () => (keys['Control'] ?? false) && (keys['y'] ?? false),
-    [keys],
-  );
+  const control = useMemo(() => keys['Control'] ?? false, [keys]);
+
+  const ctrlS = useMemo(() => control && (keys['s'] ?? false), [keys, control]);
+  const ctrlZ = useMemo(() => control && (keys['z'] ?? false), [keys, control]);
+  const ctrlY = useMemo(() => control && (keys['y'] ?? false), [keys, control]);
 
   useEffect(() => {
     window.addEventListener('keydown', keyDownHandler);
@@ -57,6 +60,7 @@ export function useControlKeys(): UseControlKeysRes {
 
   return {
     keys,
+    ctrlS,
     ctrlZ,
     ctrlY,
   };
