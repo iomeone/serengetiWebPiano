@@ -68,7 +68,7 @@ export const editorReducer = (
       return undoAndRedoableChangeState(state, (currentState) => {
         const elem: EditorWorksheetElem | null = makeElement(
           payload.contentType,
-          0,
+          currentState?.length ?? 0,
         );
         if (elem === null) throw new Error('Failed to make new element');
         if (currentState === null) {
@@ -157,6 +157,7 @@ function makeElement(
     case ContentType.Sheet:
       return {
         type: ContentType.Sheet,
+        title: `New Sheet ${elemNum}`,
         file: null,
         key: '',
         measureRange: [0, 0],
