@@ -145,7 +145,13 @@ export const noteArrayToBinaryKeys = (notes: Note[]):boolean[] =>{
   });
   return binaryKeys;
 }
-
+export const binaryKeysToNoteArray = (binaryKeys: boolean[]):Note[] => {
+  const result:Note[] = [];
+  binaryKeys.forEach((value,index)=>{
+    if(value) result.push(midiKeyNumberToNote(index + noteA0MidiKeyNumber));
+  })
+  return result;
+}
 export const isEqualNoteArray = (a: Note[],b: Note[]) =>{
   const binaryKeys_A = noteArrayToBinaryKeys(a); 
   const binaryKeys_B = noteArrayToBinaryKeys(b);
