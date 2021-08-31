@@ -2,22 +2,26 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   PlusOutlined,
+  SaveOutlined,
 } from '@ant-design/icons';
 import { MdUndo, MdRedo } from 'react-icons/md';
 import { Button, Card, Empty, message, Space, Tooltip, Typography } from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
-import { useEditor } from 'hooks/useEditor';
-import { ContentType, EditorWorksheetElem } from 'models/Worksheet';
+import { LoadRes, useEditor } from 'hooks/useEditor';
+import { ContentType } from 'models/Worksheet';
 import { index } from 'utils/List';
 import Horizontal from 'components/Horizontal';
 import ParagraphElementEditor from 'components/ParagraphElementEditor';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useControlKeys } from 'hooks/useControlKeys';
 import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
 import { downloadAsWorksheetFiles } from 'utils/Editor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { EditorWorksheetElem } from 'models/EditorWorksheet';
+import { useHistory } from 'react-router-dom';
+import { IoRefreshOutline } from 'react-icons/io5';
 
 const hMargin = Size.hMargin;
 
@@ -158,8 +162,18 @@ export default function EditorRoute() {
 }
 
 function Header() {
-  const { currentState, undo, redo, undoable, redoable, title } = useEditor();
-  const { ctrlZ, ctrlY } = useControlKeys();
+  const {
+    currentState,
+    undo,
+    redo,
+    undoable,
+    redoable,
+    title,
+    loadEditor,
+    saveEditor,
+  } = useEditor();
+  const { ctrlS, ctrlZ, ctrlY } = useControlKeys();
+  const history = useHistory();
 
   const download = () => {
     if (currentState !== null) {
@@ -172,6 +186,41 @@ function Header() {
       message.success('Worksheet 다운로드 완료');
     }
   };
+
+  const [saved, setSaved] = useState(true);
+  const save = () => {
+    if (!saved && currentState !== null) {
+      if (saveEditor()) {
+        message.success('저장되었습니다.');
+        setSaved(true);
+      } else {
+        message.error('저장 실패');
+      }
+    }
+  };
+
+  useEffect(() => {
+    setSaved(false);
+  }, [currentState]);
+
+  useEffect(() => {
+    const res = loadEditor();
+    switch (res) {
+      case LoadRes.Success:
+        message.success('로드 성공');
+        break;
+      case LoadRes.Error:
+        message.error('로드 실패');
+        break;
+    }
+    setSaved(true);
+  }, []);
+
+  useEffect(() => {
+    if (ctrlS) {
+      save();
+    }
+  }, [ctrlS]);
 
   useEffect(() => {
     if (ctrlZ) {
@@ -210,7 +259,7 @@ function Header() {
         Worksheet Editor
       </Typography.Text>
       <Space direction="horizontal" size={8}>
-        <Tooltip title="Undo">
+        <Tooltip title="Undo (ctrl + z)">
           <Button
             disabled={!undoable}
             shape="circle"
@@ -222,7 +271,7 @@ function Header() {
             <MdUndo></MdUndo>
           </Button>
         </Tooltip>
-        <Tooltip title="Redo">
+        <Tooltip title="Redo (ctrl + y)">
           <Button
             disabled={!redoable}
             shape="circle"
@@ -232,6 +281,18 @@ function Header() {
             }}
           >
             <MdRedo></MdRedo>
+          </Button>
+        </Tooltip>
+        <Tooltip title="Save (ctrl + s)">
+          <Button
+            disabled={saved === true}
+            shape="circle"
+            type="text"
+            onClick={() => {
+              save();
+            }}
+          >
+            <SaveOutlined></SaveOutlined>
           </Button>
         </Tooltip>
         <Tooltip title="Download">
@@ -244,6 +305,17 @@ function Header() {
             }}
           >
             <DownloadOutlined></DownloadOutlined>
+          </Button>
+        </Tooltip>
+        <Tooltip title="Refresh (ctrl + shfit + r)">
+          <Button
+            shape="circle"
+            type="text"
+            onClick={() => {
+              history.go(0);
+            }}
+          >
+            <IoRefreshOutline></IoRefreshOutline>
           </Button>
         </Tooltip>
       </Space>
