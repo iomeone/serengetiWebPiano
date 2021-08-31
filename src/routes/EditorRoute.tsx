@@ -4,16 +4,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import { MdUndo, MdRedo } from 'react-icons/md';
-import {
-  Button,
-  Card,
-  Empty,
-  List,
-  message,
-  Space,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Button, Card, Empty, message, Space, Tooltip, Typography } from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
 import { useEditor } from 'hooks/useEditor';
@@ -26,11 +17,34 @@ import { useControlKeys } from 'hooks/useControlKeys';
 import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
 import { downloadAsWorksheetFiles } from 'utils/Editor';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const hMargin = Size.hMargin;
 
+const grid = 4;
+
+const getItemStyle = (isDragging: boolean, draggableStyle: any) => ({
+  // some basic styles to make the items look a bit nicer
+  userSelect: 'none',
+  padding: grid * 2,
+  margin: `0 0 ${grid}px 0`,
+
+  // change background colour if dragging
+  background: isDragging ? '#ffffff88' : 'transparent',
+
+  // styles we need to apply on draggables
+  ...draggableStyle,
+});
+
+const getListStyle = (isDraggingOver: boolean) => ({
+  background: isDraggingOver ? '#e6f7ff88' : 'transparent',
+  padding: grid,
+  width: '100%',
+});
+
 export default function EditorRoute() {
-  const { currentState, addElem, deleteElem, title, setTitle } = useEditor();
+  const { currentState, addElem, deleteElem, title, setTitle, arrangeElem } =
+    useEditor();
   return (
     <ResponsiveCont>
       <Space
@@ -47,39 +61,73 @@ export default function EditorRoute() {
         {currentState === null || currentState.length === 0 ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
-          <List
-            dataSource={index(currentState)}
-            renderItem={(item: Indexed<EditorWorksheetElem>) => (
-              <List.Item>
-                <Card
-                  style={{
-                    width: '100%',
-                  }}
-                  extra={
-                    <Button
-                      type="text"
-                      shape="circle"
-                      onClick={() => {
-                        deleteElem(item.key);
-                      }}
-                    >
-                      <DeleteOutlined></DeleteOutlined>
-                    </Button>
-                  }
-                  title={
-                    <Typography.Text>
-                      {contentTypeName(item.content.type)}
-                    </Typography.Text>
-                  }
+          <DragDropContext
+            onDragEnd={(result) => {
+              if (!result.destination) {
+                return;
+              }
+              console.log(result);
+              arrangeElem(result.source.index, result.destination.index);
+            }}
+          >
+            <Droppable droppableId="droppable">
+              {(provided, snapshot) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  style={getListStyle(snapshot.isDraggingOver)}
                 >
-                  <WorksheetElementEditor
-                    elem={item.content}
-                    elemInd={item.key}
-                  ></WorksheetElementEditor>
-                </Card>
-              </List.Item>
-            )}
-          ></List>
+                  {index(currentState).map((item, index) => (
+                    <Draggable
+                      key={item.key}
+                      draggableId={item.key.toString()}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={getItemStyle(
+                            snapshot.isDragging,
+                            provided.draggableProps.style,
+                          )}
+                        >
+                          <Card
+                            style={{
+                              width: '100%',
+                            }}
+                            extra={
+                              <Button
+                                type="text"
+                                shape="circle"
+                                onClick={() => {
+                                  deleteElem(item.key);
+                                }}
+                              >
+                                <DeleteOutlined></DeleteOutlined>
+                              </Button>
+                            }
+                            title={
+                              <Typography.Text>
+                                {contentTypeName(item.content.type)}
+                              </Typography.Text>
+                            }
+                          >
+                            <WorksheetElementEditor
+                              elem={item.content}
+                              elemInd={item.key}
+                            ></WorksheetElementEditor>
+                          </Card>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
         <Space direction="horizontal" size={10}>
           <Button
