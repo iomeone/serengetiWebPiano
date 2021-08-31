@@ -28,7 +28,7 @@ type UseEditorRes = {
   undoable: boolean;
   title: string;
   loadEditor: () => LoadRes;
-  saveEditor: () => boolean;
+  saveEditor: () => Promise<boolean>;
   setTitle: (nextTitle: string) => void;
   redo: () => void;
   undo: () => void;
@@ -75,10 +75,10 @@ export function useEditor(): UseEditorRes {
 
     return LoadRes.Success;
   };
-  const saveEditor = () => {
+  const saveEditor = async () => {
     const jsonWorksheets: EditorJsonWorksheet[] = [];
     for (const worksheet of editor.worksheetHistory) {
-      const jsonObj = editorToJson(worksheet);
+      const jsonObj = await editorToJson(worksheet);
       if (jsonObj === null) return false;
       jsonWorksheets.push(jsonObj);
     }
