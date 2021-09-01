@@ -9,7 +9,9 @@ type KeyBoardMIDIRes = {
   pressedBinaryKeysByKeyboard: boolean[];
 };
 
-export const useKeyboardMIDI = (play: ((note: NotePlayOption)=>Promise<void>) | null): KeyBoardMIDIRes => {
+export const useKeyboardMIDI = (
+  play: ((note: NotePlayOption) => Promise<void>) | null,
+): KeyBoardMIDIRes => {
   const { pressedKeys, pressedBinaryKeys, onKeyDown, onKeyUp } =
     useBinaryPressedKeys();
 
@@ -18,13 +20,13 @@ export const useKeyboardMIDI = (play: ((note: NotePlayOption)=>Promise<void>) | 
       const note = keyBoardToNote(key);
       if (note !== null) {
         onKeyDown(noteToMidiKeyNumber(note));
-        if(play !== null)
-        play({
-          articulation: Articulation.Legato,
-          duration: 1,
-          gain: 4,
-          midiKeyNumber:noteToMidiKeyNumber(note),
-        });
+        if (play !== null)
+          play({
+            articulation: Articulation.Legato,
+            duration: 1,
+            gain: 4,
+            midiKeyNumber: noteToMidiKeyNumber(note),
+          });
       }
     }
   };
@@ -43,6 +45,7 @@ export const useKeyboardMIDI = (play: ((note: NotePlayOption)=>Promise<void>) | 
       window.removeEventListener('keydown', keyDownHandler);
       window.removeEventListener('keyup', keyUpHandler);
     };
+    //eslint-disable-next-line
   }, []);
 
   return {
