@@ -7,12 +7,14 @@ type Props = {
   file?: UploadFile<any> | null;
   onFileChange?: (file: UploadFile<any> | null) => void;
   onLoadFile: (file: UploadFile<any>) => void;
+  fileType: string;
 };
 
-export default function ImageUploadArea({
+export default function UploadArea({
   file,
   onFileChange,
   onLoadFile,
+  fileType,
 }: Props) {
   const [myFile, setMyFile] = useState<UploadFile<any> | null>(null);
 
@@ -32,7 +34,7 @@ export default function ImageUploadArea({
 
   return (
     <Space direction="vertical" size={8} style={{ width: '100%' }}>
-      <Typography.Text>이미지 파일을 업로드해주세요.</Typography.Text>
+      <Typography.Text>{fileType} 파일을 업로드해주세요.</Typography.Text>
       <Upload.Dragger
         name="file"
         multiple={false}
@@ -48,7 +50,9 @@ export default function ImageUploadArea({
           <InboxOutlined />
         </p>
         <p className="ant-upload-text">클릭하거나 파일을 드래그해서 업로드</p>
-        <p className="ant-upload-hint">1개의 이미지 파일을 업로드해주세요.</p>
+        <p className="ant-upload-hint">
+          1개의 {fileType} 파일을 업로드해주세요.
+        </p>
       </Upload.Dragger>
       <Typography.Text>업로드 완료 후 확인 버튼을 눌러주세요.</Typography.Text>
       <Button
@@ -62,4 +66,24 @@ export default function ImageUploadArea({
       </Button>
     </Space>
   );
+}
+
+type ImageUploadAreaProps = {
+  file?: UploadFile<any> | null;
+  onFileChange?: (file: UploadFile<any> | null) => void;
+  onLoadFile: (file: UploadFile<any>) => void;
+};
+
+export function ImageUploadArea(props: ImageUploadAreaProps) {
+  return <UploadArea {...props} fileType="이미지"></UploadArea>;
+}
+
+type MusicxmlUploadAreaProps = {
+  file?: UploadFile<any> | null;
+  onFileChange?: (file: UploadFile<any> | null) => void;
+  onLoadFile: (file: UploadFile<any>) => void;
+};
+
+export function MusicxmlUploadArea(props: MusicxmlUploadAreaProps) {
+  return <UploadArea {...props} fileType="Musicxml"></UploadArea>;
 }

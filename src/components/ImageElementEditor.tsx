@@ -3,7 +3,7 @@ import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
 import { EditorImage } from 'models/EditorWorksheet';
-import ImageUploadArea from './ImageUploadArea';
+import { ImageUploadArea } from './UploadArea';
 import TextEditor from './TextEditor';
 
 type ImageElementEditorProps = {
