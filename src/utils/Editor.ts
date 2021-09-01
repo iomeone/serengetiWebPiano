@@ -194,6 +194,8 @@ export function jsonToEditor(
         }
       case ContentType.Sheet:
         return jsonElem as EditorSheet;
+      default:
+        throw Error('invalid content type');
     }
   });
 }
