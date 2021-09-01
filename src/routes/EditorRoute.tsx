@@ -22,21 +22,17 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { EditorWorksheetElem } from 'models/EditorWorksheet';
 import { useHistory } from 'react-router-dom';
 import { IoRefreshOutline } from 'react-icons/io5';
+import SheetElementEditor from 'components/SheetElementEditor';
 
 const hMargin = Size.hMargin;
 
 const grid = 4;
 
 const getItemStyle = (isDragging: boolean, draggableStyle: any) => ({
-  // some basic styles to make the items look a bit nicer
   userSelect: 'none',
   padding: grid * 2,
   margin: `0 0 ${grid}px 0`,
-
-  // change background colour if dragging
   background: isDragging ? '#ffffff88' : 'transparent',
-
-  // styles we need to apply on draggables
   ...draggableStyle,
 });
 
@@ -214,24 +210,28 @@ function Header() {
         break;
     }
     setSaved(true);
+    //eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     if (ctrlS) {
       save();
     }
+    //eslint-disable-next-line
   }, [ctrlS]);
 
   useEffect(() => {
     if (ctrlZ) {
       undoWithMessage();
     }
+    //eslint-disable-next-line
   }, [ctrlZ]);
 
   useEffect(() => {
     if (ctrlY) {
       redoWithMessage();
     }
+    //eslint-disable-next-line
   }, [ctrlY]);
 
   const undoWithMessage = () => {
@@ -353,7 +353,9 @@ function WorksheetElementEditor({
         ></ParagraphElementEditor>
       );
     case ContentType.Sheet:
-      return <div></div>;
+      return (
+        <SheetElementEditor elem={elem} elemInd={elemInd}></SheetElementEditor>
+      );
     case ContentType.Image:
       return (
         <ImageElementEditor elem={elem} elemInd={elemInd}></ImageElementEditor>
