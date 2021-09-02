@@ -1,8 +1,16 @@
-import { Alert, Button, Space, Typography } from 'antd';
+import { Alert, Button, Radio, Space, Typography } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
 import { EditorSheet, StaffType } from 'models/EditorWorksheet';
+import { useEffect } from 'react';
+import { useMemo } from 'react';
+import {
+  getScoreXml,
+  getXmlDocument,
+  hasMultipleStaves,
+  processMusicxml,
+} from 'utils/Editor';
 import SegmentViewer from './SegmentViewer';
 import TextEditor from './TextEditor';
 import { MusicxmlUploadArea } from './UploadArea';
@@ -54,6 +62,42 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
     );
   };
 
+  const onStaffChange = (e: any) => {
+    updateElem(
+      elemInd,
+      produce(elem, (draft) => {
+        draft.staffType = e.target.value as StaffType;
+      }),
+    );
+  };
+
+  const multipleStaves = useMemo(() => {
+    if (elem.musicxml !== null) {
+      const xmlDoc = getXmlDocument(elem.musicxml);
+      const score = getScoreXml(xmlDoc);
+      if (score === null) return null;
+      return hasMultipleStaves(score);
+    }
+    return null;
+  }, [elem.musicxml]);
+
+  useEffect(() => {
+    if (!multipleStaves) {
+      updateElem(
+        elemInd,
+        produce(elem, (draft) => {
+          draft.staffType = StaffType.RightHand;
+        }),
+      );
+    }
+  }, [multipleStaves]);
+
+  const processedMusicxml = useMemo(() => {
+    if (elem.musicxml !== null)
+      return processMusicxml(elem.musicxml, elem.staffType);
+    else return null;
+  }, [elem.musicxml, elem.staffType]);
+
   return (
     <Space
       direction="vertical"
@@ -72,8 +116,9 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
         onSubmit={submitKey}
         tag="악보 키"
       ></TextEditor>
+
       {(() => {
-        if (elem.key !== null)
+        if (elem.key === null)
           return (
             <Alert
               type="warning"
@@ -88,6 +133,49 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
               }}
             ></MusicxmlUploadArea>
           );
+        if (processedMusicxml !== null)
+          return (
+            <Space
+              direction="vertical"
+              size={6}
+              style={{
+                width: '100%',
+              }}
+            >
+              <Typography.Text
+                style={{
+                  fontWeight: 'bold',
+                }}
+              >
+                미리보기
+              </Typography.Text>
+              {multipleStaves ? (
+                <Radio.Group onChange={onStaffChange} value={elem.staffType}>
+                  <Radio value={StaffType.BothHands}>Both Hands</Radio>
+                  <Radio value={StaffType.RightHand}>Right Hand</Radio>
+                  <Radio value={StaffType.LeftHand}>Left Hand</Radio>
+                </Radio.Group>
+              ) : (
+                <Radio.Group onChange={onStaffChange} value={elem.staffType}>
+                  <Radio value={StaffType.RightHand}>Right Hand</Radio>
+                  <Radio value={StaffType.LeftHand}>Left Hand</Radio>
+                </Radio.Group>
+              )}
+              <SegmentViewer
+                sheetKey={elem.key}
+                title={elem.title}
+                oneStaff={elem.staffType !== StaffType.BothHands}
+                url={processedMusicxml}
+              ></SegmentViewer>
+              <Button
+                onClick={() => {
+                  resetFile();
+                }}
+              >
+                다시 업로드
+              </Button>
+            </Space>
+          );
         return (
           <Space
             direction="vertical"
@@ -96,19 +184,10 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
               width: '100%',
             }}
           >
-            <Typography.Text
-              style={{
-                fontWeight: 'bold',
-              }}
-            >
-              미리보기
-            </Typography.Text>
-            <SegmentViewer
-              sheetKey={elem.key}
-              title={elem.title}
-              oneStaff={elem.staffType !== StaffType.BothHands}
-              url={elem.musicxml}
-            ></SegmentViewer>
+            <Alert
+              type="error"
+              message="악보 처리 실패... 다시 업로드해주세요."
+            ></Alert>
             <Button
               onClick={() => {
                 resetFile();
