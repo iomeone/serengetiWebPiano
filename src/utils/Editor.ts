@@ -201,26 +201,27 @@ export function jsonToEditor(
 }
 
 async function encodeImageFile(file: File): Promise<EncodedImageInfo> {
-  throw Error('not implemented');
-  // const arrayBuffer = await file.arrayBuffer();
-  // const base64String = btoa(
-  //   String.fromCharCode(...new Uint8Array(arrayBuffer)),
-  // );
-  // return {
-  //   encoded: base64String,
-  //   filename: file.name,
-  // };
+  const arrayBuffer = await file.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(arrayBuffer).reduce(
+      (data, byte) => data + String.fromCharCode(byte),
+      '',
+    ),
+  );
+  return {
+    encoded: base64,
+    filename: file.name,
+  };
 }
 
 function makeImageFile(filename: string, encoded: string): File {
-  throw Error('not implemented');
-  // const binary = atob(encoded);
-  // let n = binary.length;
-  // const u8arr = new Uint8Array(n);
-  // while (n--) {
-  //   u8arr[n] = binary.charCodeAt(n);
-  // }
-  // return new File([u8arr], filename);
+  const binary = atob(encoded);
+  let n = binary.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = binary.charCodeAt(n);
+  }
+  return new File([u8arr], filename);
 }
 
 const STAFF_RIGHT_HAND = '1';
