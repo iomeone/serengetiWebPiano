@@ -23,6 +23,10 @@ import { EditorWorksheetElem } from 'models/EditorWorksheet';
 import { useHistory } from 'react-router-dom';
 import { IoRefreshOutline } from 'react-icons/io5';
 import SheetElementEditor from 'components/SheetElementEditor';
+import { getAuth, User } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import SpinLayout from 'components/SpinLayout';
+import { signIn } from 'utils/Auth';
 
 const hMargin = Size.hMargin;
 
@@ -45,6 +49,34 @@ const getListStyle = (isDraggingOver: boolean) => ({
 export default function EditorRoute() {
   const { currentState, addElem, deleteElem, title, setTitle, arrangeElem } =
     useEditor();
+
+  const [user, loading]: [User | null, boolean, any] = useAuthState(getAuth());
+
+  if (loading) return <SpinLayout></SpinLayout>;
+
+  if (user === null) {
+    return (
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          size={8}
+          style={{
+            marginTop: hMargin,
+          }}
+        >
+          <Typography.Text>로그인이 필요합니다.</Typography.Text>
+          <Button
+            onClick={() => {
+              signIn();
+            }}
+          >
+            구글 로그인
+          </Button>
+        </Space>
+      </ResponsiveCont>
+    );
+  }
+
   return (
     <ResponsiveCont>
       <Space
