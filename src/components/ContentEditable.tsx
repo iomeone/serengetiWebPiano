@@ -13,13 +13,12 @@ export default function ContentEditable({
   const elem = useRef<any>(null);
 
   useEffect(() => {
-    if (value !== undefined) {
+    if (value !== undefined && elem.current.innerText !== value) {
       elem.current.innerText = value;
     }
   }, [value]);
 
   const onMyChange = () => {
-    console.log(elem.current.innerText);
     const v = elem.current.innerText;
     onChange && onChange(v as string);
   };
