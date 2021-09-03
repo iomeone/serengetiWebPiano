@@ -1,4 +1,4 @@
-import { ContentType, StaffType, Worksheet } from 'models/Worksheet';
+import { StaffType } from 'models/Worksheet';
 
 export function getFileExtension(file: File) {
   return file.name.split('.').pop();
