@@ -1,5 +1,4 @@
 import { Button, Space, Typography } from 'antd';
-import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
 import { ImageUploadArea } from './UploadArea';
@@ -15,24 +14,13 @@ export default function ImageElementEditor({
   elem,
   elemInd,
 }: ImageElementEditorProps) {
-  const { updateElem } = useEditor();
+  const { updateElem, loadImageFile } = useEditor();
 
   const submit = (title: string) => {
     updateElem(
       elemInd,
       produce(elem, (draft) => {
         draft.title = title;
-      }),
-    );
-  };
-
-  const loadFile = (file: UploadFile<any>) => {
-    const fileObj = file.originFileObj as File;
-    updateElem(
-      elemInd,
-      produce(elem, (draft) => {
-        draft.file = fileObj;
-        draft.url = URL.createObjectURL(fileObj);
       }),
     );
   };
@@ -59,7 +47,7 @@ export default function ImageElementEditor({
       {elem.file === null ? (
         <ImageUploadArea
           onLoadFile={(file) => {
-            loadFile(file);
+            loadImageFile(elem, elemInd, file);
           }}
         ></ImageUploadArea>
       ) : (
