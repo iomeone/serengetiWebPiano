@@ -27,8 +27,8 @@ export type Sheet = Content<ContentType.Sheet> & {
 
 export type Image = Content<ContentType.Image> & {
   title: string;
+  key: string;
   file: File | null;
-  path: string | null;
   url: string | null;
 };
 
