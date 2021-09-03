@@ -103,7 +103,7 @@ function ParagraphEditor({
     );
   };
 
-  const save = () => {
+  const save = useCallback(() => {
     setSaved(true);
     updateElem(
       elemInd,
@@ -111,7 +111,7 @@ function ParagraphEditor({
         draft.content[paragraphInd] = value.split('\n');
       }),
     );
-  };
+  }, [updateElem, setSaved, elem, elemInd, paragraphInd, value]);
 
   useEffect(() => {
     if (!saved) {
