@@ -1,6 +1,6 @@
 import { WidthMode } from 'constants/layout';
 import { Sheet } from 'models/Sheet';
-import { EditorWorksheet } from 'models/EditorWorksheet';
+import { Worksheet } from 'models/Worksheet';
 import { IAudioContext } from 'standardized-audio-context';
 import { Note } from 'utils/Note';
 
@@ -25,7 +25,7 @@ export type LayoutState = {
 
 export type EditorState = {
   title: string;
-  worksheetHistory: EditorWorksheet[];
+  worksheetHistory: Worksheet[];
   currentInd: number | null;
   undoable: boolean;
   redoable: boolean;

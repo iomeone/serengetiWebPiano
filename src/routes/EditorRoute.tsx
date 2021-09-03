@@ -1,15 +1,10 @@
-import {
-  DeleteOutlined,
-  DownloadOutlined,
-  PlusOutlined,
-  SaveOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { MdUndo, MdRedo } from 'react-icons/md';
 import { Button, Card, Empty, message, Space, Tooltip, Typography } from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
 import { LoadRes, useEditor } from 'hooks/useEditor';
-import { ContentType } from 'models/Worksheet';
+import { ContentType, WorksheetElem } from 'models/Worksheet';
 import { index } from 'utils/List';
 import Horizontal from 'components/Horizontal';
 import ParagraphElementEditor from 'components/ParagraphElementEditor';
@@ -17,9 +12,7 @@ import { useEffect, useState } from 'react';
 import { useControlKeys } from 'hooks/useControlKeys';
 import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
-import { downloadAsWorksheetFiles } from 'utils/Editor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { EditorWorksheetElem } from 'models/EditorWorksheet';
 import { useHistory } from 'react-router-dom';
 import { IoRefreshOutline } from 'react-icons/io5';
 import SheetElementEditor from 'components/SheetElementEditor';
@@ -203,18 +196,6 @@ function Header() {
   const { ctrlS, ctrlZ, ctrlY } = useControlKeys();
   const history = useHistory();
 
-  const download = () => {
-    if (currentState !== null) {
-      if (title.length === 0) {
-        message.error('제목을 입력해주세요');
-        return;
-      }
-
-      downloadAsWorksheetFiles(title, currentState);
-      message.success('Worksheet 다운로드 완료');
-    }
-  };
-
   const [saved, setSaved] = useState(true);
   const save = async () => {
     if (!saved && currentState !== null) {
@@ -327,18 +308,6 @@ function Header() {
             <SaveOutlined></SaveOutlined>
           </Button>
         </Tooltip>
-        <Tooltip title="Download">
-          <Button
-            disabled={currentState === null}
-            shape="circle"
-            type="text"
-            onClick={() => {
-              download();
-            }}
-          >
-            <DownloadOutlined></DownloadOutlined>
-          </Button>
-        </Tooltip>
         <Tooltip title="Refresh (ctrl + shfit + r)">
           <Button
             shape="circle"
@@ -369,7 +338,7 @@ function contentTypeName(contentType: ContentType): string {
 }
 
 type WorksheetElementEditorProps = {
-  elem: EditorWorksheetElem;
+  elem: WorksheetElem;
   elemInd: number;
 };
 function WorksheetElementEditor({

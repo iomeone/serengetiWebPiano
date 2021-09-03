@@ -2,7 +2,7 @@ import { Alert, Button, Radio, Space, Typography } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorSheet, StaffType } from 'models/EditorWorksheet';
+import { Sheet, StaffType } from 'models/Worksheet';
 import { useEffect } from 'react';
 import { useMemo } from 'react';
 import {
@@ -16,7 +16,7 @@ import TextEditor from './TextEditor';
 import { MusicxmlUploadArea } from './UploadArea';
 
 type Props = {
-  elem: EditorSheet;
+  elem: Sheet;
   elemInd: number;
 };
 

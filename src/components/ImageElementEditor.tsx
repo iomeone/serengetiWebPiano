@@ -2,12 +2,12 @@ import { Button, Space, Typography } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorImage } from 'models/EditorWorksheet';
 import { ImageUploadArea } from './UploadArea';
 import TextEditor from './TextEditor';
+import { Image } from 'models/Worksheet';
 
 type ImageElementEditorProps = {
-  elem: EditorImage;
+  elem: Image;
   elemInd: number;
 };
 
@@ -32,7 +32,7 @@ export default function ImageElementEditor({
       elemInd,
       produce(elem, (draft) => {
         draft.file = fileObj;
-        draft.previewUrl = URL.createObjectURL(fileObj);
+        draft.url = URL.createObjectURL(fileObj);
       }),
     );
   };
@@ -42,7 +42,7 @@ export default function ImageElementEditor({
       elemInd,
       produce(elem, (draft) => {
         draft.file = null;
-        draft.previewUrl = '';
+        draft.url = null;
       }),
     );
   };
@@ -80,7 +80,7 @@ export default function ImageElementEditor({
           <img
             style={{ width: '100%', height: 'auto' }}
             alt={elem.title}
-            src={elem.previewUrl ?? ''}
+            src={elem.url ?? ''}
           ></img>
           <Button
             onClick={() => {

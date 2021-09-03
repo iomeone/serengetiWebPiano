@@ -7,7 +7,6 @@ import {
 import { Button, Space } from 'antd';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorParagraph } from 'models/EditorWorksheet';
 import { Paragraph } from 'models/Worksheet';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
@@ -76,7 +75,7 @@ const ParagraphBox = styled.div`
 `;
 
 type ParagraphEditorProps = {
-  elem: EditorParagraph;
+  elem: Paragraph;
   paragraph: string[];
   elemInd: number;
   paragraphInd: number;
