@@ -23,6 +23,11 @@ import {
   EditorJsonWorksheet,
 } from 'models/EditorJsonWorksheet';
 
+export type MeasureRange = {
+  start:number;
+  end:number;
+}
+
 type DownloadInfo = {
   filename: string;
   blob: Blob;
