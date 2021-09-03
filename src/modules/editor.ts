@@ -161,7 +161,7 @@ function makeElement(
     case ContentType.Sheet:
       return {
         type: ContentType.Sheet,
-        title: uniqueKey ?? 'new-sheet',
+        title: 'new-sheet',
         key: uniqueKey ?? '',
         musicxml: null,
         staffType: StaffType.BothHands,
@@ -169,9 +169,9 @@ function makeElement(
     case ContentType.Image:
       return {
         type: ContentType.Image,
+        key: uniqueKey ?? '',
         file: null,
         url: null,
-        path: null,
         title: 'new-image',
       };
     default:
