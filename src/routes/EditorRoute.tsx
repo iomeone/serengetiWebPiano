@@ -189,7 +189,6 @@ function Header() {
     redo,
     undoable,
     redoable,
-    title,
     loadEditor,
     saveEditor,
   } = useEditor();
