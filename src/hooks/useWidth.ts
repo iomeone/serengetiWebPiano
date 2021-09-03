@@ -1,5 +1,5 @@
 import { Size, WidthMode } from 'constants/layout';
-import { setReady, setWidth, setWidthMode } from 'modules/layout';
+import { setWidth, setWidthMode } from 'modules/layout';
 import { State } from 'modules/State';
 import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,9 +10,11 @@ type WidthRes = {
 };
 
 export function useWidth(): WidthRes {
-  const { ready, width, widthMode } = useSelector(
-    (state: State) => state.layout,
-  );
+  const { width, widthMode } = useSelector((state: State) => state.layout);
+  return { width, widthMode };
+}
+
+export function useWidthStartup() {
   const dispatch = useDispatch();
 
   const handleResize = useCallback(() => {
@@ -31,17 +33,12 @@ export function useWidth(): WidthRes {
   }, []);
 
   useEffect(() => {
-    if (!ready) {
-      window.addEventListener('resize', handleResize);
-      handleResize();
-      dispatch(setReady(true));
+    window.addEventListener('resize', handleResize);
+    handleResize();
 
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
     // eslint-disable-next-line
   }, []);
-
-  return { width, widthMode };
 }
