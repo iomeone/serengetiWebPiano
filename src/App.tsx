@@ -1,3 +1,4 @@
+import { initializeApp } from 'firebase/app';
 import { Space, Typography, Button, Breadcrumb } from 'antd';
 import { Footer, Header } from 'antd/lib/layout/layout';
 import styled from 'styled-components';
@@ -19,6 +20,8 @@ import MIDIRoute from 'routes/MIDIRoute';
 import PianoRollRoute from 'routes/PianoRollRoute';
 import WorksheetRoute from 'routes/WorksheetRoute';
 import { Size } from 'constants/layout';
+import EditorRoute from 'routes/EditorRoute';
+import OSMDEditor from 'routes/OSMDEditorRoute';
 
 const hMargin = Size.hMargin;
 
@@ -60,6 +63,7 @@ type BreadcrumbItem = {
     | React.ComponentType<any>
     | undefined;
   extraIcon?: React.ReactNode;
+  exact: boolean;
 };
 
 type BreadCrumbMap = {
@@ -70,24 +74,54 @@ const routeMap: BreadCrumbMap = {
   '/sheet': {
     routeName: 'Sheet Music Viewer',
     component: SheetRoute,
+    exact: true,
   },
   '/osmd': {
     routeName: 'OSMD Component',
     component: OSMDRoute,
+    exact: true,
   },
   '/midi': {
     routeName: 'MIDI',
     component: MIDIRoute,
+    exact: true,
   },
   '/pianoRoll': {
     routeName: 'Piano Roll',
     component: PianoRollRoute,
+    exact: true,
   },
   '/worksheet': {
     routeName: 'Worksheet',
     component: WorksheetRoute,
+    exact: true,
+  },
+  '/worksheet/:name': {
+    routeName: 'Worksheet',
+    component: WorksheetRoute,
+    exact: true,
+  },
+  '/editor': {
+    routeName: 'Editor',
+    component: EditorRoute,
+    exact: true,
+  },
+  '/osmdEditor': {
+    routeName: 'OSMD Editor',
+    component: OSMDEditor,
+    exact: true,
   },
 };
+
+initializeApp({
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
+});
 
 function App() {
   const [settingsModal, setSettingsModal] = useState(false);
@@ -165,9 +199,16 @@ function App() {
         </BreadCrumbCont>
         <Switch>
           <Route path="/" exact component={MainRoute} />
-          {Object.entries(routeMap).map(([route, { component }], _) => (
-            <Route path={route} exact component={component} />
-          ))}
+          {Object.entries(routeMap).map(
+            ([route, { component, exact }], key) => (
+              <Route
+                key={key}
+                path={route}
+                exact={exact}
+                component={component}
+              />
+            ),
+          )}
           <Redirect to="/"></Redirect>
         </Switch>
       </Main>

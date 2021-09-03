@@ -1,6 +1,6 @@
 import { Typography } from 'antd';
 import { Sheet } from 'models/Sheet';
-import { loadTestSheetThunk } from 'modules/audio';
+import { loadSheetThunk, loadTestSheetThunk } from 'modules/audio';
 import { State } from 'modules/State';
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,7 +21,9 @@ export default function LoadSheet({ sheetKey }: LoadSheetProps) {
   return (
     <>
       <LoadSheetModal
-        sheetKey={sheetKey}
+        onLoadFile={(file) => {
+          dispatch(loadSheetThunk(sheetKey, file.originFileObj as File));
+        }}
         visible={loadModal}
         onVisibleChange={setLoadModal}
       ></LoadSheetModal>

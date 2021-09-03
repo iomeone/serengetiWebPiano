@@ -1,9 +1,11 @@
-import { Button, Modal, Slider, Checkbox, Space, Typography } from 'antd';
+import { getAuth, User } from 'firebase/auth';
+import { Button, Modal, Slider, Checkbox, Space, Typography, Spin } from 'antd';
 import produce from 'immer';
 import { setPianoRange, setPianoVisibility } from 'modules/piano';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { signIn, signOut } from 'utils/Auth';
 import {
   diatonicNumberToNote,
   diatonicNumberToNoteName,
@@ -11,6 +13,7 @@ import {
   noteToDiatonicNumber,
   parseNoteNameToDiatonicNumber,
 } from 'utils/Note';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 type Props = {
   visible: boolean;
@@ -119,6 +122,7 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
       ]}
     >
       <Space direction="vertical" style={{ width: '100%' }}>
+        <LoginArea></LoginArea>
         <Space direction="vertical" size={8} style={{ width: '100%' }}>
           <Typography.Text
             style={{
@@ -164,5 +168,50 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
         </Space>
       </Space>
     </Modal>
+  );
+}
+
+function LoginArea() {
+  const [user, loading]: [User | null, boolean, any] = useAuthState(getAuth());
+
+  return (
+    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+      <Typography.Text
+        style={{
+          fontWeight: 'bold',
+        }}
+      >
+        Login
+      </Typography.Text>
+      {(() => {
+        if (loading) {
+          return <Spin></Spin>;
+        }
+        if (user !== null) {
+          return (
+            <Space direction="vertical" size={8}>
+              <Typography.Text>{user.displayName}</Typography.Text>
+              <Button
+                onClick={() => {
+                  signOut();
+                }}
+              >
+                로그아웃
+              </Button>
+            </Space>
+          );
+        } else {
+          return (
+            <Button
+              onClick={() => {
+                signIn();
+              }}
+            >
+              구글 로그인
+            </Button>
+          );
+        }
+      })()}
+    </Space>
   );
 }

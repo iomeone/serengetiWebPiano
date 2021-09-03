@@ -1,21 +1,19 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import {
   addSheet,
   cleanupSheetThunk,
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
-import { State } from 'modules/State';
-import { Sheet } from 'models/Sheet';
-import { isLoadedSheet } from 'utils/Sheet';
 import styled from 'styled-components';
 import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
+import { useSheet } from 'hooks/useSheet';
 
 type ContProps = {
   x: number;
-}
+};
 
 const Cont = styled.div<ContProps>`
   position: relative;
@@ -41,14 +39,11 @@ type ViewerProps = {
 export default function Viewer({ sheetKey, hidden }: ViewerProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
-  const [positionX,setPositionX] = useState(0);
-  const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
+  const [positionX, setPositionX] = useState(0);
   const [hoveringBoxInd, setHoveringBoxInd] = useState<number | null>(null);
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
-  const sheet: Sheet | null = useSelector(
-    (state: State) => state.audio.sheets[sheetKey] ?? null,
-  );
+  const { sheet, isLoaded: isSheetLoaded } = useSheet(sheetKey);
 
   useEffect(() => {
     if (osmdDivRef.current !== null) {
@@ -71,16 +66,12 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     }
   }, [osmdDivRef, dispatch, sheetKey]);
 
+  const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
   useEffect(() => {
-    if (isLoadedSheet(sheet)) {
-      setMeasureBoxes(getMeasureBoundingBoxes(sheet.osmd));
+    if (isSheetLoaded) {
+      setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
     }
-  }, [sheet]);
-
-  useEffect(() => {
-    if (measureBoxes !== null) {
-    }
-  }, [measureBoxes]);
+  }, [sheet, isSheetLoaded]);
 
   useLayoutEffect(() => {
     return () => {
@@ -89,17 +80,20 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     //eslint-disable-next-line
   }, []);
 
-  useEffect(()=>{
-    if(sheet !== null && sheet.currentMeasureInd !== null && measureBoxes !== null){
-      const index = Math.min(sheet.currentMeasureInd , measureBoxes.length - 1);
-      if(measureBoxes[index].right - positionX > window.innerWidth) {
+  useEffect(() => {
+    if (
+      sheet !== null &&
+      sheet.currentMeasureInd !== null &&
+      measureBoxes !== null
+    ) {
+      const index = Math.min(sheet.currentMeasureInd, measureBoxes.length - 1);
+      if (measureBoxes[index].right - positionX > window.innerWidth) {
         setPositionX(measureBoxes[index].left - 50);
-      } else if( measureBoxes[index].right - positionX < 0 ){
+      } else if (measureBoxes[index].right - positionX < 0) {
         setPositionX(measureBoxes[index].left - 50);
       }
-       
     }
-  },[sheet?.currentMeasureInd]);
+  }, [isSheetLoaded, sheet?.currentMeasureInd, measureBoxes]);
 
   return (
     <Cont x={positionX}>
