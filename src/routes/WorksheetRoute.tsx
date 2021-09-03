@@ -5,13 +5,8 @@ import SegmentViewer from 'components/SegmentViewer';
 import SpinLayout from 'components/SpinLayout';
 import { Size } from 'constants/layout';
 import { getAuth, User } from 'firebase/auth';
-import {
-  ContentType,
-  StaffType,
-  Worksheet,
-  WorksheetInfo,
-} from 'models/Worksheet';
-import { useEffect, useMemo } from 'react';
+import { ContentType, StaffType, WorksheetInfo } from 'models/Worksheet';
+import { useEffect } from 'react';
 import { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useHistory, useParams } from 'react-router-dom';
