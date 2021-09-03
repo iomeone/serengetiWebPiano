@@ -8,7 +8,7 @@ import { setPianoVisibility } from 'modules/piano';
 import LoadSheet from 'components/LoadSheet';
 import PianoRollViewer from 'components/PianoRollViewer';
 import { Size } from 'constants/layout';
-import { useKeyboardMIDI } from 'hooks/useKeyboardMIDI';
+import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
 
 const hMargin = Size.hMargin;
 const margin = Size.margin;
@@ -29,7 +29,8 @@ const sheetKey = 'osmd-sheet-key';
 export default function PianoRollRoute() {
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
-  const { pressedKeysByKeyboard } = useKeyboardMIDI(null);
+  const { preloadWithGesture,
+    isLoaded,pressedKeys } = useIntergratedPressedKeys();
 
   return (
     <Main>
@@ -39,6 +40,7 @@ export default function PianoRollRoute() {
       <Space direction="horizontal" size={8}>
         <Button
           onClick={() => {
+            preloadWithGesture();
             dispatch(setPianoVisibility(true));
           }}
         >
@@ -47,7 +49,7 @@ export default function PianoRollRoute() {
       </Space>
       <PianoRollViewer sheetKey={sheetKey}></PianoRollViewer>
       <Piano
-        pressedKeys={pressedKeysByKeyboard}
+        pressedKeys={pressedKeys}
         lower={noteToMidiKeyNumber(piano.min)}
         upper={noteToMidiKeyNumber(piano.max)}
       />

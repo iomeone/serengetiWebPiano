@@ -1,5 +1,10 @@
 import { StaffType } from 'models/Worksheet';
 
+export type MeasureRange = {
+  start: number;
+  end: number;
+};
+
 export function getFileExtension(file: File) {
   return file.name.split('.').pop();
 }

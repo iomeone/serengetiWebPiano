@@ -20,13 +20,14 @@ export const useKeyboardMIDI = (
       const note = keyBoardToNote(key);
       if (note !== null) {
         onKeyDown(noteToMidiKeyNumber(note));
-        if (play !== null)
+        if(play !== null){
           play({
             articulation: Articulation.Legato,
             duration: 1,
             gain: 4,
-            midiKeyNumber: noteToMidiKeyNumber(note),
+            midiKeyNumber:noteToMidiKeyNumber(note),
           });
+        }
       }
     }
   };
