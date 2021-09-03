@@ -82,18 +82,21 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
 
   useEffect(() => {
     if (
-      sheet !== null &&
-      sheet.currentMeasureInd !== null &&
+      isSheetLoaded &&
+      sheet?.currentMeasureInd !== null &&
       measureBoxes !== null
     ) {
-      const index = Math.min(sheet.currentMeasureInd, measureBoxes.length - 1);
+      const index = Math.min(
+        sheet?.currentMeasureInd ?? 0,
+        measureBoxes.length - 1,
+      );
       if (measureBoxes[index].right - positionX > window.innerWidth) {
         setPositionX(measureBoxes[index].left - 50);
       } else if (measureBoxes[index].right - positionX < 0) {
         setPositionX(measureBoxes[index].left - 50);
       }
     }
-  }, [isSheetLoaded, sheet?.currentMeasureInd, measureBoxes]);
+  }, [isSheetLoaded, sheet?.currentMeasureInd, measureBoxes, positionX]);
 
   return (
     <Cont x={positionX}>
