@@ -22,21 +22,21 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { EditorWorksheetElem } from 'models/EditorWorksheet';
 import { useHistory } from 'react-router-dom';
 import { IoRefreshOutline } from 'react-icons/io5';
+import SheetElementEditor from 'components/SheetElementEditor';
+import { getAuth, User } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import SpinLayout from 'components/SpinLayout';
+import { signIn } from 'utils/Auth';
 
 const hMargin = Size.hMargin;
 
 const grid = 4;
 
 const getItemStyle = (isDragging: boolean, draggableStyle: any) => ({
-  // some basic styles to make the items look a bit nicer
   userSelect: 'none',
   padding: grid * 2,
   margin: `0 0 ${grid}px 0`,
-
-  // change background colour if dragging
   background: isDragging ? '#ffffff88' : 'transparent',
-
-  // styles we need to apply on draggables
   ...draggableStyle,
 });
 
@@ -49,6 +49,34 @@ const getListStyle = (isDraggingOver: boolean) => ({
 export default function EditorRoute() {
   const { currentState, addElem, deleteElem, title, setTitle, arrangeElem } =
     useEditor();
+
+  const [user, loading]: [User | null, boolean, any] = useAuthState(getAuth());
+
+  if (loading) return <SpinLayout></SpinLayout>;
+
+  if (user === null) {
+    return (
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          size={8}
+          style={{
+            marginTop: hMargin,
+          }}
+        >
+          <Typography.Text>로그인이 필요합니다.</Typography.Text>
+          <Button
+            onClick={() => {
+              signIn();
+            }}
+          >
+            구글 로그인
+          </Button>
+        </Space>
+      </ResponsiveCont>
+    );
+  }
+
   return (
     <ResponsiveCont>
       <Space
@@ -214,24 +242,28 @@ function Header() {
         break;
     }
     setSaved(true);
+    //eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     if (ctrlS) {
       save();
     }
+    //eslint-disable-next-line
   }, [ctrlS]);
 
   useEffect(() => {
     if (ctrlZ) {
       undoWithMessage();
     }
+    //eslint-disable-next-line
   }, [ctrlZ]);
 
   useEffect(() => {
     if (ctrlY) {
       redoWithMessage();
     }
+    //eslint-disable-next-line
   }, [ctrlY]);
 
   const undoWithMessage = () => {
@@ -353,7 +385,9 @@ function WorksheetElementEditor({
         ></ParagraphElementEditor>
       );
     case ContentType.Sheet:
-      return <div></div>;
+      return (
+        <SheetElementEditor elem={elem} elemInd={elemInd}></SheetElementEditor>
+      );
     case ContentType.Image:
       return (
         <ImageElementEditor elem={elem} elemInd={elemInd}></ImageElementEditor>

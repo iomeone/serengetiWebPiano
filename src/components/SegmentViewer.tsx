@@ -56,11 +56,11 @@ export default function SegmentViewer({
   const [isSheetLoading, setIsSheetLoading] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
-    if (!isLoaded && url !== undefined && title !== undefined) {
+    if (url !== undefined && title !== undefined) {
       setIsSheetLoading(true);
       dispatch(loadSheetWithUrlThunk(sheetKey, title, url));
     }
-  }, [url, title, isLoaded, dispatch, sheetKey]);
+  }, [url, title, dispatch, sheetKey]);
 
   useEffect(() => {
     if (isLoaded) {

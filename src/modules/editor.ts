@@ -165,7 +165,7 @@ function makeElement(
     case ContentType.Sheet:
       return {
         type: ContentType.Sheet,
-        title: `New Sheet ${elemNum}`,
+        title: `sheet-${elemNum}`,
         key: '',
         measureRange: [0, 0],
         musicxml: null,
@@ -176,7 +176,7 @@ function makeElement(
         type: ContentType.Image,
         file: null,
         previewUrl: null,
-        title: `New Image ${elemNum}`,
+        title: `sheet-${elemNum}`,
       };
     default:
       return null;

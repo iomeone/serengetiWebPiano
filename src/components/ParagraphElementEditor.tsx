@@ -9,6 +9,7 @@ import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
 import { EditorParagraph } from 'models/EditorWorksheet';
 import { Paragraph } from 'models/Worksheet';
+import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
@@ -26,14 +27,14 @@ export default function ParagraphElementEditor({
 }: ParagraphElementEditorProps) {
   const { updateElem } = useEditor();
 
-  const addParagraph = () => {
+  const addParagraph = useCallback(() => {
     updateElem(
       elemInd,
       produce(elem, (draft) => {
         draft.content.push([]);
       }),
     );
-  };
+  }, [updateElem, elemInd, elem]);
 
   return (
     <Space
@@ -119,7 +120,7 @@ function ParagraphEditor({
         save();
       }
     }
-  }, [saved, lastChanged, currentTime]);
+  }, [save, saved, lastChanged, currentTime]);
 
   useEffect(() => {
     const timer = setInterval(() => {
