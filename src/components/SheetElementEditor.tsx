@@ -68,7 +68,8 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
         }),
       );
     }
-  }, [elem, elemInd, multipleStaves, updateElem]);
+    //eslint-disable-next-line
+  }, [multipleStaves]);
 
   const processedMusicxml = useMemo(() => {
     if (elem.musicxml !== null)
