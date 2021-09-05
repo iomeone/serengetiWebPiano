@@ -1,17 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { useDispatch } from 'react-redux';
-import {
-  addSheet,
-  cleanupSheetThunk,
-  stopOtherPlaybackServicesThunk,
-} from 'modules/audio';
+import { addSheet, cleanupSheetThunk } from 'modules/audio';
 import styled from 'styled-components';
 import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
-import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { useSheet } from 'hooks/useSheet';
 import { MeasureRange } from 'utils/Editor';
-import { isArrayBindingPattern } from 'typescript';
 
 type ContProps = {
   x: number;
@@ -24,16 +18,16 @@ const Cont = styled.div<ContProps>`
 
 type BoxProps = {
   selected: boolean;
-  isRange: ()=>Boolean;
+  isRange: () => Boolean;
 };
 
 const Box = styled.div<BoxProps>`
   position: absolute;
   background-color: ${(props) => {
-    if(props.selected){
+    if (props.selected) {
       return '#91d5ff66';
     } else {
-      return props.isRange() ?  '#80ED9966' :'transparent' ;
+      return props.isRange() ? '#80ED9966' : 'transparent';
     }
   }};
   cursor: pointer;
@@ -41,30 +35,33 @@ const Box = styled.div<BoxProps>`
 
 type SheetEditorProps = {
   sheetKey: string;
-  showModal: (start:number, end:number)=>void;
+  showModal: (start: number, end: number) => void;
   hidden?: boolean;
-  range: MeasureRange|null;
+  range: MeasureRange | null;
 };
 
-export default function SheetEditor({ sheetKey, showModal , hidden,range }: SheetEditorProps) {
+export default function SheetEditor({
+  sheetKey,
+  showModal,
+  hidden,
+  range,
+}: SheetEditorProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
-  const [positionX, setPositionX] = useState(0);
+  const [positionX] = useState(0);
   const [hoveringBoxInd, setHoveringBoxInd] = useState<number | null>(null);
-  const { getOrCreateFrontPlaybackServiceWithGesture } =
-    useFrontPlaybackService(sheetKey);
   const { sheet, isLoaded: isSheetLoaded } = useSheet(sheetKey);
 
-  const [startInd, setStartInd] = useState<number|null>(null);
-  const [endInd, setEndInd] = useState<number|null>(null);
+  const [startInd, setStartInd] = useState<number | null>(null);
+  const [endInd, setEndInd] = useState<number | null>(null);
 
-  useEffect(()=>{
-    if(startInd !== null && endInd !== null){
+  useEffect(() => {
+    if (startInd !== null && endInd !== null) {
       showModal(startInd, endInd);
       setStartInd(null);
       setEndInd(null);
     }
-  },[startInd,endInd]);
+  }, [startInd, endInd]);
 
   //TODO: sheetClick => function
   useEffect(() => {
@@ -102,18 +99,18 @@ export default function SheetEditor({ sheetKey, showModal , hidden,range }: Shee
     //eslint-disable-next-line
   }, []);
 
-  const MeasureClick = (ind:number) => {
+  const MeasureClick = (ind: number) => {
     console.log(startInd, endInd);
-    if(startInd === null){
+    if (startInd === null) {
       setStartInd(ind);
-    } else{
-      if(startInd <= ind){
+    } else {
+      if (startInd <= ind) {
         setEndInd(ind);
       } else {
         setStartInd(ind);
       }
     }
-  } 
+  };
 
   return (
     <Cont x={positionX}>
@@ -126,8 +123,8 @@ export default function SheetEditor({ sheetKey, showModal , hidden,range }: Shee
       {measureBoxes !== null &&
         measureBoxes.map((box, ind) => (
           <Box
-            onClick={()=>{
-              MeasureClick(ind)
+            onClick={() => {
+              MeasureClick(ind);
             }}
             onMouseEnter={() => {
               setHoveringBoxInd(ind);
@@ -136,13 +133,15 @@ export default function SheetEditor({ sheetKey, showModal , hidden,range }: Shee
               setHoveringBoxInd(null);
             }}
             key={ind}
-            isRange={()=>{
-              if(range !== null){
-                return range.start <= ind  && range.end >= ind;
+            isRange={() => {
+              if (range !== null) {
+                return range.start <= ind && range.end >= ind;
               }
               return false;
             }}
-            selected={startInd === ind || endInd === ind || hoveringBoxInd === ind }
+            selected={
+              startInd === ind || endInd === ind || hoveringBoxInd === ind
+            }
             style={{
               left: box.left,
               top: box.top,

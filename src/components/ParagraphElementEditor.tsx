@@ -45,6 +45,7 @@ export default function ParagraphElementEditor({
     >
       {elem.content.map((paragraph, paragraphInd) => (
         <ParagraphEditor
+          key={paragraphInd}
           elem={elem}
           paragraph={paragraph}
           elemInd={elemInd}
