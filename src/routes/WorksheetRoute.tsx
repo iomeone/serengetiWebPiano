@@ -5,12 +5,17 @@ import SegmentViewer from 'components/SegmentViewer';
 import SpinLayout from 'components/SpinLayout';
 import { Size } from 'constants/layout';
 import { getAuth, User } from 'firebase/auth';
-import { ContentType, StaffType, WorksheetInfo } from 'models/Worksheet';
+import { ContentType, StaffType } from 'models/Worksheet';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useHistory, useParams } from 'react-router-dom';
-import { getWorksheetDetail, getWorksheets } from 'utils/Server';
+import {
+  getWorksheetDetail,
+  getWorksheets,
+  WorksheetDetail,
+  WorksheetInfo,
+} from 'utils/Server';
 
 const margin = Size.margin;
 
@@ -50,13 +55,9 @@ export default function WorksheetRoute() {
 
 function SelectWorksheet() {
   const history = useHistory();
-  const [worksheetList, setWorksheetList] = useState<
-    | {
-        id: string;
-        title: string;
-      }[]
-    | null
-  >(null);
+  const [worksheetList, setWorksheetList] = useState<WorksheetInfo[] | null>(
+    null,
+  );
 
   const [loading, setLoading] = useState(true);
 
@@ -157,14 +158,13 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
   const history = useHistory();
   const [authLoading]: [User | null, boolean, any] = useAuthState(getAuth());
 
-  const [worksheetInfo, setWorksheetInfo] = useState<WorksheetInfo | null>(
-    null,
-  );
+  const [worksheetDetail, setWorksheetDetail] =
+    useState<WorksheetDetail | null>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (id !== undefined && !authLoading) {
       (async () => {
-        setWorksheetInfo(await getWorksheetDetail(id));
+        setWorksheetDetail(await getWorksheetDetail(id));
         setLoading(false);
       })();
     }
@@ -177,7 +177,7 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
       </ResponsiveCont>
     );
 
-  if (worksheetInfo === null)
+  if (worksheetDetail === null)
     return (
       <ResponsiveCont>
         <Space
@@ -240,7 +240,7 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
               fontSize: 16,
             }}
           >
-            {worksheetInfo.title}
+            {worksheetDetail.title}
           </Typography.Text>
         </Space>
       </ResponsiveCont>
@@ -252,7 +252,7 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
           marginTop: 30,
         }}
       >
-        {worksheetInfo.worksheet.map((content, contentKey) => {
+        {worksheetDetail.worksheet.map((content, contentKey) => {
           switch (content.type) {
             case ContentType.Paragraph: {
               return (
