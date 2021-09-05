@@ -30,6 +30,8 @@ export function useWidth(): WidthRes {
     const { width: w, widthMode: m } = getWidthInfo();
     dispatch(setWidth(w));
     dispatch(setWidthMode(m));
+
+    // eslint-disable-next-line
   }, []);
   return { width, widthMode };
 }
