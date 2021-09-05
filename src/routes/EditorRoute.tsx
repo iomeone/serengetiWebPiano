@@ -197,9 +197,96 @@ type EditorProps = {
 };
 
 function DraftEditor({ id }: EditorProps) {
-  const { currentState, addElem, deleteElem, title, setTitle, arrangeElem } =
-    useEditor();
+  const {
+    currentState,
+    undo,
+    title,
+    setTitle,
+    arrangeElem,
+    deleteElem,
+    addElem,
+    redo,
+    undoable,
+    redoable,
+    loadDraft,
+    saveDraft,
+  } = useEditor();
+  const { ctrlS, ctrlZ, ctrlY } = useControlKeys();
   const history = useHistory();
+
+  const [saved, setSaved] = useState(true);
+  const save = async () => {
+    if (!saved && currentState !== null) {
+      message.info('저장중...');
+      if (await saveDraft(id)) {
+        message.success('저장되었습니다.');
+        setSaved(true);
+      } else {
+        message.error('저장 실패');
+      }
+    }
+  };
+
+  const [loaded, setLoaded] = useState(false);
+  const load = async () => {
+    message.info('로딩중...');
+    const res = await loadDraft(id);
+    if (res) {
+      message.success('로드 성공');
+    } else {
+      message.error('로드 실패');
+    }
+    setLoaded(true);
+    setSaved(true);
+  };
+
+  useEffect(() => {
+    setSaved(false);
+  }, [currentState]);
+
+  useEffect(() => {
+    load();
+    //eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    if (ctrlS) {
+      save();
+    }
+    //eslint-disable-next-line
+  }, [ctrlS]);
+
+  useEffect(() => {
+    if (ctrlZ) {
+      undoWithMessage();
+    }
+    //eslint-disable-next-line
+  }, [ctrlZ]);
+
+  useEffect(() => {
+    if (ctrlY) {
+      redoWithMessage();
+    }
+    //eslint-disable-next-line
+  }, [ctrlY]);
+
+  const undoWithMessage = () => {
+    if (undoable) {
+      undo();
+      message.info('실행 취소');
+    }
+  };
+
+  const redoWithMessage = () => {
+    if (redoable) {
+      redo();
+      message.info('실행 취소 되돌리기');
+    }
+  };
+
+  if (!loaded) {
+    return <SpinLayout></SpinLayout>;
+  }
 
   return (
     <ResponsiveCont>
@@ -229,7 +316,65 @@ function DraftEditor({ id }: EditorProps) {
             돌아가기
           </Typography.Text>
         </Space>
-        <Header id={id}></Header>
+        <Horizontal>
+          <Typography.Text
+            style={{
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}
+          >
+            Worksheet Editor
+          </Typography.Text>
+          <Space direction="horizontal" size={8}>
+            <Tooltip title="Undo (ctrl + z)">
+              <Button
+                disabled={!undoable}
+                shape="circle"
+                type="text"
+                onClick={() => {
+                  undoWithMessage();
+                }}
+              >
+                <MdUndo></MdUndo>
+              </Button>
+            </Tooltip>
+            <Tooltip title="Redo (ctrl + y)">
+              <Button
+                disabled={!redoable}
+                shape="circle"
+                type="text"
+                onClick={() => {
+                  redoWithMessage();
+                }}
+              >
+                <MdRedo></MdRedo>
+              </Button>
+            </Tooltip>
+            <Tooltip title="Save (ctrl + s)">
+              <Button
+                disabled={saved === true}
+                shape="circle"
+                type="text"
+                onClick={() => {
+                  save();
+                }}
+              >
+                <SaveOutlined></SaveOutlined>
+              </Button>
+            </Tooltip>
+            <Tooltip title="Refresh (ctrl + shfit + r)">
+              <Button
+                shape="circle"
+                type="text"
+                onClick={() => {
+                  history.go(0);
+                }}
+              >
+                <IoRefreshOutline></IoRefreshOutline>
+              </Button>
+            </Tooltip>
+          </Space>
+        </Horizontal>
         <TextEditor tag="제목" title={title} onSubmit={setTitle}></TextEditor>
         {currentState === null || currentState.length === 0 ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -326,144 +471,6 @@ function DraftEditor({ id }: EditorProps) {
         </Space>
       </Space>
     </ResponsiveCont>
-  );
-}
-
-type HeaderProps = {
-  id: string;
-};
-
-function Header({ id }: HeaderProps) {
-  const { currentState, undo, redo, undoable, redoable, loadDraft, saveDraft } =
-    useEditor();
-  const { ctrlS, ctrlZ, ctrlY } = useControlKeys();
-  const history = useHistory();
-
-  const [saved, setSaved] = useState(true);
-  const save = async () => {
-    if (!saved && currentState !== null) {
-      if (await saveDraft(id)) {
-        message.success('저장되었습니다.');
-        setSaved(true);
-      } else {
-        message.error('저장 실패');
-      }
-    }
-  };
-  const load = async () => {
-    const res = await loadDraft(id);
-    if (res) {
-      message.success('로드 성공');
-    } else {
-      message.error('로드 실패');
-    }
-    setSaved(true);
-  };
-
-  useEffect(() => {
-    setSaved(false);
-  }, [currentState]);
-
-  useEffect(() => {
-    load();
-    //eslint-disable-next-line
-  }, []);
-
-  useEffect(() => {
-    if (ctrlS) {
-      save();
-    }
-    //eslint-disable-next-line
-  }, [ctrlS]);
-
-  useEffect(() => {
-    if (ctrlZ) {
-      undoWithMessage();
-    }
-    //eslint-disable-next-line
-  }, [ctrlZ]);
-
-  useEffect(() => {
-    if (ctrlY) {
-      redoWithMessage();
-    }
-    //eslint-disable-next-line
-  }, [ctrlY]);
-
-  const undoWithMessage = () => {
-    if (undoable) {
-      undo();
-      message.info('실행 취소');
-    }
-  };
-
-  const redoWithMessage = () => {
-    if (redoable) {
-      redo();
-      message.info('실행 취소 되돌리기');
-    }
-  };
-
-  return (
-    <Horizontal>
-      <Typography.Text
-        style={{
-          fontWeight: 'bold',
-          fontSize: 16,
-        }}
-      >
-        Worksheet Editor
-      </Typography.Text>
-      <Space direction="horizontal" size={8}>
-        <Tooltip title="Undo (ctrl + z)">
-          <Button
-            disabled={!undoable}
-            shape="circle"
-            type="text"
-            onClick={() => {
-              undoWithMessage();
-            }}
-          >
-            <MdUndo></MdUndo>
-          </Button>
-        </Tooltip>
-        <Tooltip title="Redo (ctrl + y)">
-          <Button
-            disabled={!redoable}
-            shape="circle"
-            type="text"
-            onClick={() => {
-              redoWithMessage();
-            }}
-          >
-            <MdRedo></MdRedo>
-          </Button>
-        </Tooltip>
-        <Tooltip title="Save (ctrl + s)">
-          <Button
-            disabled={saved === true}
-            shape="circle"
-            type="text"
-            onClick={() => {
-              save();
-            }}
-          >
-            <SaveOutlined></SaveOutlined>
-          </Button>
-        </Tooltip>
-        <Tooltip title="Refresh (ctrl + shfit + r)">
-          <Button
-            shape="circle"
-            type="text"
-            onClick={() => {
-              history.go(0);
-            }}
-          >
-            <IoRefreshOutline></IoRefreshOutline>
-          </Button>
-        </Tooltip>
-      </Space>
-    </Horizontal>
   );
 }
 
