@@ -3,6 +3,7 @@ import produce from 'immer';
 import { Worksheet, WorksheetElem, Image, Sheet } from 'models/Worksheet';
 import { ContentType } from 'models/Worksheet';
 import {
+  loadState,
   setTitle as setTitleActionCreator,
   addWorksheetElem,
   deleteWorksheetElem,
@@ -14,21 +15,16 @@ import {
 import { State } from 'modules/State';
 import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { loadDraftDetail, saveDraftDetail } from 'utils/Server';
 import { v4 as uuidv4 } from 'uuid';
-
-export enum LoadRes {
-  Error = 'Error',
-  Success = 'Success',
-  NoData = 'NoData',
-}
 
 type UseEditorRes = {
   currentState: Worksheet | null;
   redoable: boolean;
   undoable: boolean;
   title: string;
-  loadEditor: () => LoadRes;
-  saveEditor: () => Promise<boolean>;
+  loadDraft: (id: string) => Promise<boolean>;
+  saveDraft: (id: string) => Promise<boolean>;
   setTitle: (nextTitle: string) => void;
   redo: () => void;
   undo: () => void;
@@ -52,11 +48,16 @@ export function useEditor(): UseEditorRes {
   );
 
   const dispatch = useDispatch();
-  const loadEditor = () => {
-    return LoadRes.Success;
-  };
-  const saveEditor = async () => {
+  const loadDraft = async (id: string) => {
+    const draft = await loadDraftDetail(id);
+    if (draft === null) return false;
+
+    dispatch(loadState(draft.state));
+    dispatch(setTitleActionCreator(draft.title));
     return true;
+  };
+  const saveDraft = async (id: string) => {
+    return await saveDraftDetail(id, editor);
   };
   const addElem = (contentType: ContentType) => {
     dispatch(addWorksheetElem(contentType, uuidv4()));
@@ -118,8 +119,8 @@ export function useEditor(): UseEditorRes {
     redoable: editor.redoable,
     undoable: editor.undoable,
     title: editor.title,
-    loadEditor,
-    saveEditor,
+    loadDraft,
+    saveDraft,
     setTitle,
     addElem,
     updateElem,

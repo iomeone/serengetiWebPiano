@@ -4,6 +4,7 @@ import {
   collection,
   getDocs,
   getDoc,
+  setDoc,
   doc,
 } from 'firebase/firestore/lite';
 import {
@@ -13,8 +14,10 @@ import {
   uploadString,
   getDownloadURL,
 } from 'firebase/storage';
+import produce from 'immer';
 import { Sheet } from 'models/Worksheet';
-import { ContentType, Image, Worksheet, WorksheetInfo } from 'models/Worksheet';
+import { ContentType, Image, Worksheet } from 'models/Worksheet';
+import { EditorState } from 'modules/State';
 
 const app = initializeApp({
   apiKey: process.env.REACT_APP_API_KEY,
@@ -29,13 +32,11 @@ const app = initializeApp({
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-export async function getWorksheets(): Promise<
-  | {
-      id: string;
-      title: string;
-    }[]
-  | null
-> {
+export type WorksheetInfo = {
+  id: string;
+  title: string;
+};
+export async function getWorksheets(): Promise<WorksheetInfo[] | null> {
   try {
     const worksheetsCol = collection(db, 'worksheets');
     const worksheetSnap = await getDocs(worksheetsCol);
@@ -49,9 +50,13 @@ export async function getWorksheets(): Promise<
   return null;
 }
 
+export type WorksheetDetail = {
+  title: string;
+  worksheet: Worksheet;
+};
 export async function getWorksheetDetail(
   id: string,
-): Promise<WorksheetInfo | null> {
+): Promise<WorksheetDetail | null> {
   try {
     const docRef = doc(db, 'worksheets', id);
     const docSnap = await getDoc(docRef);
@@ -117,7 +122,6 @@ async function uploadStr(
 
   return true;
 }
-
 async function getFile(type: string, id: string): Promise<File | null> {
   try {
     const keyRef = ref(storage, `${type}/${id}`);
@@ -130,7 +134,6 @@ async function getFile(type: string, id: string): Promise<File | null> {
     return null;
   }
 }
-
 export const uploadImageFile = async (key: string, file: File) =>
   uploadFile('images', key, file);
 export const uploadMusicxmlFile = async (key: string, str: string) =>
@@ -139,10 +142,10 @@ export const getImageFile = async (id: string) => getFile('images', id);
 export const getMusicxmlFile = async (id: string) => getFile('sheets', id);
 
 export async function firestoreWorksheetToWorksheet(
-  worksheet: Worksheet,
+  firestoreWorksheet: Worksheet,
 ): Promise<Worksheet> {
   const res = [];
-  for (const elem of worksheet) {
+  for (const elem of firestoreWorksheet) {
     switch (elem.type) {
       case ContentType.Paragraph: {
         res.push(elem);
@@ -198,11 +201,11 @@ export async function firestoreWorksheetToWorksheet(
   }
   return res;
 }
-export function worksheetToFirestoreWorksheet(
-  firestoreWorksheet: Worksheet,
-): Worksheet {
+export async function worksheetToFirestoreWorksheet(
+  worksheet: Worksheet,
+): Promise<Worksheet> {
   const res = [];
-  for (const elem of firestoreWorksheet) {
+  for (const elem of worksheet) {
     switch (elem.type) {
       case ContentType.Paragraph: {
         res.push(elem);
@@ -210,7 +213,7 @@ export function worksheetToFirestoreWorksheet(
       }
       case ContentType.Image: {
         if (elem.file !== null) {
-          uploadImageFile(elem.key, elem.file);
+          await uploadImageFile(elem.key, elem.file);
         }
         res.push({
           type: ContentType.Image,
@@ -223,7 +226,7 @@ export function worksheetToFirestoreWorksheet(
       }
       case ContentType.Sheet: {
         if (elem.musicxml !== null) {
-          uploadMusicxmlFile(elem.key, elem.musicxml);
+          await uploadMusicxmlFile(elem.key, elem.musicxml);
         }
         res.push({
           type: ContentType.Sheet,
@@ -237,4 +240,86 @@ export function worksheetToFirestoreWorksheet(
     }
   }
   return res;
+}
+
+export type DraftInfo = {
+  id: string;
+  title: string;
+};
+export async function getDrafts(): Promise<DraftInfo[] | null> {
+  try {
+    const worksheetsCol = collection(db, 'drafts');
+    const worksheetSnap = await getDocs(worksheetsCol);
+    return worksheetSnap.docs.map((doc) => ({
+      id: doc.id,
+      title: doc.get('title') as string,
+    }));
+  } catch (e) {
+    console.log(e);
+  }
+  return null;
+}
+
+export type DraftDetail = {
+  title: string;
+  state: EditorState;
+};
+export async function loadDraftDetail(id: string): Promise<DraftDetail | null> {
+  try {
+    const docRef = doc(db, 'drafts', id);
+    const docSnap = await getDoc(docRef);
+    const draft = docSnap.data() as {
+      title: string;
+      state: string;
+    };
+
+    const firebaseState = JSON.parse(draft.state) as EditorState;
+    const nextWorksheetHistory: Worksheet[] = [];
+    for (const worksheet of firebaseState.worksheetHistory) {
+      const res = await firestoreWorksheetToWorksheet(worksheet);
+      if (res === null) return null;
+      else nextWorksheetHistory.push(res);
+    }
+    return {
+      title: draft.title,
+      state: produce(firebaseState, (draft) => {
+        draft.worksheetHistory = nextWorksheetHistory;
+      }),
+    };
+  } catch (e) {
+    console.log(e);
+  }
+  return null;
+}
+
+export async function saveDraftDetail(
+  id: string,
+  editorState: EditorState,
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'drafts', id);
+
+    const nextWorksheetHistory: Worksheet[] = [];
+    for (const worksheet of editorState.worksheetHistory) {
+      const res = await worksheetToFirestoreWorksheet(worksheet);
+      nextWorksheetHistory.push(res);
+    }
+
+    const nextState = JSON.stringify({
+      ...editorState,
+      worksheetHistory: nextWorksheetHistory,
+    });
+
+    const ret = {
+      title: editorState.title,
+      state: nextState,
+    };
+
+    await setDoc(docRef, ret);
+    return true;
+  } catch (e) {
+    console.log(e);
+  }
+
+  return false;
 }

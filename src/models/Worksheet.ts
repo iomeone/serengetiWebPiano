@@ -34,8 +34,3 @@ export type Image = Content<ContentType.Image> & {
 
 export type WorksheetElem = Paragraph | Sheet | Image;
 export type Worksheet = WorksheetElem[];
-
-export type WorksheetInfo = {
-  title: string;
-  worksheet: Worksheet;
-};
