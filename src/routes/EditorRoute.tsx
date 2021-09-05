@@ -125,7 +125,10 @@ function SelectDraft() {
               돌아가기
             </Typography.Text>
           </Space>
-          <Alert type="error" message="오류가 발생했습니다."></Alert>
+          <Alert
+            type="error"
+            message="접근 권한이 없거나 오류가 발생했습니다."
+          ></Alert>
           <Button
             onClick={() => {
               history.go(0);
@@ -227,16 +230,17 @@ function DraftEditor({ id }: EditorProps) {
     }
   };
 
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState<boolean | null>(null);
   const load = async () => {
     message.info('로딩중...');
     const res = await loadDraft(id);
     if (res) {
       message.success('로드 성공');
+      setLoaded(true);
     } else {
       message.error('로드 실패');
+      setLoaded(false);
     }
-    setLoaded(true);
     setSaved(true);
   };
 
@@ -284,8 +288,51 @@ function DraftEditor({ id }: EditorProps) {
     }
   };
 
-  if (!loaded) {
+  if (loaded === null) {
     return <SpinLayout></SpinLayout>;
+  }
+
+  if (loaded === false) {
+    return (
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          style={{
+            width: '100%',
+            marginTop: 30,
+          }}
+        >
+          <Space direction="horizontal" size={8} align="center">
+            <Button
+              type="text"
+              shape="circle"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => {
+                history.push('/');
+              }}
+            ></Button>
+            <Typography.Text
+              style={{
+                fontSize: 16,
+              }}
+            >
+              돌아가기
+            </Typography.Text>
+          </Space>
+          <Alert
+            type="error"
+            message="접근 권한이 없거나 오류가 발생했습니다."
+          ></Alert>
+          <Button
+            onClick={() => {
+              history.go(0);
+            }}
+          >
+            Reload
+          </Button>
+        </Space>
+      </ResponsiveCont>
+    );
   }
 
   return (
