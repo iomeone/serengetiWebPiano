@@ -106,6 +106,11 @@ const routeMap: BreadCrumbMap = {
     component: EditorRoute,
     exact: true,
   },
+  '/editor/:id': {
+    routeName: 'Editor',
+    component: EditorRoute,
+    exact: true,
+  },
   '/osmdEditor': {
     routeName: 'OSMD Editor',
     component: OSMDEditor,
