@@ -1,9 +1,24 @@
-import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  SaveOutlined,
+} from '@ant-design/icons';
 import { MdUndo, MdRedo } from 'react-icons/md';
-import { Button, Card, Empty, message, Space, Tooltip, Typography } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  List,
+  message,
+  Space,
+  Tooltip,
+  Typography,
+} from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import { Size } from 'constants/layout';
-import { LoadRes, useEditor } from 'hooks/useEditor';
+import { useEditor } from 'hooks/useEditor';
 import { ContentType, WorksheetElem } from 'models/Worksheet';
 import { index } from 'utils/List';
 import Horizontal from 'components/Horizontal';
@@ -13,38 +28,27 @@ import { useControlKeys } from 'hooks/useControlKeys';
 import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { IoRefreshOutline } from 'react-icons/io5';
 import SheetElementEditor from 'components/SheetElementEditor';
 import { getAuth, User } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import SpinLayout from 'components/SpinLayout';
 import { signIn } from 'utils/Auth';
+import { DraftInfo, getDrafts } from 'utils/Server';
 
+const margin = Size.margin;
 const hMargin = Size.hMargin;
 
 const grid = 4;
 
-const getItemStyle = (isDragging: boolean, draggableStyle: any) => ({
-  userSelect: 'none',
-  padding: grid * 2,
-  margin: `0 0 ${grid}px 0`,
-  background: isDragging ? '#ffffff88' : 'transparent',
-  ...draggableStyle,
-});
-
-const getListStyle = (isDraggingOver: boolean) => ({
-  background: isDraggingOver ? '#e6f7ff88' : 'transparent',
-  padding: grid,
-  width: '100%',
-});
+type EditorParam = {
+  id: string | undefined;
+};
 
 export default function EditorRoute() {
-  const { currentState, addElem, deleteElem, title, setTitle, arrangeElem } =
-    useEditor();
-
+  const { id } = useParams<EditorParam>();
   const [user, loading]: [User | null, boolean, any] = useAuthState(getAuth());
-
   if (loading) return <SpinLayout></SpinLayout>;
 
   if (user === null) {
@@ -70,6 +74,133 @@ export default function EditorRoute() {
     );
   }
 
+  if (id === undefined) {
+    return (
+      <ResponsiveCont>
+        <SelectDraft></SelectDraft>
+      </ResponsiveCont>
+    );
+  }
+
+  return <DraftEditor id={id}></DraftEditor>;
+}
+
+function SelectDraft() {
+  const history = useHistory();
+  const [draftList, setDraftList] = useState<DraftInfo[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setDraftList(await getDrafts());
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <SpinLayout></SpinLayout>;
+  if (draftList === null) {
+    return (
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          style={{
+            width: '100%',
+            marginTop: 30,
+          }}
+        >
+          <Space direction="horizontal" size={8} align="center">
+            <Button
+              type="text"
+              shape="circle"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => {
+                history.push('/');
+              }}
+            ></Button>
+            <Typography.Text
+              style={{
+                fontSize: 16,
+              }}
+            >
+              돌아가기
+            </Typography.Text>
+          </Space>
+          <Alert type="error" message="오류가 발생했습니다."></Alert>
+          <Button
+            onClick={() => {
+              history.go(0);
+            }}
+          >
+            Reload
+          </Button>
+        </Space>
+      </ResponsiveCont>
+    );
+  }
+
+  return (
+    <ResponsiveCont>
+      <Space
+        direction="vertical"
+        size={margin}
+        style={{
+          width: '100%',
+          marginTop: 30,
+        }}
+      >
+        <Typography.Text
+          style={{
+            fontSize: 16,
+          }}
+        >
+          Select Worksheet Draft
+        </Typography.Text>
+        <List
+          grid={{
+            column: 2,
+            gutter: 10,
+          }}
+          dataSource={draftList}
+          renderItem={(item: { id: string; title: string }) => (
+            <List.Item>
+              <Card
+                title={
+                  <Typography.Link href={`/editor/${item.id}`}>
+                    {item.title}
+                  </Typography.Link>
+                }
+              >
+                <Typography.Text>Worksheet Draft를 편집합니다.</Typography.Text>
+              </Card>
+            </List.Item>
+          )}
+        ></List>
+      </Space>
+    </ResponsiveCont>
+  );
+}
+
+const getItemStyle = (isDragging: boolean, draggableStyle: any) => ({
+  userSelect: 'none',
+  padding: grid * 2,
+  margin: `0 0 ${grid}px 0`,
+  background: isDragging ? '#ffffff88' : 'transparent',
+  ...draggableStyle,
+});
+const getListStyle = (isDraggingOver: boolean) => ({
+  background: isDraggingOver ? '#e6f7ff88' : 'transparent',
+  padding: grid,
+  width: '100%',
+});
+type EditorProps = {
+  id: string;
+};
+
+function DraftEditor({ id }: EditorProps) {
+  const { currentState, addElem, deleteElem, title, setTitle, arrangeElem } =
+    useEditor();
+  const history = useHistory();
+
   return (
     <ResponsiveCont>
       <Space
@@ -81,7 +212,24 @@ export default function EditorRoute() {
           marginBottom: 100,
         }}
       >
-        <Header></Header>
+        <Space direction="horizontal" size={8} align="center">
+          <Button
+            type="text"
+            shape="circle"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => {
+              history.push('/editor');
+            }}
+          ></Button>
+          <Typography.Text
+            style={{
+              fontSize: 16,
+            }}
+          >
+            돌아가기
+          </Typography.Text>
+        </Space>
+        <Header id={id}></Header>
         <TextEditor tag="제목" title={title} onSubmit={setTitle}></TextEditor>
         {currentState === null || currentState.length === 0 ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -91,7 +239,6 @@ export default function EditorRoute() {
               if (!result.destination) {
                 return;
               }
-              console.log(result);
               arrangeElem(result.source.index, result.destination.index);
             }}
           >
@@ -182,23 +329,20 @@ export default function EditorRoute() {
   );
 }
 
-function Header() {
-  const {
-    currentState,
-    undo,
-    redo,
-    undoable,
-    redoable,
-    loadEditor,
-    saveEditor,
-  } = useEditor();
+type HeaderProps = {
+  id: string;
+};
+
+function Header({ id }: HeaderProps) {
+  const { currentState, undo, redo, undoable, redoable, loadDraft, saveDraft } =
+    useEditor();
   const { ctrlS, ctrlZ, ctrlY } = useControlKeys();
   const history = useHistory();
 
   const [saved, setSaved] = useState(true);
   const save = async () => {
     if (!saved && currentState !== null) {
-      if (await saveEditor()) {
+      if (await saveDraft(id)) {
         message.success('저장되었습니다.');
         setSaved(true);
       } else {
@@ -206,22 +350,22 @@ function Header() {
       }
     }
   };
+  const load = async () => {
+    const res = await loadDraft(id);
+    if (res) {
+      message.success('로드 성공');
+    } else {
+      message.error('로드 실패');
+    }
+    setSaved(true);
+  };
 
   useEffect(() => {
     setSaved(false);
   }, [currentState]);
 
   useEffect(() => {
-    const res = loadEditor();
-    switch (res) {
-      case LoadRes.Success:
-        message.success('로드 성공');
-        break;
-      case LoadRes.Error:
-        message.error('로드 실패');
-        break;
-    }
-    setSaved(true);
+    load();
     //eslint-disable-next-line
   }, []);
 
