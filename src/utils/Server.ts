@@ -164,7 +164,6 @@ export async function firestoreWorksheetToWorksheet(
           res.push(blankImage);
           break;
         }
-
         res.push({
           type: ContentType.Image,
           key: elem.key,
@@ -270,22 +269,22 @@ export async function loadDraftDetail(id: string): Promise<DraftDetail | null> {
     const docSnap = await getDoc(docRef);
     const draft = docSnap.data() as {
       title: string;
-      state: string;
+      data: string;
     };
 
-    const firebaseState = JSON.parse(draft.state) as EditorState;
-    const nextWorksheetHistory: Worksheet[] = [];
-    for (const worksheet of firebaseState.worksheetHistory) {
-      const res = await firestoreWorksheetToWorksheet(worksheet);
-      if (res === null) return null;
-      else nextWorksheetHistory.push(res);
-    }
-    return {
+    const firebaseData = JSON.parse(draft.data) as Worksheet;
+    const data = await firestoreWorksheetToWorksheet(firebaseData);
+    const res = {
       title: draft.title,
-      state: produce(firebaseState, (draft) => {
-        draft.worksheetHistory = nextWorksheetHistory;
-      }),
+      state: {
+        title: draft.title,
+        currentInd: 0,
+        redoable: false,
+        undoable: false,
+        worksheetHistory: [data],
+      },
     };
+    return res;
   } catch (e) {
     console.log(e);
   }
@@ -294,25 +293,22 @@ export async function loadDraftDetail(id: string): Promise<DraftDetail | null> {
 
 export async function saveDraftDetail(
   id: string,
-  editorState: EditorState,
+  state: EditorState,
 ): Promise<boolean> {
+  const { title, worksheetHistory } = state;
   try {
     const docRef = doc(db, 'drafts', id);
+    const len = worksheetHistory.length;
+    const lastWorksheet = worksheetHistory[len - 1] ?? null;
 
-    const nextWorksheetHistory: Worksheet[] = [];
-    for (const worksheet of editorState.worksheetHistory) {
-      const res = await worksheetToFirestoreWorksheet(worksheet);
-      nextWorksheetHistory.push(res);
+    let data: Worksheet = [];
+    if (lastWorksheet !== null) {
+      data = await worksheetToFirestoreWorksheet(lastWorksheet);
     }
 
-    const nextState = JSON.stringify({
-      ...editorState,
-      worksheetHistory: nextWorksheetHistory,
-    });
-
     const ret = {
-      title: editorState.title,
-      state: nextState,
+      title,
+      data: JSON.stringify(data),
     };
 
     await setDoc(docRef, ret);
