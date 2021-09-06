@@ -296,7 +296,7 @@ function DraftEditor({ id }: EditorProps) {
 
   useEffect(() => {
     setSaved(false);
-  }, [currentState]);
+  }, [currentState, title]);
 
   useEffect(() => {
     load();
