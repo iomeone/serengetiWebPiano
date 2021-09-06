@@ -4,8 +4,11 @@ import {
   collection,
   getDocs,
   getDoc,
-  setDoc,
   doc,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  setDoc,
 } from 'firebase/firestore/lite';
 import {
   getStorage,
@@ -14,10 +17,11 @@ import {
   uploadString,
   getDownloadURL,
 } from 'firebase/storage';
-import produce from 'immer';
-import { Sheet } from 'models/Worksheet';
-import { ContentType, Image, Worksheet } from 'models/Worksheet';
+import { WorksheetElem } from 'models/Worksheet';
+import { ContentType, Worksheet } from 'models/Worksheet';
 import { EditorState } from 'modules/State';
+import { processMusicxml } from './Editor';
+import { v4 as uuidv4 } from 'uuid';
 
 const app = initializeApp({
   apiKey: process.env.REACT_APP_API_KEY,
@@ -147,54 +151,29 @@ export async function firestoreWorksheetToWorksheet(
   const res = [];
   for (const elem of firestoreWorksheet) {
     switch (elem.type) {
-      case ContentType.Paragraph: {
+      case ContentType.Paragraph:
         res.push(elem);
         break;
-      }
       case ContentType.Image: {
-        const blankImage = {
-          type: ContentType.Image,
-          key: elem.key,
-          title: elem.title,
-          file: null,
-          url: null,
-        } as Image;
         const file = await getImageFile(elem.key);
         if (file === null) {
-          res.push(blankImage);
-          break;
+          res.push({ ...elem, file: null, url: null });
+        } else {
+          res.push({ ...elem, file, url: URL.createObjectURL(file) });
         }
-        res.push({
-          type: ContentType.Image,
-          key: elem.key,
-          file,
-          title: elem.title,
-          url: URL.createObjectURL(file),
-        } as Image);
         break;
       }
       case ContentType.Sheet: {
-        const blankSheet = {
-          key: elem.key,
-          type: ContentType.Sheet,
-          title: elem.title,
-          staffType: elem.staffType,
-          musicxml: null,
-        } as Sheet;
         const file = await getMusicxmlFile(elem.key);
         if (file === null) {
-          res.push(blankSheet);
-          break;
+          res.push({ ...elem, musicxml: null });
         } else {
           res.push({
-            key: elem.key,
-            type: ContentType.Sheet,
+            ...elem,
             musicxml: await file.text(),
-            staffType: elem.staffType,
-            title: elem.title,
-          } as Sheet);
-          break;
+          });
         }
+        break;
       }
     }
   }
@@ -206,36 +185,57 @@ export async function worksheetToFirestoreWorksheet(
   const res = [];
   for (const elem of worksheet) {
     switch (elem.type) {
-      case ContentType.Paragraph: {
+      case ContentType.Paragraph:
         res.push(elem);
         break;
-      }
       case ContentType.Image: {
         if (elem.file !== null) {
           await uploadImageFile(elem.key, elem.file);
         }
-        res.push({
-          type: ContentType.Image,
-          key: elem.key,
-          title: elem.title,
-          file: null,
-          url: null,
-        } as Image);
+        res.push({ ...elem, file: null, url: null });
         break;
       }
       case ContentType.Sheet: {
         if (elem.musicxml !== null) {
           await uploadMusicxmlFile(elem.key, elem.musicxml);
         }
-        res.push({
-          type: ContentType.Sheet,
-          key: elem.key,
-          title: elem.title,
-          musicxml: null,
-          staffType: elem.staffType,
-        } as Sheet);
+        res.push({ ...elem, musicxml: null });
         break;
       }
+    }
+  }
+  return res;
+}
+
+export async function draftToPublishWorksheet(
+  draft: Worksheet,
+): Promise<Worksheet | null> {
+  const res: WorksheetElem[] = [];
+  for (const elem of draft) {
+    switch (elem.type) {
+      case ContentType.Paragraph:
+      case ContentType.Image:
+        res.push(elem);
+        break;
+      case ContentType.Sheet:
+        if (elem.musicxml === null) {
+          return null;
+        }
+
+        const nextElem = { ...elem };
+        nextElem.key = uuidv4();
+        nextElem.musicxml = null;
+        const musicxml = processMusicxml(elem.musicxml, elem.staffType);
+        if (musicxml === null) {
+          return null;
+        }
+
+        if (!(await uploadMusicxmlFile(nextElem.key, musicxml))) {
+          return null;
+        }
+
+        res.push(nextElem);
+        break;
     }
   }
   return res;
@@ -259,8 +259,34 @@ export async function getDrafts(): Promise<DraftInfo[] | null> {
   return null;
 }
 
+export async function addDraft(title: string): Promise<string | null> {
+  try {
+    const docRef = await addDoc(collection(db, 'drafts'), {
+      title,
+      deployId: '',
+      data: '[]',
+    });
+    return docRef.id;
+  } catch (e) {
+    console.log(e);
+  }
+  return null;
+}
+
+export async function deleteDraft(id: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, `/drafts/${id}`);
+    await deleteDoc(docRef);
+    return true;
+  } catch (e) {
+    console.log(e);
+  }
+  return false;
+}
+
 export type DraftDetail = {
   title: string;
+  deployId: string;
   state: EditorState;
 };
 export async function loadDraftDetail(id: string): Promise<DraftDetail | null> {
@@ -269,6 +295,7 @@ export async function loadDraftDetail(id: string): Promise<DraftDetail | null> {
     const docSnap = await getDoc(docRef);
     const draft = docSnap.data() as {
       title: string;
+      deployId: string;
       data: string;
     };
 
@@ -283,6 +310,7 @@ export async function loadDraftDetail(id: string): Promise<DraftDetail | null> {
         undoable: false,
         worksheetHistory: [data],
       },
+      deployId: draft.deployId,
     };
     return res;
   } catch (e) {
@@ -311,11 +339,56 @@ export async function saveDraftDetail(
       data: JSON.stringify(data),
     };
 
-    await setDoc(docRef, ret);
+    await updateDoc(docRef, ret);
     return true;
   } catch (e) {
     console.log(e);
   }
 
   return false;
+}
+
+export async function deployDraft(id: string): Promise<string | null> {
+  const worksheet = await loadDraftDetail(id);
+  if (worksheet === null) {
+    return null;
+  }
+
+  const worksheetHistory = worksheet.state.worksheetHistory;
+  const len = worksheetHistory.length;
+  const lastWorksheet = worksheetHistory[len - 1] ?? null;
+  if (lastWorksheet === null) {
+    return null;
+  }
+
+  const data = await draftToPublishWorksheet(lastWorksheet);
+  const nextWorksheet = {
+    title: worksheet.title,
+    data: JSON.stringify(data),
+  };
+
+  try {
+    const docRef = doc(db, 'drafts', id);
+
+    const deployId = worksheet.deployId;
+    console.log(deployId);
+
+    if (deployId !== '' && deployId !== undefined) {
+      const worksheetRef = doc(db, 'worksheets', deployId);
+      await setDoc(worksheetRef, nextWorksheet);
+      return deployId;
+    } else {
+      const worksheetRef = await addDoc(
+        collection(db, 'worksheets'),
+        nextWorksheet,
+      );
+      await updateDoc(docRef, {
+        deployId: worksheetRef.id,
+      });
+      return worksheetRef.id;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return null;
 }
