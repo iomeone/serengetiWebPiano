@@ -156,17 +156,18 @@ type WorksheetViewerProps = {
 };
 function WorksheetViewer({ id }: WorksheetViewerProps) {
   const history = useHistory();
-  const [authLoading]: [User | null, boolean, any] = useAuthState(getAuth());
+  const [_, authLoading]: [User | null, boolean, any] = useAuthState(getAuth());
 
   const [worksheetDetail, setWorksheetDetail] =
     useState<WorksheetDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const refresh = async () => {
+    setWorksheetDetail(await getWorksheetDetail(id));
+    setLoading(false);
+  };
   useEffect(() => {
     if (id !== undefined && !authLoading) {
-      (async () => {
-        setWorksheetDetail(await getWorksheetDetail(id));
-        setLoading(false);
-      })();
+      refresh();
     }
   }, [id, authLoading]);
 
