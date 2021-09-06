@@ -156,7 +156,7 @@ type WorksheetViewerProps = {
 };
 function WorksheetViewer({ id }: WorksheetViewerProps) {
   const history = useHistory();
-  const [_, authLoading]: [User | null, boolean, any] = useAuthState(getAuth());
+  const [, authLoading]: [User | null, boolean, any] = useAuthState(getAuth());
 
   const [worksheetDetail, setWorksheetDetail] =
     useState<WorksheetDetail | null>(null);
