@@ -46,7 +46,6 @@ import {
   getDrafts,
 } from 'utils/Server';
 
-const margin = Size.margin;
 const hMargin = Size.hMargin;
 
 const grid = 4;
