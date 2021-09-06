@@ -9,9 +9,12 @@ import {
   Alert,
   Button,
   Card,
+  Divider,
   Empty,
+  Input,
   List,
   message,
+  Popconfirm,
   Space,
   Tooltip,
   Typography,
@@ -29,13 +32,19 @@ import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useHistory, useParams } from 'react-router-dom';
-import { IoRefreshOutline } from 'react-icons/io5';
+import { IoRefreshOutline, IoRocketOutline } from 'react-icons/io5';
 import SheetElementEditor from 'components/SheetElementEditor';
 import { getAuth, User } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import SpinLayout from 'components/SpinLayout';
 import { signIn } from 'utils/Auth';
-import { DraftInfo, getDrafts } from 'utils/Server';
+import {
+  addDraft,
+  deleteDraft,
+  deployDraft,
+  DraftInfo,
+  getDrafts,
+} from 'utils/Server';
 
 const margin = Size.margin;
 const hMargin = Size.hMargin;
@@ -90,12 +99,16 @@ function SelectDraft() {
   const [draftList, setDraftList] = useState<DraftInfo[] | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refresh = async () => {
+    setDraftList(await getDrafts());
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      setDraftList(await getDrafts());
-      setLoading(false);
-    })();
+    refresh();
   }, []);
+
+  const [title, setTitle] = useState('');
 
   if (loading) return <SpinLayout></SpinLayout>;
   if (draftList === null) {
@@ -107,6 +120,7 @@ function SelectDraft() {
             width: '100%',
             marginTop: 30,
           }}
+          size={8}
         >
           <Space direction="horizontal" size={8} align="center">
             <Button
@@ -145,7 +159,7 @@ function SelectDraft() {
     <ResponsiveCont>
       <Space
         direction="vertical"
-        size={margin}
+        size={10}
         style={{
           width: '100%',
           marginTop: 30,
@@ -164,7 +178,7 @@ function SelectDraft() {
             gutter: 10,
           }}
           dataSource={draftList}
-          renderItem={(item: { id: string; title: string }) => (
+          renderItem={(item: DraftInfo) => (
             <List.Item>
               <Card
                 title={
@@ -172,12 +186,47 @@ function SelectDraft() {
                     {item.title}
                   </Typography.Link>
                 }
+                extra={
+                  <Popconfirm
+                    title="정말로 제거하시겠습니까? 복구할 수 없습니다."
+                    onConfirm={async () => {
+                      await deleteDraft(item.id);
+                      await refresh();
+                    }}
+                  >
+                    <Button shape="circle" type="text">
+                      <DeleteOutlined></DeleteOutlined>
+                    </Button>
+                  </Popconfirm>
+                }
               >
                 <Typography.Text>Worksheet Draft를 편집합니다.</Typography.Text>
               </Card>
             </List.Item>
           )}
         ></List>
+        <Divider></Divider>
+        <Typography.Text style={{ fontWeight: 'bold' }}>
+          Create new worksheet draft
+        </Typography.Text>
+        <Space direction="horizontal" size={8}>
+          <Typography.Text>제목 </Typography.Text>
+          <Input
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+            }}
+          ></Input>
+        </Space>
+        <Button
+          disabled={title === ''}
+          onClick={async () => {
+            await addDraft(title);
+            await refresh();
+          }}
+        >
+          <PlusOutlined></PlusOutlined> 생성
+        </Button>
       </Space>
     </ResponsiveCont>
   );
@@ -224,10 +273,12 @@ function DraftEditor({ id }: EditorProps) {
       if (await saveDraft(id)) {
         message.success('저장되었습니다.');
         setSaved(true);
+        return true;
       } else {
         message.error('저장 실패');
       }
     }
+    return false;
   };
 
   const [loaded, setLoaded] = useState<boolean | null>(null);
@@ -420,6 +471,40 @@ function DraftEditor({ id }: EditorProps) {
                 <IoRefreshOutline></IoRefreshOutline>
               </Button>
             </Tooltip>
+            <Popconfirm
+              title="정말로 제거하시겠습니까? 되돌릴 수 없습니다."
+              onConfirm={async () => {
+                await deleteDraft(id);
+                history.push('/editor');
+              }}
+            >
+              <Tooltip title="Delete">
+                <Button shape="circle" type="text">
+                  <DeleteOutlined></DeleteOutlined>
+                </Button>
+              </Tooltip>
+            </Popconfirm>
+            <Popconfirm
+              title="정말로 배포하시겠습니까?"
+              onConfirm={async () => {
+                message.info('배포중...');
+                if (saved || (await save())) {
+                  const worksheetId = await deployDraft(id);
+                  if (worksheetId !== null) {
+                    message.success('배포 완료');
+                    history.push(`/worksheet/${worksheetId}`);
+                  } else {
+                    message.error('배포 실패');
+                  }
+                }
+              }}
+            >
+              <Tooltip title="Deploy">
+                <Button shape="circle" type="text">
+                  <IoRocketOutline></IoRocketOutline>
+                </Button>
+              </Tooltip>
+            </Popconfirm>
           </Space>
         </Horizontal>
         <TextEditor tag="제목" title={title} onSubmit={setTitle}></TextEditor>
