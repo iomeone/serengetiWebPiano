@@ -362,6 +362,9 @@ export async function deployDraft(id: string): Promise<string | null> {
   }
 
   const data = await draftToPublishWorksheet(lastWorksheet);
+  if (data === null) {
+    return null;
+  }
   const nextWorksheet = {
     title: worksheet.title,
     data: JSON.stringify(data),
