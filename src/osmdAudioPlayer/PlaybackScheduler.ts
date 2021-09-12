@@ -27,8 +27,9 @@ export default class PlaybackScheduler {
   private schedulePeriod: number = 500;
   private tickDenominator: number = 1024;
 
-  private lastTickOffset: number = 500; // Hack to get the initial notes play better
+  private lastTickOffset: number = 300; // Hack to get the initial notes play better
   private playing: boolean = false;
+  private metronome: boolean = false;
 
   private noteSchedulingCallback: NoteSchedulingCallback;
 
@@ -66,19 +67,32 @@ export default class PlaybackScheduler {
     );
   }
 
+  startMetronome() {
+    this.metronome = true;
+    this.startIteration();
+  }
+
+  stopMetronome() {
+    this.metronome = false;
+  }
+
   start() {
     this.stepQueue.sort();
     this.audioContextStartTime = this.audioContext.currentTime;
     this.currentTickTimestamp = this.audioContextTime;
 
+    this.startIteration();
+
+    this.playing = true;
+  }
+
+  startIteration() {
     if (!this.schedulerIntervalHandle) {
       this.schedulerIntervalHandle = window.setInterval(
         () => this.scheduleIterationStep(),
         this.scheduleInterval,
       );
     }
-
-    this.playing = true;
   }
 
   setIterationStep(step: number) {
@@ -123,6 +137,9 @@ export default class PlaybackScheduler {
   }
 
   private scheduleIterationStep() {
+    if (this.metronome) {
+      console.log('tick!');
+    }
     if (!this.playing) return;
     this.currentTick = this.calculatedTick;
     this.currentTickTimestamp = this.audioContextTime;
