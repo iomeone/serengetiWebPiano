@@ -11,7 +11,10 @@ import {
   InstrumentPlayer,
   PlaybackInstrument,
 } from './players/InstrumentPlayer';
-import { NotePlaybackInstruction } from './players/NotePlaybackOptions';
+import {
+  ArticulationStyle,
+  NotePlaybackInstruction,
+} from './players/NotePlaybackOptions';
 import {
   getNoteDuration,
   getNoteVolume,
@@ -38,6 +41,11 @@ interface PlaybackSettings {
   masterVolume: number;
 }
 
+type MetronomeInstrumentInfo = {
+  id: number;
+  note: number;
+};
+
 export default class PlaybackEngine {
   private ac: IAudioContext;
   private defaultBpm: number = 100;
@@ -57,6 +65,16 @@ export default class PlaybackEngine {
   public availableInstruments: PlaybackInstrument[];
   public scoreInstruments: Instrument[] = [];
   public ready: boolean = false;
+
+  public metronomeInstrumentInfoMap: {
+    [key: string]: MetronomeInstrumentInfo;
+  } = {
+    stick: {
+      id: 114,
+      note: 50,
+    },
+  };
+  public metronomeInstrument = 'stick';
 
   constructor(
     context: IAudioContext = new AudioContext(),
@@ -133,8 +151,8 @@ export default class PlaybackEngine {
       this.denominator,
       this.wholeNoteLength,
       this.ac,
-      (delay, stepIndex, notes) =>
-        this.notePlaybackCallback(delay, stepIndex, notes),
+      (delay, index, notes) => this.notePlaybackCallback(delay, index, notes),
+      (delay) => this.metronomeCallback(delay),
     );
     this.countAndSetIterationSteps();
     this.ready = true;
@@ -163,6 +181,10 @@ export default class PlaybackEngine {
       playerPromises.push(this.instrumentPlayer.load(i.MidiInstrumentId));
     }
     await Promise.all(playerPromises);
+
+    for (const info of Object.values(this.metronomeInstrumentInfoMap)) {
+      await this.instrumentPlayer.load(info.id);
+    }
   }
 
   private fallbackToPiano(i: Instrument) {
@@ -266,6 +288,22 @@ export default class PlaybackEngine {
       ++steps;
     }
     this.osmd.cursor.reset();
+  }
+
+  private metronomeCallback(audioDelay: number) {
+    setTimeout(() => {
+      console.log('beat!');
+    }, audioDelay * 1000);
+    const info = this.metronomeInstrumentInfoMap[this.metronomeInstrument];
+    if (info === undefined) throw Error('there is no metronome instrument');
+    this.instrumentPlayer.schedule(info.id, this.ac.currentTime + audioDelay, [
+      {
+        articulation: ArticulationStyle.None,
+        duration: 1,
+        gain: 3,
+        note: info.note,
+      },
+    ]);
   }
 
   private notePlaybackCallback(

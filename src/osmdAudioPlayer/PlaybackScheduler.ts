@@ -8,6 +8,8 @@ type NoteSchedulingCallback = (
   notes: any,
 ) => void;
 
+type MetronomeCallback = (delay: number) => void;
+
 export default class PlaybackScheduler {
   public denominator: number;
   public wholeNoteLength: number;
@@ -33,17 +35,20 @@ export default class PlaybackScheduler {
   private metronome: boolean = false;
 
   private noteSchedulingCallback: NoteSchedulingCallback;
+  private metronomeCallback: MetronomeCallback;
 
   constructor(
     denominator: number,
     wholeNoteLength: number,
     audioContext: IAudioContext,
     noteSchedulingCallback: NoteSchedulingCallback,
+    metronomeCallback: MetronomeCallback,
   ) {
     this.noteSchedulingCallback = noteSchedulingCallback;
     this.denominator = denominator;
     this.wholeNoteLength = wholeNoteLength;
     this.audioContext = audioContext;
+    this.metronomeCallback = metronomeCallback;
   }
 
   get schedulePeriodTicks() {
@@ -146,9 +151,7 @@ export default class PlaybackScheduler {
         const curTimespan = curTick * this.tickDuration;
         const current = curTimespan + this.audioContextTime;
         if (current > this.lastProcessed + (beatTick * this.tickDuration) / 2) {
-          setTimeout(() => {
-            console.log('beat');
-          }, curTimespan);
+          this.metronomeCallback(curTimespan / 1000);
           this.lastProcessed = current;
         }
         curTick += beatTick;
