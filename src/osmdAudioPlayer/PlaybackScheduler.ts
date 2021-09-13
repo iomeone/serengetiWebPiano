@@ -143,13 +143,15 @@ export default class PlaybackScheduler {
 
   private scheduleIterationStep() {
     if (this.metronome) {
+      const thisTick = this.calculatedTick;
       const beatTick = this.tickDenominator / this.denominator;
-      const offsetTick = this.calculatedTick % beatTick;
+      const offsetTick = (thisTick - this.lastTickOffset) % beatTick;
+      const currentTime = this.audioContextTime;
 
       let curTick = beatTick - offsetTick;
       while (curTick < this.metronomeProcessInterval) {
         const curTimespan = curTick * this.tickDuration;
-        const current = curTimespan + this.audioContextTime;
+        const current = curTimespan + currentTime;
         if (current > this.lastProcessed + (beatTick * this.tickDuration) / 2) {
           this.metronomeCallback(curTimespan / 1000);
           this.lastProcessed = current;
