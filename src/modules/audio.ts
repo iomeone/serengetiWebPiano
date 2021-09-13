@@ -126,6 +126,7 @@ export const cleanupSheetThunk =
 
     if (sheet.playbackService !== null) {
       sheet.playbackService.stop();
+      sheet.playbackService.stopMetronome();
     }
     dispatch(deleteSheet(sheetKey));
   };
