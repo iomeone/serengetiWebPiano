@@ -70,8 +70,8 @@ export default class PlaybackEngine {
     [key: string]: MetronomeInstrumentInfo;
   } = {
     stick: {
-      id: 114,
-      note: 50,
+      id: 113,
+      note: 40,
     },
   };
   public metronomeInstrument = 'stick';
@@ -291,9 +291,9 @@ export default class PlaybackEngine {
   }
 
   private metronomeCallback(audioDelay: number) {
-    setTimeout(() => {
-      console.log('beat!');
-    }, audioDelay * 1000);
+    // setTimeout(() => {
+    //   console.log('beat!');
+    // }, audioDelay * 1000);
     const info = this.metronomeInstrumentInfoMap[this.metronomeInstrument];
     if (info === undefined) throw Error('there is no metronome instrument');
     this.instrumentPlayer.schedule(info.id, this.ac.currentTime + audioDelay, [
