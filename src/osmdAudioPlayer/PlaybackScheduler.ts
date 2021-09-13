@@ -14,7 +14,6 @@ export default class PlaybackScheduler {
 
   private stepQueue = new StepQueue();
   private stepQueueIndex = 0;
-  private scheduledTicks = new Set();
 
   private currentTick = 0;
   private currentTickTimestamp = 0;
@@ -24,6 +23,8 @@ export default class PlaybackScheduler {
 
   private schedulerIntervalHandle: number | null = null;
   private scheduleInterval: number = 200; // Milliseconds
+  private metronomeProcessInterval: number = 300; // Milliseconds
+  private lastProcessed = 0;
   private schedulePeriod: number = 500;
   private tickDenominator: number = 1024;
 
@@ -79,11 +80,10 @@ export default class PlaybackScheduler {
   start() {
     this.stepQueue.sort();
     this.audioContextStartTime = this.audioContext.currentTime;
+    this.lastProcessed = 0;
     this.currentTickTimestamp = this.audioContextTime;
-
-    this.startIteration();
-
     this.playing = true;
+    this.startIteration();
   }
 
   startIteration() {
@@ -138,9 +138,25 @@ export default class PlaybackScheduler {
 
   private scheduleIterationStep() {
     if (this.metronome) {
-      console.log('tick!');
+      const beatTick = this.tickDenominator / this.denominator;
+      const offsetTick = this.calculatedTick % beatTick;
+
+      let curTick = beatTick - offsetTick;
+      while (curTick < this.metronomeProcessInterval) {
+        const curTimespan = curTick * this.tickDuration;
+        const current = curTimespan + this.audioContextTime;
+        if (current > this.lastProcessed + (beatTick * this.tickDuration) / 2) {
+          setTimeout(() => {
+            console.log('beat');
+          }, curTimespan);
+          this.lastProcessed = current;
+        }
+        curTick += beatTick;
+      }
     }
+
     if (!this.playing) return;
+
     this.currentTick = this.calculatedTick;
     this.currentTickTimestamp = this.audioContextTime;
 
@@ -152,7 +168,6 @@ export default class PlaybackScheduler {
       let timeToTick = (step.tick - this.currentTick) * this.tickDuration;
       if (timeToTick < 0) timeToTick = 0;
 
-      this.scheduledTicks.add(step.tick);
       this.noteSchedulingCallback(
         timeToTick / 1000,
         this.stepQueueIndex,
@@ -161,12 +176,6 @@ export default class PlaybackScheduler {
 
       this.stepQueueIndex++;
       nextTick = this.stepQueue.steps[this.stepQueueIndex]?.tick;
-    }
-
-    for (let tick of this.scheduledTicks as any) {
-      if (tick <= this.currentTick) {
-        this.scheduledTicks.delete(tick);
-      }
     }
   }
 
