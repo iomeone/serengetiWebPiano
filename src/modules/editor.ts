@@ -3,11 +3,7 @@ import { action, ActionType } from 'typesafe-actions';
 import { EditorState } from 'modules/State';
 import inistialState from './initialState';
 import { ContentType } from 'models/Worksheet';
-import {
-  EditorWorksheetElem,
-  EditorWorksheet,
-  StaffType,
-} from 'models/EditorWorksheet';
+import { WorksheetElem, Worksheet, StaffType } from 'models/Worksheet';
 
 export const LOAD_STATE = '@EDITOR/LOAD_STATE';
 export const loadState = (editorState: EditorState) =>
@@ -19,15 +15,15 @@ export const setTitle = (title: string) => action(SET_TITLE, { title });
 export type SetTitle = ActionType<typeof setTitle>;
 
 export const ADD_WORKSHEET_ELEM = '@EDITOR/ADD_WORKSHEET_ELEM';
-export const addWorksheetElem = (contentType: ContentType) =>
-  action(ADD_WORKSHEET_ELEM, { contentType });
+export const addWorksheetElem = (
+  contentType: ContentType,
+  uniqueKey: string | null,
+) => action(ADD_WORKSHEET_ELEM, { contentType, uniqueKey });
 export type AddWorksheetElem = ActionType<typeof addWorksheetElem>;
 
 export const UPDATE_WORKSHEET_ELEM = '@EDITOR/UPDATE_WORKSHEET_ELEM';
-export const updateWorksheetElem = (
-  elemInd: number,
-  nextElem: EditorWorksheetElem,
-) => action(UPDATE_WORKSHEET_ELEM, { elemInd, nextElem });
+export const updateWorksheetElem = (elemInd: number, nextElem: WorksheetElem) =>
+  action(UPDATE_WORKSHEET_ELEM, { elemInd, nextElem });
 export type UpdateWorksheetElem = ActionType<typeof updateWorksheetElem>;
 
 export const DELETE_WORKSHEET_ELEM = '@EDITOR/DELETE_WORKSHEET_ELEM';
@@ -76,9 +72,9 @@ export const editorReducer = (
     case ADD_WORKSHEET_ELEM: {
       const { payload } = action as AddWorksheetElem;
       return undoAndRedoableChangeState(state, (currentState) => {
-        const elem: EditorWorksheetElem | null = makeElement(
+        const elem: WorksheetElem | null = makeElement(
           payload.contentType,
-          currentState?.length ?? 0,
+          payload.uniqueKey,
         );
         if (elem === null) throw new Error('Failed to make new element');
         if (currentState === null) {
@@ -154,8 +150,8 @@ export const editorReducer = (
 
 function makeElement(
   contentType: ContentType,
-  elemNum: number,
-): EditorWorksheetElem | null {
+  uniqueKey: string | null,
+): WorksheetElem | null {
   switch (contentType) {
     case ContentType.Paragraph:
       return {
@@ -165,18 +161,18 @@ function makeElement(
     case ContentType.Sheet:
       return {
         type: ContentType.Sheet,
-        title: `sheet-${elemNum}`,
-        key: '',
-        measureRange: [0, 0],
+        title: 'new-sheet',
+        key: uniqueKey ?? '',
         musicxml: null,
         staffType: StaffType.BothHands,
       };
     case ContentType.Image:
       return {
         type: ContentType.Image,
+        key: uniqueKey ?? '',
         file: null,
-        previewUrl: null,
-        title: `sheet-${elemNum}`,
+        url: null,
+        title: 'new-image',
       };
     default:
       return null;
@@ -186,8 +182,8 @@ function makeElement(
 function undoAndRedoableChangeState(
   state: EditorState,
   makeNextWorksheetState: (
-    currentWorksheetState: EditorWorksheet | null,
-  ) => EditorWorksheet | null,
+    currentWorksheetState: Worksheet | null,
+  ) => Worksheet | null,
 ) {
   return produce(state, (draft) => {
     const currentWorksheetState =

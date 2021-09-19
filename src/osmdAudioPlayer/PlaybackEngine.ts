@@ -1,10 +1,9 @@
 import PlaybackScheduler from './PlaybackScheduler';
 import {
-  Cursor,
-  OpenSheetMusicDisplay,
+  Instrument,
   MusicSheet,
   Note,
-  Instrument,
+  OpenSheetMusicDisplay,
   Voice,
 } from 'opensheetmusicdisplay';
 import { SoundfontPlayer } from './players/SoundfontPlayer';
@@ -12,7 +11,10 @@ import {
   InstrumentPlayer,
   PlaybackInstrument,
 } from './players/InstrumentPlayer';
-import { NotePlaybackInstruction } from './players/NotePlaybackOptions';
+import {
+  ArticulationStyle,
+  NotePlaybackInstruction,
+} from './players/NotePlaybackOptions';
 import {
   getNoteDuration,
   getNoteVolume,
@@ -29,8 +31,9 @@ export enum PlaybackState {
 }
 
 export enum PlaybackEvent {
-  STATE_CHANGE = 'state-change',
-  ITERATION = 'iteration',
+  STATE_CHANGE = 'STATE_CHANGE',
+  ITERATION = 'ITERATION',
+  METRONOME = 'METRONOME',
 }
 
 interface PlaybackSettings {
@@ -38,18 +41,21 @@ interface PlaybackSettings {
   masterVolume: number;
 }
 
+type MetronomeInstrumentInfo = {
+  id: number;
+  note: number;
+};
+
 export default class PlaybackEngine {
   private ac: IAudioContext;
   private defaultBpm: number = 100;
-  private cursor: Cursor | null;
+  private osmd: OpenSheetMusicDisplay | null;
   private sheet: MusicSheet | null;
   private denominator: number | null;
   private scheduler: PlaybackScheduler | null;
   private instrumentPlayer: InstrumentPlayer;
   private events: EventEmitter<PlaybackEvent>;
   private compensateDelay: number;
-
-  private iterationSteps: number;
   private currentIterationStep: number;
 
   private timeoutHandles: number[];
@@ -59,6 +65,16 @@ export default class PlaybackEngine {
   public availableInstruments: PlaybackInstrument[];
   public scoreInstruments: Instrument[] = [];
   public ready: boolean = false;
+
+  public metronomeInstrumentInfoMap: {
+    [key: string]: MetronomeInstrumentInfo;
+  } = {
+    stick: {
+      id: 113,
+      note: 40,
+    },
+  };
+  public metronomeInstrument = 'stick';
 
   constructor(
     context: IAudioContext = new AudioContext(),
@@ -73,13 +89,11 @@ export default class PlaybackEngine {
 
     this.events = new EventEmitter();
 
-    this.cursor = null;
+    this.osmd = null;
     this.sheet = null;
     this.denominator = null;
     this.scheduler = null;
-    this.compensateDelay = 50;
-
-    this.iterationSteps = 0;
+    this.compensateDelay = 30;
     this.currentIterationStep = 0;
 
     this.timeoutHandles = [];
@@ -121,10 +135,10 @@ export default class PlaybackEngine {
   }
 
   async loadScore(osmd: OpenSheetMusicDisplay): Promise<void> {
+    this.osmd = osmd;
     this.ready = false;
     this.sheet = osmd.Sheet;
     this.scoreInstruments = this.sheet.Instruments;
-    this.cursor = osmd.cursor;
     this.denominator = this.sheet.SheetPlaybackSetting.rhythm.Denominator;
     if (this.sheet.HasBPMInfo) {
       this.setBpm(this.sheet.DefaultStartTempoInBpm);
@@ -137,8 +151,8 @@ export default class PlaybackEngine {
       this.denominator,
       this.wholeNoteLength,
       this.ac,
-      (delay, stepIndex, notes) =>
-        this.notePlaybackCallback(delay, stepIndex, notes),
+      (delay, index, notes) => this.notePlaybackCallback(delay, index, notes),
+      (delay) => this.metronomeCallback(delay),
     );
     this.countAndSetIterationSteps();
     this.ready = true;
@@ -167,6 +181,10 @@ export default class PlaybackEngine {
       playerPromises.push(this.instrumentPlayer.load(i.MidiInstrumentId));
     }
     await Promise.all(playerPromises);
+
+    for (const info of Object.values(this.metronomeInstrumentInfoMap)) {
+      await this.instrumentPlayer.load(info.id);
+    }
   }
 
   private fallbackToPiano(i: Instrument) {
@@ -180,29 +198,30 @@ export default class PlaybackEngine {
     }
   }
 
-  async play() {
-    if (this.cursor === null) throw Error('Cursor is null');
+  public async play() {
+    if (this.osmd === null) throw Error('OpenSheetMusicDisplay is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
     this.setState(PlaybackState.PLAYING);
-    this.cursor.show();
+    this.osmd.cursor.hide();
+    this.osmd.cursor.show();
     this.scheduler.start();
   }
 
-  async stop() {
-    if (this.cursor === null) throw Error('Cursor is null');
+  public async stop() {
+    if (this.osmd === null) throw Error('OpenSheetMusicDisplay is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
     this.setState(PlaybackState.STOPPED);
     this.stopPlayers();
     this.clearTimeouts();
     this.scheduler.reset();
-    this.cursor.reset();
+    this.osmd.cursor.reset();
     this.currentIterationStep = 0;
-    this.cursor.hide();
+    this.osmd.cursor.hide();
   }
 
-  pause() {
+  public pause() {
     if (this.sheet === null) throw Error('Cursor is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
@@ -213,26 +232,42 @@ export default class PlaybackEngine {
     this.clearTimeouts();
   }
 
-  jumpToMeasure(measureInd: number) {
-    if (this.cursor === null) throw Error('Cursor is null');
+  public jumpToMeasure(measureInd: number) {
+    if (this.osmd === null) throw Error('OpenSheetMusicDisplay is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
     this.pause();
-    if (this.cursor.iterator.CurrentMeasureIndex >= measureInd) {
-      this.cursor.reset();
+    if (this.osmd.cursor.iterator.CurrentMeasureIndex >= measureInd) {
+      this.osmd.cursor.reset();
       this.currentIterationStep = 0;
     }
-    while (this.cursor.iterator.CurrentMeasureIndex < measureInd) {
-      this.cursor.next();
+    while (this.osmd.cursor.iterator.CurrentMeasureIndex < measureInd) {
+      this.osmd.cursor.next();
       ++this.currentIterationStep;
     }
     let schedulerStep = this.currentIterationStep;
     this.scheduler.setIterationStep(schedulerStep);
   }
 
-  setBpm(bpm: number) {
+  public startMetronome() {
+    if (this.scheduler === null) throw Error('Scheduler is null');
+    this.scheduler.startMetronome();
+    this.events.emit(PlaybackEvent.METRONOME, true);
+  }
+
+  public stopMetronome() {
+    if (this.scheduler === null) throw Error('Scheduler is null');
+    this.scheduler.stopMetronome();
+    this.events.emit(PlaybackEvent.METRONOME, false);
+  }
+
+  public setBpm(bpm: number) {
     this.playbackSettings.bpm = bpm;
     if (this.scheduler) this.scheduler.wholeNoteLength = this.wholeNoteLength;
+  }
+
+  public getBpm() {
+    return this.playbackSettings.bpm;
   }
 
   public on(event: PlaybackEvent, cb: (...args: any[]) => void) {
@@ -240,20 +275,35 @@ export default class PlaybackEngine {
   }
 
   private countAndSetIterationSteps() {
-    if (this.cursor === null) throw Error('Cursor is null');
+    if (this.osmd === null) throw Error('OpenSheetMusicDisplay is null');
     if (this.scheduler === null) throw Error('Scheduler is null');
 
-    this.cursor.reset();
+    this.osmd.cursor.reset();
     let steps = 0;
-    while (!this.cursor.Iterator.EndReached) {
-      if (this.cursor.Iterator.CurrentVoiceEntries) {
-        this.scheduler.loadNotes(this.cursor.Iterator.CurrentVoiceEntries);
+    while (!this.osmd.cursor.Iterator.EndReached) {
+      if (this.osmd.cursor.Iterator.CurrentVoiceEntries) {
+        this.scheduler.loadNotes(this.osmd.cursor.Iterator.CurrentVoiceEntries);
       }
-      this.cursor.next();
+      this.osmd.cursor.next();
       ++steps;
     }
-    this.iterationSteps = steps;
-    this.cursor.reset();
+    this.osmd.cursor.reset();
+  }
+
+  private metronomeCallback(audioDelay: number) {
+    // setTimeout(() => {
+    //   console.log('beat!');
+    // }, audioDelay * 1000);
+    const info = this.metronomeInstrumentInfoMap[this.metronomeInstrument];
+    if (info === undefined) throw Error('there is no metronome instrument');
+    this.instrumentPlayer.schedule(info.id, this.ac.currentTime + audioDelay, [
+      {
+        articulation: ArticulationStyle.None,
+        duration: 1,
+        gain: 3,
+        note: info.note,
+      },
+    ]);
   }
 
   private notePlaybackCallback(
@@ -305,7 +355,11 @@ export default class PlaybackEngine {
         Math.max(0, audioDelay * 1000 - this.compensateDelay),
       ),
       window.setTimeout(
-        () => this.events.emit(PlaybackEvent.ITERATION, this.cursor?.Iterator),
+        () =>
+          this.events.emit(
+            PlaybackEvent.ITERATION,
+            this.osmd?.cursor?.Iterator,
+          ),
         audioDelay * 1000,
       ),
     );
@@ -335,10 +389,10 @@ export default class PlaybackEngine {
   }
 
   private iterationCallback(stepIndex: number) {
-    if (this.cursor === null) throw Error('Cursor is null');
+    if (this.osmd === null) throw Error('OpenSheetMusicDisplay is null');
     if (this.state !== PlaybackState.PLAYING) return;
     while (this.currentIterationStep < stepIndex) {
-      this.cursor.next();
+      this.osmd.cursor.next();
       ++this.currentIterationStep;
     }
   }

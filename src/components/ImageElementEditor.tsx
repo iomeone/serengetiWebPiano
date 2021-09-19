@@ -1,13 +1,12 @@
 import { Button, Space, Typography } from 'antd';
-import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorImage } from 'models/EditorWorksheet';
 import { ImageUploadArea } from './UploadArea';
 import TextEditor from './TextEditor';
+import { Image } from 'models/Worksheet';
 
 type ImageElementEditorProps = {
-  elem: EditorImage;
+  elem: Image;
   elemInd: number;
 };
 
@@ -15,7 +14,7 @@ export default function ImageElementEditor({
   elem,
   elemInd,
 }: ImageElementEditorProps) {
-  const { updateElem } = useEditor();
+  const { updateElem, loadImageFile } = useEditor();
 
   const submit = (title: string) => {
     updateElem(
@@ -26,23 +25,12 @@ export default function ImageElementEditor({
     );
   };
 
-  const loadFile = (file: UploadFile<any>) => {
-    const fileObj = file.originFileObj as File;
-    updateElem(
-      elemInd,
-      produce(elem, (draft) => {
-        draft.file = fileObj;
-        draft.previewUrl = URL.createObjectURL(fileObj);
-      }),
-    );
-  };
-
   const resetFile = () => {
     updateElem(
       elemInd,
       produce(elem, (draft) => {
         draft.file = null;
-        draft.previewUrl = '';
+        draft.url = null;
       }),
     );
   };
@@ -59,7 +47,7 @@ export default function ImageElementEditor({
       {elem.file === null ? (
         <ImageUploadArea
           onLoadFile={(file) => {
-            loadFile(file);
+            loadImageFile(elem, elemInd, file);
           }}
         ></ImageUploadArea>
       ) : (
@@ -80,7 +68,7 @@ export default function ImageElementEditor({
           <img
             style={{ width: '100%', height: 'auto' }}
             alt={elem.title}
-            src={elem.previewUrl ?? ''}
+            src={elem.url ?? ''}
           ></img>
           <Button
             onClick={() => {

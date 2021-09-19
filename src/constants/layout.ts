@@ -6,7 +6,7 @@ export const Size = {
   margin: MARGIN,
   hMargin: H_MARGIN,
   maxWidth: MAX_WIDTH,
-  desktopMin: MAX_WIDTH + 2 * MARGIN,
+  desktopMin: MAX_WIDTH + 2 * H_MARGIN,
   tabletMin: 724,
   headerHeight: 60,
 };

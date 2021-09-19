@@ -7,7 +7,6 @@ import {
 import { Button, Space } from 'antd';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorParagraph } from 'models/EditorWorksheet';
 import { Paragraph } from 'models/Worksheet';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
@@ -46,6 +45,7 @@ export default function ParagraphElementEditor({
     >
       {elem.content.map((paragraph, paragraphInd) => (
         <ParagraphEditor
+          key={paragraphInd}
           elem={elem}
           paragraph={paragraph}
           elemInd={elemInd}
@@ -76,7 +76,7 @@ const ParagraphBox = styled.div`
 `;
 
 type ParagraphEditorProps = {
-  elem: EditorParagraph;
+  elem: Paragraph;
   paragraph: string[];
   elemInd: number;
   paragraphInd: number;
@@ -104,7 +104,7 @@ function ParagraphEditor({
     );
   };
 
-  const save = () => {
+  const save = useCallback(() => {
     setSaved(true);
     updateElem(
       elemInd,
@@ -112,7 +112,7 @@ function ParagraphEditor({
         draft.content[paragraphInd] = value.split('\n');
       }),
     );
-  };
+  }, [updateElem, setSaved, elem, elemInd, paragraphInd, value]);
 
   useEffect(() => {
     if (!saved) {

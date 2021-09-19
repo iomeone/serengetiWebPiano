@@ -11,6 +11,7 @@ import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
 import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
 import { useSheet } from 'hooks/useSheet';
+import { GiMetronome } from 'react-icons/gi';
 
 const SheetCont = styled.div`
   width: 100%;
@@ -87,11 +88,23 @@ export default function SegmentViewer({
     service?.stop();
   };
 
+  const toggleMetronome = async () => {
+    const met = sheet?.metronomeState ?? false;
+    const service = await getOrCreateFrontPlaybackServiceWithGesture();
+
+    if (met) {
+      service?.stopMetronome();
+    } else {
+      dispatch(stopOtherPlaybackServicesThunk(sheetKey));
+      service?.startMetronome();
+    }
+  };
+
   return (
     <div
       style={{
         width: '100%',
-        backgroundColor: '#E6CDAF',
+        backgroundColor: '#e1e1e1',
         paddingBottom: 20,
       }}
     >
@@ -135,6 +148,17 @@ export default function SegmentViewer({
                     <Button onClick={stop} type="text" shape="circle">
                       <IoStop />
                     </Button>
+                    <Button
+                      onClick={toggleMetronome}
+                      style={{
+                        color:
+                          sheet?.metronomeState ?? false ? 'black' : '#888888',
+                      }}
+                      type="text"
+                      shape="circle"
+                    >
+                      <GiMetronome></GiMetronome>
+                    </Button>
                   </Space>
                 );
               case PlaybackState.PLAYING:
@@ -146,6 +170,17 @@ export default function SegmentViewer({
                     <Button onClick={stop} type="text" shape="circle">
                       <IoStop />
                     </Button>
+                    <Button
+                      onClick={toggleMetronome}
+                      style={{
+                        color:
+                          sheet?.metronomeState ?? false ? 'black' : '#888888',
+                      }}
+                      type="text"
+                      shape="circle"
+                    >
+                      <GiMetronome></GiMetronome>
+                    </Button>
                   </Space>
                 );
             }
@@ -155,8 +190,7 @@ export default function SegmentViewer({
       <SheetCont>
         <div
           style={{
-            width: 100000,
-            height,
+            minHeight: height,
           }}
         >
           <Viewer sheetKey={sheetKey}></Viewer>

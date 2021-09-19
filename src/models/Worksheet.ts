@@ -12,16 +12,24 @@ export type Paragraph = Content<ContentType.Paragraph> & {
   content: string[][];
 };
 
+export enum StaffType {
+  RightHand = 'RightHand',
+  LeftHand = 'LeftHand',
+  BothHands = 'BothHands',
+}
+
 export type Sheet = Content<ContentType.Sheet> & {
-  key: string;
   title: string;
-  path: string;
-  oneStaff: boolean;
+  key: string;
+  musicxml: string | null;
+  staffType: StaffType;
 };
 
 export type Image = Content<ContentType.Image> & {
   title: string;
-  path: string;
+  key: string;
+  file: File | null;
+  url: string | null;
 };
 
 export type WorksheetElem = Paragraph | Sheet | Image;

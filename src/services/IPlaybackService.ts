@@ -15,6 +15,8 @@ export interface IPlaybackService {
   play: () => void;
   pause: () => void;
   stop: () => void;
+  startMetronome: () => void;
+  stopMetronome: () => void;
   jumpToMeasure: (measureInd: number) => void;
   addIteratorListener(
     listener: (iterator: MusicPartManagerIterator) => void,

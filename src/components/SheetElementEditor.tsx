@@ -1,8 +1,7 @@
 import { Alert, Button, Radio, Space, Typography } from 'antd';
-import { UploadFile } from 'antd/lib/upload/interface';
 import { useEditor } from 'hooks/useEditor';
 import produce from 'immer';
-import { EditorSheet, StaffType } from 'models/EditorWorksheet';
+import { Sheet, StaffType } from 'models/Worksheet';
 import { useEffect } from 'react';
 import { useMemo } from 'react';
 import {
@@ -16,39 +15,18 @@ import TextEditor from './TextEditor';
 import { MusicxmlUploadArea } from './UploadArea';
 
 type Props = {
-  elem: EditorSheet;
+  elem: Sheet;
   elemInd: number;
 };
 
 export default function SheetElementEditor({ elem, elemInd }: Props) {
-  const { updateElem } = useEditor();
-
-  const submitKey = (key: string) => {
-    updateElem(
-      elemInd,
-      produce(elem, (draft) => {
-        draft.key = key;
-      }),
-    );
-  };
+  const { updateElem, loadMusicxmlFile } = useEditor();
 
   const submitTitle = (title: string) => {
     updateElem(
       elemInd,
       produce(elem, (draft) => {
         draft.title = title;
-      }),
-    );
-  };
-
-  const loadFile = async (file: UploadFile<any>) => {
-    const fileObj = file.originFileObj as File;
-    const text = await fileObj.text();
-
-    updateElem(
-      elemInd,
-      produce(elem, (draft) => {
-        draft.musicxml = text;
       }),
     );
   };
@@ -90,6 +68,7 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
         }),
       );
     }
+    //eslint-disable-next-line
   }, [multipleStaves]);
 
   const processedMusicxml = useMemo(() => {
@@ -111,25 +90,12 @@ export default function SheetElementEditor({ elem, elemInd }: Props) {
         onSubmit={submitTitle}
         tag="악보 제목"
       ></TextEditor>
-      <TextEditor
-        title={elem.title}
-        onSubmit={submitKey}
-        tag="악보 키"
-      ></TextEditor>
-
       {(() => {
-        if (elem.key === null)
-          return (
-            <Alert
-              type="warning"
-              message="악보 고유 키를 먼저 입력해주세요. 한 문서 내에서 키는 겹칠 수 없는 고유 번호입니다."
-            ></Alert>
-          );
         if (elem.musicxml === null)
           return (
             <MusicxmlUploadArea
               onLoadFile={(file) => {
-                loadFile(file);
+                loadMusicxmlFile(elem, elemInd, file);
               }}
             ></MusicxmlUploadArea>
           );

@@ -1,5 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
+import {
+  IOSMDOptions,
+  OpenSheetMusicDisplay as OSMD,
+  VexFlowMusicSheetCalculator,
+} from 'opensheetmusicdisplay';
 import { useDispatch } from 'react-redux';
 import {
   addSheet,
@@ -10,14 +14,11 @@ import styled from 'styled-components';
 import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { useSheet } from 'hooks/useSheet';
+import { Sheet } from 'models/Sheet';
+import { PlaybackState } from 'services/IPlaybackService';
 
-type ContProps = {
-  x: number;
-};
-
-const Cont = styled.div<ContProps>`
+const Cont = styled.div`
   position: relative;
-  transform: translateX(-${(props) => props.x}px);
 `;
 
 type BoxProps = {
@@ -36,31 +37,60 @@ type ViewerProps = {
   hidden?: boolean;
 };
 
+enum ResizeState {
+  Init,
+  ResizeStart,
+  ResizeEnd,
+}
+
 export default function Viewer({ sheetKey, hidden }: ViewerProps) {
   const dispatch = useDispatch();
   const osmdDivRef = useRef<HTMLDivElement>(null);
-  const [positionX, setPositionX] = useState(0);
   const [hoveringBoxInd, setHoveringBoxInd] = useState<number | null>(null);
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
   const { sheet, isLoaded: isSheetLoaded } = useSheet(sheetKey);
 
+  const [resize, setResize] = useState<ResizeState>(ResizeState.Init);
+  useEffect(() => {
+    if (resize === ResizeState.ResizeStart) {
+      if (isSheetLoaded) {
+        const service = sheet?.playbackService ?? null;
+        if (
+          service !== null &&
+          sheet?.playbackState === PlaybackState.PLAYING
+        ) {
+          service.pause();
+        }
+      }
+    }
+  }, [resize, isSheetLoaded]);
+
   useEffect(() => {
     if (osmdDivRef.current !== null) {
-      const osmd = new OSMD(osmdDivRef.current, {
-        autoResize: false,
-        backend: 'svg',
-        drawLyricist: false,
-        drawLyrics: false,
-        drawFingerings: true,
-        drawTitle: false,
-        drawComposer: false,
-        drawCredits: false,
-        drawSubtitle: false,
-        drawPartNames: false,
-        drawPartAbbreviations: false,
-        drawingParameters: 'compact',
-      });
+      const osmd = new CustomResizeOSMD(
+        osmdDivRef.current,
+        () => {
+          setResize(ResizeState.ResizeStart);
+        },
+        () => {
+          setResize(ResizeState.ResizeEnd);
+        },
+        {
+          autoResize: true,
+          backend: 'svg',
+          drawLyricist: false,
+          drawLyrics: false,
+          drawFingerings: true,
+          drawTitle: false,
+          drawComposer: false,
+          drawCredits: false,
+          drawSubtitle: false,
+          drawPartNames: false,
+          drawPartAbbreviations: false,
+          drawingParameters: 'compact',
+        },
+      );
 
       dispatch(addSheet(sheetKey, osmd));
     }
@@ -68,10 +98,10 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
 
   const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
   useEffect(() => {
-    if (isSheetLoaded) {
+    if (isSheetLoaded && resize === ResizeState.ResizeEnd) {
       setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
     }
-  }, [sheet, isSheetLoaded]);
+  }, [sheet, isSheetLoaded, resize]);
 
   useLayoutEffect(() => {
     return () => {
@@ -80,23 +110,8 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
     //eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
-    if (
-      sheet !== null &&
-      sheet.currentMeasureInd !== null &&
-      measureBoxes !== null
-    ) {
-      const index = Math.min(sheet.currentMeasureInd, measureBoxes.length - 1);
-      if (measureBoxes[index].right - positionX > window.innerWidth) {
-        setPositionX(measureBoxes[index].left - 50);
-      } else if (measureBoxes[index].right - positionX < 0) {
-        setPositionX(measureBoxes[index].left - 50);
-      }
-    }
-  }, [isSheetLoaded, sheet?.currentMeasureInd, measureBoxes]);
-
   return (
-    <Cont x={positionX}>
+    <Cont>
       <div
         ref={osmdDivRef}
         style={{
@@ -130,4 +145,31 @@ export default function Viewer({ sheetKey, hidden }: ViewerProps) {
         ))}
     </Cont>
   );
+}
+
+class CustomResizeOSMD extends OSMD {
+  constructor(
+    container: string | HTMLElement,
+    resizeStart: () => void,
+    resizeEnd: () => void,
+    options?: IOSMDOptions | undefined,
+  ) {
+    super(container, {
+      ...options,
+      autoResize: false,
+    });
+    this.autoResizeEnabled = true;
+    this.handleResize(resizeStart, () => {
+      if (this.graphic?.GetCalculator instanceof VexFlowMusicSheetCalculator) {
+        // null and type check
+        (
+          this.graphic.GetCalculator as VexFlowMusicSheetCalculator
+        ).beamsNeedUpdate = true;
+      }
+      if (this.IsReadyToRender()) {
+        this.render();
+      }
+      resizeEnd();
+    });
+  }
 }

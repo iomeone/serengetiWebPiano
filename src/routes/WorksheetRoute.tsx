@@ -1,13 +1,21 @@
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button, Card, List, Space, Typography } from 'antd';
+import { Alert, Button, Card, List, Space, Typography } from 'antd';
 import ResponsiveCont from 'components/ResponsiveCont';
 import SegmentViewer from 'components/SegmentViewer';
 import SpinLayout from 'components/SpinLayout';
 import { Size } from 'constants/layout';
-import { ContentType, WorksheetElem } from 'models/Worksheet';
-import { useEffect, useMemo } from 'react';
+import { getAuth, User } from 'firebase/auth';
+import { ContentType, StaffType } from 'models/Worksheet';
+import { useEffect } from 'react';
 import { useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useHistory, useParams } from 'react-router-dom';
+import {
+  getWorksheetDetail,
+  getWorksheets,
+  WorksheetDetail,
+  WorksheetInfo,
+} from 'utils/Server';
 
 const margin = Size.margin;
 
@@ -28,80 +36,79 @@ function Typo({ children }: TypoProps) {
 }
 
 type WorksheetParam = {
-  name: string | undefined;
+  id: string | undefined;
 };
-
-type WorksheetCard = {
-  key: string;
-  title: string;
-  description: string;
-};
-
-const worksheetCards: WorksheetCard[] = [
-  {
-    key: 'permissionToDance',
-    title: 'Permission To Dance',
-    description:
-      'BTS의 Permission To Dance를 배웁니다. 현재 작성 및 테스트 중입니다.',
-  },
-  {
-    key: 'dragonSpine',
-    title: 'Dragon Spine',
-    description:
-      '테스트용 Worksheet입니다. Dragon Spine OST 작곡 Hoyo-Mix의 Yu-Peng Chen',
-  },
-];
 
 export default function WorksheetRoute() {
-  const [worksheet, setWorksheet] = useState<WorksheetElem[] | null>(null);
-  const { name } = useParams<WorksheetParam>();
-  const history = useHistory();
+  const { id } = useParams<WorksheetParam>();
 
-  useEffect(() => {
-    (async () => {
-      if (name !== undefined) {
-        const jsonpath = `/sheetData/${name}/data.json`;
-        const data = await fetch(jsonpath);
-        try {
-          const nextWorksheet = (await data.json()) as WorksheetElem[];
-          setWorksheet(nextWorksheet);
-        } catch (e) {
-          //fallback
-          console.log(e);
-          history.push('/worksheet');
-        }
-      }
-    })();
-    //eslint-disable-next-line
-  }, [name]);
-
-  const worksheetCard = useMemo(() => {
-    if (name !== undefined) {
-      const card = worksheetCards.find((card) => card.key === name);
-      if (card !== undefined) {
-        return card;
-      }
-    }
-
-    return null;
-  }, [name]);
-
-  if (name === undefined) {
-    return <SelectWorksheet></SelectWorksheet>;
-  }
-
-  if (worksheet === null) return <SpinLayout></SpinLayout>;
-  else {
+  if (id === undefined) {
     return (
-      <Worksheet
-        worksheet={worksheet}
-        card={worksheetCard as WorksheetCard}
-      ></Worksheet>
+      <ResponsiveCont>
+        <SelectWorksheet></SelectWorksheet>
+      </ResponsiveCont>
     );
   }
+
+  return <WorksheetViewer id={id}></WorksheetViewer>;
 }
 
 function SelectWorksheet() {
+  const history = useHistory();
+  const [worksheetList, setWorksheetList] = useState<WorksheetInfo[] | null>(
+    null,
+  );
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setWorksheetList(await getWorksheets());
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <SpinLayout></SpinLayout>;
+  if (worksheetList === null) {
+    return (
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          style={{
+            width: '100%',
+            marginTop: 30,
+          }}
+        >
+          <Space direction="horizontal" size={8} align="center">
+            <Button
+              type="text"
+              shape="circle"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => {
+                history.push('/');
+              }}
+            ></Button>
+            <Typography.Text
+              style={{
+                fontSize: 16,
+              }}
+            >
+              돌아가기
+            </Typography.Text>
+          </Space>
+          <Alert type="error" message="오류가 발생했습니다."></Alert>
+          <Button
+            onClick={() => {
+              history.go(0);
+            }}
+          >
+            Reload
+          </Button>
+        </Space>
+      </ResponsiveCont>
+    );
+  }
+
   return (
     <ResponsiveCont>
       <Space
@@ -124,17 +131,17 @@ function SelectWorksheet() {
             column: 2,
             gutter: 10,
           }}
-          dataSource={worksheetCards}
-          renderItem={(item: WorksheetCard) => (
+          dataSource={worksheetList}
+          renderItem={(item: { id: string; title: string }) => (
             <List.Item>
               <Card
                 title={
-                  <Typography.Link href={`/worksheet/${item.key}`}>
+                  <Typography.Link href={`/worksheet/${item.id}`}>
                     {item.title}
                   </Typography.Link>
                 }
               >
-                <Typography.Text>{item.description}</Typography.Text>
+                <Typography.Text>피아노를 연습합니다.</Typography.Text>
               </Card>
             </List.Item>
           )}
@@ -144,12 +151,71 @@ function SelectWorksheet() {
   );
 }
 
-type WorksheetProps = {
-  worksheet: WorksheetElem[];
-  card: WorksheetCard;
+type WorksheetViewerProps = {
+  id: string;
 };
-function Worksheet({ worksheet, card }: WorksheetProps) {
+function WorksheetViewer({ id }: WorksheetViewerProps) {
   const history = useHistory();
+  const [, authLoading]: [User | null, boolean, any] = useAuthState(getAuth());
+
+  const [worksheetDetail, setWorksheetDetail] =
+    useState<WorksheetDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const refresh = async () => {
+    setWorksheetDetail(await getWorksheetDetail(id));
+    setLoading(false);
+  };
+  useEffect(() => {
+    if (id !== undefined && !authLoading) {
+      refresh();
+    }
+  }, [id, authLoading]);
+
+  if (loading)
+    return (
+      <ResponsiveCont>
+        <SpinLayout></SpinLayout>
+      </ResponsiveCont>
+    );
+
+  if (worksheetDetail === null)
+    return (
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          style={{
+            width: '100%',
+            marginTop: 30,
+          }}
+        >
+          <Space direction="horizontal" size={8} align="center">
+            <Button
+              type="text"
+              shape="circle"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => {
+                history.push('/worksheet');
+              }}
+            ></Button>
+            <Typography.Text
+              style={{
+                fontSize: 16,
+              }}
+            >
+              돌아가기
+            </Typography.Text>
+          </Space>
+          <Alert type="error" message="오류가 발생했습니다."></Alert>
+          <Button
+            onClick={() => {
+              history.go(0);
+            }}
+          >
+            Reload
+          </Button>
+        </Space>
+      </ResponsiveCont>
+    );
 
   return (
     <Space
@@ -175,11 +241,10 @@ function Worksheet({ worksheet, card }: WorksheetProps) {
               fontSize: 16,
             }}
           >
-            {card.title}
+            {worksheetDetail.title}
           </Typography.Text>
         </Space>
       </ResponsiveCont>
-
       <Space
         direction="vertical"
         size={50}
@@ -188,7 +253,7 @@ function Worksheet({ worksheet, card }: WorksheetProps) {
           marginTop: 30,
         }}
       >
-        {worksheet.map((content, contentKey) => {
+        {worksheetDetail.worksheet.map((content, contentKey) => {
           switch (content.type) {
             case ContentType.Paragraph: {
               return (
@@ -224,8 +289,8 @@ function Worksheet({ worksheet, card }: WorksheetProps) {
                   <SegmentViewer
                     sheetKey={content.key}
                     title={content.title}
-                    url={`/sheetData/${card.key}/${content.path}`}
-                    oneStaff={content.oneStaff}
+                    url={content.musicxml ?? ''}
+                    oneStaff={content.staffType !== StaffType.BothHands}
                   ></SegmentViewer>
                 </div>
               );
@@ -239,7 +304,7 @@ function Worksheet({ worksheet, card }: WorksheetProps) {
                       height: 'auto',
                     }}
                     alt={content.title}
-                    src={`/sheetData/${card.key}/${content.path}`}
+                    src={content.url ?? ''}
                   ></img>
                 </ResponsiveCont>
               );

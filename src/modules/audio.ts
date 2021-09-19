@@ -51,6 +51,11 @@ export const setPlaybackState = (
 ) => action(SET_PLAYBACK_STATE, { sheetKey, playbackState });
 export type SetPlaybackState = ActionType<typeof setPlaybackState>;
 
+export const SET_METRONOME_STATE = '@AUDIO/SET_METRONOME_STATE';
+export const setMetronomeState = (sheetKey: string, metronomeState: boolean) =>
+  action(SET_METRONOME_STATE, { sheetKey, metronomeState });
+export type SetMetronomeState = ActionType<typeof setMetronomeState>;
+
 export const SET_CURRENT_MEASURE_IND = '@AUDIO/SET_CURRENT_MEASURE_IND';
 export const setCurrentMeasureInd = (
   sheetKey: string,
@@ -65,6 +70,7 @@ export type AudioActions =
   | SetLoaded
   | SetAudioContext
   | SetPlaybackService
+  | SetMetronomeState
   | SetPlaybackState
   | SetCurrentMeasureInd;
 
@@ -78,6 +84,7 @@ export const loadSheetWithUrlThunk =
 
     if (sheet.playbackService !== null) {
       sheet.playbackService.stop();
+      if (sheet.metronomeState) sheet.playbackService.stopMetronome();
     }
 
     dispatch(_setTitle(sheetKey, 'loading...'));
@@ -119,6 +126,7 @@ export const cleanupSheetThunk =
 
     if (sheet.playbackService !== null) {
       sheet.playbackService.stop();
+      sheet.playbackService.stopMetronome();
     }
     dispatch(deleteSheet(sheetKey));
   };
@@ -131,8 +139,10 @@ export const stopOtherPlaybackServicesThunk =
 
     Object.entries(sheets).forEach(([key, sheet]) => {
       if (key !== sheetKey && sheet.playbackService !== null) {
-        if (sheet.playbackState === PlaybackState.PLAYING)
+        if (sheet.playbackState === PlaybackState.PLAYING) {
           sheet.playbackService.pause();
+        }
+        if (sheet.metronomeState) sheet.playbackService.stopMetronome();
       }
     });
   };
@@ -153,6 +163,7 @@ export const audioReducer = (
           playbackServiceType: null,
           currentMeasureInd: null,
           playbackState: null,
+          metronomeState: false,
         };
         draft.sheets[payload.sheetKey] = sheet;
       });
@@ -196,6 +207,12 @@ export const audioReducer = (
       const { payload } = action as SetPlaybackState;
       return produce<AudioState>(state, (draft) => {
         draft.sheets[payload.sheetKey].playbackState = payload.playbackState;
+      });
+    }
+    case SET_METRONOME_STATE: {
+      const { payload } = action as SetMetronomeState;
+      return produce<AudioState>(state, (draft) => {
+        draft.sheets[payload.sheetKey].metronomeState = payload.metronomeState;
       });
     }
     case SET_CURRENT_MEASURE_IND: {

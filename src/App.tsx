@@ -1,4 +1,3 @@
-import { initializeApp } from 'firebase/app';
 import { Space, Typography, Button, Breadcrumb } from 'antd';
 import { Footer, Header } from 'antd/lib/layout/layout';
 import styled from 'styled-components';
@@ -22,6 +21,7 @@ import WorksheetRoute from 'routes/WorksheetRoute';
 import { Size } from 'constants/layout';
 import EditorRoute from 'routes/EditorRoute';
 import OSMDEditor from 'routes/OSMDEditorRoute';
+import { useWidthStartup } from 'hooks/useWidth';
 
 const hMargin = Size.hMargin;
 
@@ -96,12 +96,17 @@ const routeMap: BreadCrumbMap = {
     component: WorksheetRoute,
     exact: true,
   },
-  '/worksheet/:name': {
+  '/worksheet/:id': {
     routeName: 'Worksheet',
     component: WorksheetRoute,
     exact: true,
   },
   '/editor': {
+    routeName: 'Editor',
+    component: EditorRoute,
+    exact: true,
+  },
+  '/editor/:id': {
     routeName: 'Editor',
     component: EditorRoute,
     exact: true,
@@ -113,17 +118,8 @@ const routeMap: BreadCrumbMap = {
   },
 };
 
-initializeApp({
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_APP_ID,
-  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
-});
-
 function App() {
+  useStartup();
   const [settingsModal, setSettingsModal] = useState(false);
   const location = useLocation();
   const pathSnippets = useMemo(
@@ -224,3 +220,7 @@ function App() {
 }
 
 export default App;
+
+function useStartup() {
+  useWidthStartup();
+}

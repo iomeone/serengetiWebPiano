@@ -1,8 +1,5 @@
 import { Button, Typography } from 'antd';
-import { State } from 'modules/State';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { OpenSheetMusicDisplay as OSMD } from 'opensheetmusicdisplay';
 import { isLoadedSheet } from 'utils/Sheet';
 import PianoRoll, { PlayMode, PlayState } from './PianoRoll';
 import Viewer from './Viewer';

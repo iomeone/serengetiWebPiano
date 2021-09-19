@@ -12,4 +12,5 @@ export type Sheet = {
   playbackServiceType: PlaybackServiceType | null;
   currentMeasureInd: number | null;
   playbackState: PlaybackState | null;
+  metronomeState: boolean;
 };

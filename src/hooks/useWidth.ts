@@ -1,5 +1,5 @@
 import { Size, WidthMode } from 'constants/layout';
-import { setReady, setWidth, setWidthMode } from 'modules/layout';
+import { setWidth, setWidthMode } from 'modules/layout';
 import { State } from 'modules/State';
 import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,39 +9,50 @@ type WidthRes = {
   widthMode: WidthMode;
 };
 
+const getWidthInfo = (): WidthRes => {
+  const width = window.innerWidth;
+  let mode: WidthMode = WidthMode.Desktop;
+  if (width > Size.desktopMin) {
+    mode = WidthMode.Desktop;
+  } else if (width > Size.tabletMin) {
+    mode = WidthMode.Tablet;
+  } else {
+    mode = WidthMode.Mobile;
+  }
+  return { width, widthMode: mode };
+};
+
 export function useWidth(): WidthRes {
-  const { ready, width, widthMode } = useSelector(
-    (state: State) => state.layout,
-  );
+  const { width, widthMode } = useSelector((state: State) => state.layout);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const { width: w, widthMode: m } = getWidthInfo();
+    dispatch(setWidth(w));
+    dispatch(setWidthMode(m));
+
+    // eslint-disable-next-line
+  }, []);
+  return { width, widthMode };
+}
+
+export function useWidthStartup() {
   const dispatch = useDispatch();
 
   const handleResize = useCallback(() => {
-    const width = window.innerWidth;
-    let mode: WidthMode = WidthMode.Desktop;
-    if (width > Size.desktopMin) {
-      mode = WidthMode.Desktop;
-    } else if (width > Size.tabletMin) {
-      mode = WidthMode.Tablet;
-    } else {
-      mode = WidthMode.Mobile;
-    }
-    dispatch(setWidth(width));
-    dispatch(setWidthMode(mode));
+    const { width: w, widthMode: m } = getWidthInfo();
+    dispatch(setWidth(w));
+    dispatch(setWidthMode(m));
     // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
-    if (!ready) {
-      window.addEventListener('resize', handleResize);
-      handleResize();
-      dispatch(setReady(true));
+    window.addEventListener('resize', handleResize);
+    handleResize();
 
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
     // eslint-disable-next-line
   }, []);
-
-  return { width, widthMode };
 }

@@ -11,6 +11,7 @@ import {
 } from 'services/IPlaybackService';
 import {
   setCurrentMeasureInd,
+  setMetronomeState,
   setPlaybackService,
   setPlaybackState,
 } from 'modules/audio';
@@ -54,6 +55,9 @@ export function useFrontPlaybackService(
       });
       service.addIteratorListener((iterator) => {
         dispatch(setCurrentMeasureInd(sheetKey, iterator.CurrentMeasureIndex));
+      });
+      service.addMetronomeListener((metronomeState) => {
+        dispatch(setMetronomeState(sheetKey, metronomeState));
       });
 
       return service;
