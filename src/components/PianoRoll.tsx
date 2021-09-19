@@ -197,9 +197,14 @@ export default function PianoRoll({
 
   const drawMeasure = (
     context: CanvasRenderingContext2D,
-    x: number,
+    playTime:number,
+    InitX: number,
     bottomY: number,
   ) => {
+    const x =
+    InitX +
+      (measureLength *
+        (1 - playTime * velocity)) % measureLength;
     context.strokeStyle = 'black';
     context.beginPath();
     context.moveTo(x ,bottomY - 4 * leading);
