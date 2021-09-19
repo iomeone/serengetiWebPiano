@@ -79,7 +79,7 @@ export default function PianoRoll({
   const [holdTime, setHoldTime] = useState<number>(0);
 
   const [holdTiming, setHoldTiming] = useState<number>(-1);
-  const [holdNote, setHoldNote] = useState<Note[]>([]);
+  const [holdNote, setHoldNote] = useState<NoteSchedule[]>([]);
 
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
@@ -120,7 +120,6 @@ export default function PianoRoll({
   }, [noteSchedules, velocity, timeSigniture, bpm]);
 
   useEffect(() => {
-    //prepare pianoroll
     console.log(noteSchedules);
     nextHold();
   }, [noteSchedules]);
@@ -402,7 +401,7 @@ export default function PianoRoll({
     if (noteSchedules !== null) {
       for (let i = 0; i < noteSchedules.length; i++) {
         if (holdTiming < noteSchedules[i].timing) {
-          setHoldNote(() => {
+          setHoldNote((hold) => {
             const notes = [];
             for (
               let j = i;
@@ -411,7 +410,11 @@ export default function PianoRoll({
             ) {
               notes.push(noteSchedules[j]);
             }
-            console.log(notes);
+            hold.forEach((noteSchedule)=>{
+              if(noteSchedule.length + noteSchedule.timing > noteSchedules[i].timing){
+                notes.push(noteSchedule);
+              }
+            })
             return notes;
           });
           setHoldTiming(() => noteSchedules[i].timing);
