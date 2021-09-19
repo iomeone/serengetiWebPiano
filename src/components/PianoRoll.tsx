@@ -248,8 +248,13 @@ export default function PianoRoll({
       30 +
       15 / 2 -
       (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
+    const radius = height/2;
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
-    context.fillRect(x, y, width, height);
+    context.beginPath();
+    context.arc(x+radius,y+radius,radius, Math.PI /2, 3/2 * Math.PI);
+    context.arc(x+width-radius,y+radius,radius, Math.PI * 3/2, Math.PI/2);
+    context.lineTo(x+radius,y+height);
+    context.fill(); 
 
     context.fillStyle = '#000000';
     context.fillText(noteToBetterNoteName(noteSchedule.note), x + 4, y + 11);
