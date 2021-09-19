@@ -388,6 +388,7 @@ export default function PianoRoll({
     setHoldTime(() => Date.now());
   };
   const unholdRoll = () => {
+    if(myState !== PlayState.HOLD){return;}
     nextHold();
     setMyState(PlayState.PLAYING);
     setStartTime(() => Date.now() - (holdTime - startTime));
