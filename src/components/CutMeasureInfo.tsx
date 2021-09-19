@@ -70,7 +70,7 @@ export default function CutMeasureInfo({ range, sheetKey }: Props) {
               {range.start + 1} ~ {range.end + 1} 마디
               <Button
                 onClick={()=>{
-                  //cut function
+                  //TODO:cut function
               }}>
                 <ScissorOutlined />자르기
               </Button>
