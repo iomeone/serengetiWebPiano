@@ -211,23 +211,13 @@ export default function PianoRoll({
     context.lineTo(x ,bottomY);
     context.stroke();
     for (let i = 0; i < 5; i++) {
-      context.beginPath(); // Start a new path
-      context.moveTo(x, bottomY - leading * i); // Move the pen to (30, 50)
-      context.lineTo(x + measureLength, bottomY - leading * i); // Draw a line to (150, 100)
-      context.stroke();
+      context.fillRect(x, bottomY - leading * i,measureLength,1);
     }
-    context.beginPath();
-    context.moveTo(x + measureLength,bottomY - 4 * leading);
-    context.lineTo(x + measureLength,bottomY);
-    context.stroke();
-
+    context.fillRect(x + measureLength,bottomY - 4 * leading,1,4 * leading);
   };
   const drawCursor = (context: CanvasRenderingContext2D, cursorX: number) => {
-    context.strokeStyle = '';
-    context.beginPath(); // Start a new path
-    context.moveTo(cursorX, 0); // Move the pen to (30, 50)
-    context.lineTo(cursorX, context.canvas.height); // Draw a line to (150, 100)
-    context.stroke();
+    context.fillStyle = '#6ECB63';
+    context.fillRect(cursorX, 0,3,context.canvas.height);
   };
   const drawNote = (
     context: CanvasRenderingContext2D,
