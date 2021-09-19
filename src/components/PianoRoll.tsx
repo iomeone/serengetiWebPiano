@@ -132,13 +132,13 @@ export default function PianoRoll({
         console.log(false);
       } else {
         holdNote.sort((a, b) => {
-          return noteToMidiKeyNumber(a) - noteToMidiKeyNumber(b);
+          return noteToMidiKeyNumber(a.note) - noteToMidiKeyNumber(b.note);
         });
 
         let check = true;
         for (let i = 0; i < holdNote.length; i++) {
           if (
-            noteToMidiKeyNumber(holdNote[i]) !==
+            noteToMidiKeyNumber(holdNote[i].note) !==
             noteToMidiKeyNumber(pressedKeys[i])
           ) {
             check = false;
@@ -409,7 +409,7 @@ export default function PianoRoll({
               noteSchedules[i].timing === noteSchedules[j].timing;
               j++
             ) {
-              notes.push(noteSchedules[j].note);
+              notes.push(noteSchedules[j]);
             }
             console.log(notes);
             return notes;
