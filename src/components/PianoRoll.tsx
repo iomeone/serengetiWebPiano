@@ -182,16 +182,17 @@ export default function PianoRoll({
     context.fillStyle = '#000000';
 
     const bottom = 170;
-
-    drawMeasure(context, 50, bottom);
-    drawMeasure(context, 50 - measureLength, bottom);
-    drawMeasure(context, 50 + measureLength, bottom);
-
-    drawCursor(context, 50);
+    drawMeasure(context, playTime, 50 - 2 * measureLength, bottom);
+    drawMeasure(context, playTime, 50 - measureLength, bottom);
+    drawMeasure(context, playTime, 50, bottom);
+    drawMeasure(context, playTime, 50 + measureLength, bottom);
+    drawMeasure(context, playTime, 50 + 2 * measureLength, bottom);
 
     noteSchedules.forEach((schedule) => {
       drawNote(context, playTime, 50, bottom, timeSigniture, schedule);
     });
+
+    drawCursor(context, 50);
   };
 
   const drawMeasure = (
