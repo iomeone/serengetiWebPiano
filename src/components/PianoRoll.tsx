@@ -184,6 +184,9 @@ export default function PianoRoll({
     const bottom = 170;
 
     drawMeasure(context, 50, bottom);
+    drawMeasure(context, 50 - measureLength, bottom);
+    drawMeasure(context, 50 + measureLength, bottom);
+
     drawCursor(context, 50);
 
     noteSchedules.forEach((schedule) => {
