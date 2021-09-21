@@ -22,6 +22,7 @@ import { Size } from 'constants/layout';
 import EditorRoute from 'routes/EditorRoute';
 import OSMDEditor from 'routes/OSMDEditorRoute';
 import { useWidthStartup } from 'hooks/useWidth';
+import SampleWorksheetRoute from 'routes/SampleWorksheetRoute';
 
 const hMargin = Size.hMargin;
 
@@ -114,6 +115,11 @@ const routeMap: BreadCrumbMap = {
   '/osmdEditor': {
     routeName: 'OSMD Editor',
     component: OSMDEditor,
+    exact: true,
+  },
+  '/sampleWorksheet': {
+    routeName: 'Sample Worksheet',
+    component: SampleWorksheetRoute,
     exact: true,
   },
 };

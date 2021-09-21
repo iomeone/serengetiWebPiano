@@ -1,26 +1,28 @@
-import { Button, Space, Spin, Typography } from 'antd';
+import { Space, Spin } from 'antd';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import {
   loadSheetWithUrlThunk,
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
 import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
 import { useSheet } from 'hooks/useSheet';
 import { GiMetronome } from 'react-icons/gi';
-
-const SheetCont = styled.div`
-  width: 100%;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  background-color: white;
-  padding-top: 10px;
-  position: relative;
-`;
+import { CgPiano } from 'react-icons/cg';
+import { setPianoVisibility } from 'modules/piano';
+import { State } from 'modules/State';
+import { relative } from 'path';
+enum Control {
+  PLAY,
+  PAUSE,
+  STOP,
+  METRONOME,
+  PIANO,
+}
 
 type LoadingProps = {
   isLoading: boolean;
@@ -35,6 +37,39 @@ const Loading = styled.div<LoadingProps>`
   top: 0;
   width: 100%;
   height: 100%;
+`;
+
+const TitleBar = styled.div`
+  display: flex;
+  background: linear-gradient(90deg, #dbdef1 0%, #f9f9f9 100%) 0% 0% no-repeat
+    padding-box;
+  margin: 8px;
+  height: 56px;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 8px;
+`;
+
+const ControlButton = styled.div`
+  width: 34px;
+  height: 34px;
+  border-radius: 20px;
+  border: 0.4px solid #707070;
+  background: #2f2e410d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  :hover {
+    background: #2f2e4122;
+  }
+`;
+
+const NotoSansText = styled.span`
+  font-size: 20px;
+  font-family: 'Noto Sans KR', sans-serif;
 `;
 
 type SegmentViewerProps = {
@@ -53,7 +88,6 @@ export default function SegmentViewer({
     useFrontPlaybackService(sheetKey);
 
   const { sheet, isLoaded } = useSheet(sheetKey);
-
   const [isSheetLoading, setIsSheetLoading] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -68,6 +102,9 @@ export default function SegmentViewer({
       setIsSheetLoading(false);
     }
   }, [isLoaded]);
+
+  const piano = useSelector((state: State) => state.piano);
+  const pianoVisibility = piano.visibility;
 
   const height = oneStaff ? 110 : 220;
   const viewerTitle = title ?? 'OSMD Viewer';
@@ -100,105 +137,109 @@ export default function SegmentViewer({
     }
   };
 
+  const setPiano = async (visibility: boolean) => {
+    dispatch(setPianoVisibility(visibility));
+  };
+
+  const controlPanel = () => {
+    let toShow: Control[] = [];
+    if (isLoaded) {
+      switch (sheet?.playbackState) {
+        case null:
+          toShow = [Control.PLAY, Control.METRONOME, Control.PIANO];
+          break;
+        case PlaybackState.INIT:
+        case PlaybackState.PAUSED:
+        case PlaybackState.STOPPED:
+          toShow = [
+            Control.PLAY,
+            Control.STOP,
+            Control.METRONOME,
+            Control.PIANO,
+          ];
+          break;
+        case PlaybackState.PLAYING:
+          toShow = [
+            Control.PAUSE,
+            Control.STOP,
+            Control.METRONOME,
+            Control.PIANO,
+          ];
+          break;
+      }
+
+      return (
+        <Space direction="horizontal" size={8}>
+          {toShow.map((type) => makeButton(type))}
+        </Space>
+      );
+    }
+  };
+
+  const makeButton = (type: Control) => {
+    switch (type) {
+      case Control.PLAY:
+        return (
+          <ControlButton onClick={play}>
+            <IoPlay />
+          </ControlButton>
+        );
+      case Control.PAUSE:
+        return (
+          <ControlButton onClick={pause}>
+            <IoPause />
+          </ControlButton>
+        );
+      case Control.STOP:
+        return (
+          <ControlButton onClick={stop}>
+            <IoStop />
+          </ControlButton>
+        );
+      case Control.METRONOME:
+        return (
+          <ControlButton
+            onClick={toggleMetronome}
+            style={{
+              color: sheet?.metronomeState ?? false ? 'black' : '#888888',
+            }}
+          >
+            <GiMetronome></GiMetronome>
+          </ControlButton>
+        );
+      case Control.PIANO:
+        return (
+          <ControlButton
+            onClick={() => {
+              setPiano(!pianoVisibility);
+            }}
+            style={{
+              color: pianoVisibility ? 'black' : '#888888',
+            }}
+          >
+            <CgPiano></CgPiano>
+          </ControlButton>
+        );
+    }
+  };
+
   return (
-    <div
+    <Space
+      direction="vertical"
+      size={10}
       style={{
         width: '100%',
-        backgroundColor: '#e1e1e1',
-        paddingBottom: 20,
+        position: 'relative',
       }}
     >
-      <div
-        style={{
-          paddingTop: 8,
-          paddingLeft: 24,
-          paddingBottom: 8,
-          paddingRight: 24,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Typography.Text
-          style={{
-            fontWeight: 'bold',
-          }}
-        >
-          {viewerTitle}
-        </Typography.Text>
-        {(() => {
-          if (isLoaded) {
-            switch (sheet?.playbackState) {
-              case null:
-                return (
-                  <Space direction="horizontal" size={8}>
-                    <Button onClick={play} type="text" shape="circle">
-                      <IoPlay />
-                    </Button>
-                  </Space>
-                );
-              case PlaybackState.INIT:
-              case PlaybackState.PAUSED:
-              case PlaybackState.STOPPED:
-                return (
-                  <Space direction="horizontal" size={8}>
-                    <Button onClick={play} type="text" shape="circle">
-                      <IoPlay />
-                    </Button>
-                    <Button onClick={stop} type="text" shape="circle">
-                      <IoStop />
-                    </Button>
-                    <Button
-                      onClick={toggleMetronome}
-                      style={{
-                        color:
-                          sheet?.metronomeState ?? false ? 'black' : '#888888',
-                      }}
-                      type="text"
-                      shape="circle"
-                    >
-                      <GiMetronome></GiMetronome>
-                    </Button>
-                  </Space>
-                );
-              case PlaybackState.PLAYING:
-                return (
-                  <Space direction="horizontal" size={8}>
-                    <Button onClick={pause} type="text" shape="circle">
-                      <IoPause />
-                    </Button>
-                    <Button onClick={stop} type="text" shape="circle">
-                      <IoStop />
-                    </Button>
-                    <Button
-                      onClick={toggleMetronome}
-                      style={{
-                        color:
-                          sheet?.metronomeState ?? false ? 'black' : '#888888',
-                      }}
-                      type="text"
-                      shape="circle"
-                    >
-                      <GiMetronome></GiMetronome>
-                    </Button>
-                  </Space>
-                );
-            }
-          }
-        })()}
-      </div>
-      <SheetCont>
-        <div
-          style={{
-            minHeight: height,
-          }}
-        >
-          <Viewer sheetKey={sheetKey}></Viewer>
-        </div>
-        <Loading isLoading={isSheetLoading}>
-          <Spin size="large"></Spin>
-        </Loading>
-      </SheetCont>
-    </div>
+      <TitleBar>
+        <NotoSansText>{viewerTitle}</NotoSansText>
+        {controlPanel()}
+      </TitleBar>
+      <Viewer sheetKey={sheetKey}></Viewer>
+      <Loading isLoading={isSheetLoading}>
+        <Spin size="large"></Spin>
+      </Loading>
+    </Space>
   );
 }
