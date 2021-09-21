@@ -16,6 +16,7 @@ import { CgPiano } from 'react-icons/cg';
 import { setPianoVisibility } from 'modules/piano';
 import { State } from 'modules/State';
 import { relative } from 'path';
+import { NotoSansText } from './NotoSansText';
 enum Control {
   PLAY,
   PAUSE,
@@ -65,11 +66,6 @@ const ControlButton = styled.div`
   :hover {
     background: #2f2e4122;
   }
-`;
-
-const NotoSansText = styled.span`
-  font-size: 20px;
-  font-family: 'Noto Sans KR', sans-serif;
 `;
 
 type SegmentViewerProps = {
@@ -230,6 +226,7 @@ export default function SegmentViewer({
       style={{
         width: '100%',
         position: 'relative',
+        marginBottom: -70,
       }}
     >
       <TitleBar>
