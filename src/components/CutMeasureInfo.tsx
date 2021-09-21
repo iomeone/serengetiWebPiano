@@ -11,6 +11,7 @@ import { IoStop, IoPlay, IoPause } from 'react-icons/io5'
 import { useSheet } from 'hooks/useSheet';
 import { useDispatch } from 'react-redux';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
+import { ScissorOutlined } from '@ant-design/icons';
 
 type Props = {
   range: MeasureRange | null;
@@ -65,46 +66,15 @@ export default function CutMeasureInfo({ range, sheetKey }: Props) {
           마디 |
         </Typography.Text>
         {range !== null && (
-          <>
-            {range.start + 1} ~ {range.end + 1} 마디
-            <>{(() => {
-            switch (sheet?.playbackState) {
-              case null:
-                return (
-                  <Space direction="horizontal" size={8}>
-                    <Button onClick={play} type="text" shape="circle">
-                      <IoPlay />
-                    </Button>
-                  </Space>
-                );
-              case PlaybackState.INIT:
-              case PlaybackState.PAUSED:
-              case PlaybackState.STOPPED:
-                return (
-                  <Space direction="horizontal" size={8}>
-                    <Button onClick={play} type="text" shape="circle">
-                      <IoPlay />
-                    </Button>
-                    <Button onClick={stop} type="text" shape="circle">
-                      <IoStop />
-                    </Button>
-                  </Space>
-                );
-              case PlaybackState.PLAYING:
-                return (
-                  <Space direction="horizontal" size={8}>
-                    <Button onClick={pause} type="text" shape="circle">
-                      <IoPause />
-                    </Button>
-                    <Button onClick={stop} type="text" shape="circle">
-                      <IoStop />
-                    </Button>
-                  </Space>
-                );
-            }
-        })()}
+            <>
+              {range.start + 1} ~ {range.end + 1} 마디
+              <Button
+                onClick={()=>{
+                  //TODO:cut function
+              }}>
+                <ScissorOutlined />자르기
+              </Button>
             </>
-          </>
         )}
       </Space>
     </Space>

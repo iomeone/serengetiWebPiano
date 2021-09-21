@@ -79,7 +79,7 @@ export default function PianoRoll({
   const [holdTime, setHoldTime] = useState<number>(0);
 
   const [holdTiming, setHoldTiming] = useState<number>(-1);
-  const [holdNote, setHoldNote] = useState<Note[]>([]);
+  const [holdNote, setHoldNote] = useState<NoteSchedule[]>([]);
 
   const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
@@ -120,7 +120,6 @@ export default function PianoRoll({
   }, [noteSchedules, velocity, timeSigniture, bpm]);
 
   useEffect(() => {
-    //prepare pianoroll
     console.log(noteSchedules);
     nextHold();
   }, [noteSchedules]);
@@ -132,13 +131,13 @@ export default function PianoRoll({
         console.log(false);
       } else {
         holdNote.sort((a, b) => {
-          return noteToMidiKeyNumber(a) - noteToMidiKeyNumber(b);
+          return noteToMidiKeyNumber(a.note) - noteToMidiKeyNumber(b.note);
         });
 
         let check = true;
         for (let i = 0; i < holdNote.length; i++) {
           if (
-            noteToMidiKeyNumber(holdNote[i]) !==
+            noteToMidiKeyNumber(holdNote[i].note) !==
             noteToMidiKeyNumber(pressedKeys[i])
           ) {
             check = false;
@@ -182,35 +181,42 @@ export default function PianoRoll({
     context.fillStyle = '#000000';
 
     const bottom = 170;
-
-    drawMeasure(context, 50, bottom);
-    drawCursor(context, 50);
+    drawMeasure(context, playTime, 50 - 2 * measureLength, bottom);
+    drawMeasure(context, playTime, 50 - measureLength, bottom);
+    drawMeasure(context, playTime, 50, bottom);
+    drawMeasure(context, playTime, 50 + measureLength, bottom);
+    drawMeasure(context, playTime, 50 + 2 * measureLength, bottom);
 
     noteSchedules.forEach((schedule) => {
       drawNote(context, playTime, 50, bottom, timeSigniture, schedule);
     });
+
+    drawCursor(context, 50);
   };
 
   const drawMeasure = (
     context: CanvasRenderingContext2D,
-    x: number,
+    playTime:number,
+    InitX: number,
     bottomY: number,
   ) => {
+    const x =
+    InitX +
+      (measureLength *
+        (1 - playTime * velocity)) % measureLength;
     context.strokeStyle = 'black';
-
+    context.beginPath();
+    context.moveTo(x ,bottomY - 4 * leading);
+    context.lineTo(x ,bottomY);
+    context.stroke();
     for (let i = 0; i < 5; i++) {
-      context.beginPath(); // Start a new path
-      context.moveTo(x, bottomY - leading * i); // Move the pen to (30, 50)
-      context.lineTo(x + measureLength, bottomY - leading * i); // Draw a line to (150, 100)
-      context.stroke();
+      context.fillRect(x, bottomY - leading * i,measureLength,1);
     }
+    context.fillRect(x + measureLength,bottomY - 4 * leading,1,4 * leading);
   };
   const drawCursor = (context: CanvasRenderingContext2D, cursorX: number) => {
-    context.strokeStyle = '';
-    context.beginPath(); // Start a new path
-    context.moveTo(cursorX, 0); // Move the pen to (30, 50)
-    context.lineTo(cursorX, context.canvas.height); // Draw a line to (150, 100)
-    context.stroke();
+    context.fillStyle = '#6ECB63';
+    context.fillRect(cursorX, 0,3,context.canvas.height);
   };
   const drawNote = (
     context: CanvasRenderingContext2D,
@@ -248,8 +254,13 @@ export default function PianoRoll({
       30 +
       15 / 2 -
       (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
+    const radius = height/2;
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
-    context.fillRect(x, y, width, height);
+    context.beginPath();
+    context.arc(x+radius,y+radius,radius, Math.PI /2, 3/2 * Math.PI);
+    context.arc(x+width-radius,y+radius,radius, Math.PI * 3/2, Math.PI/2);
+    context.lineTo(x+radius,y+height);
+    context.fill(); 
 
     context.fillStyle = '#000000';
     context.fillText(noteToBetterNoteName(noteSchedule.note), x + 4, y + 11);
@@ -377,6 +388,7 @@ export default function PianoRoll({
     setHoldTime(() => Date.now());
   };
   const unholdRoll = () => {
+    if(myState !== PlayState.HOLD){return;}
     nextHold();
     setMyState(PlayState.PLAYING);
     setStartTime(() => Date.now() - (holdTime - startTime));
@@ -390,16 +402,20 @@ export default function PianoRoll({
     if (noteSchedules !== null) {
       for (let i = 0; i < noteSchedules.length; i++) {
         if (holdTiming < noteSchedules[i].timing) {
-          setHoldNote(() => {
+          setHoldNote((hold) => {
             const notes = [];
             for (
               let j = i;
               noteSchedules[i].timing === noteSchedules[j].timing;
               j++
             ) {
-              notes.push(noteSchedules[j].note);
+              notes.push(noteSchedules[j]);
             }
-            console.log(notes);
+            hold.forEach((noteSchedule)=>{
+              if(noteSchedule.length + noteSchedule.timing > noteSchedules[i].timing){
+                notes.push(noteSchedule);
+              }
+            })
             return notes;
           });
           setHoldTiming(() => noteSchedules[i].timing);
