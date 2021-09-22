@@ -528,6 +528,7 @@ type PianoProps = {
 
 const PianoWrap = styled.div`
   height: 300px;
+  margin-bottom:10px;
   display: flex;
   flex-direction: row;
   justify-content: center;
