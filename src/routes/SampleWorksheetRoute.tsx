@@ -1,4 +1,4 @@
-import { Button, Divider, Space, Typography } from 'antd';
+import { Anchor, Button, Divider, Space, Typography } from 'antd';
 import Piano from 'components/Piano';
 import SegmentViewer from 'components/SegmentViewer';
 import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
@@ -12,6 +12,10 @@ import Title8 from 'assets/title8.png';
 import { NotoSansText } from 'components/NotoSansText';
 import ResponsiveCont from 'components/ResponsiveCont';
 import { ReactNode } from 'react';
+import { useWidth } from 'hooks/useWidth';
+import { Size, WidthMode } from 'constants/layout';
+
+const Link = Anchor.Link;
 
 const tipTitleSize = 24;
 const tipTextSize = 18;
@@ -36,23 +40,30 @@ export default function SampleWorksheetRoute() {
     useIntergratedPressedKeys();
 
   const piano = useSelector((state: State) => state.piano);
-
+  const { widthMode } = useWidth();
   return (
     <Space direction="vertical" size={100} style={{ width: '100%' }}>
-      <Button
-        disabled={isLoaded}
-        onClick={() => {
-          preloadWithGesture();
-          initWithGesture();
-        }}
-      >
-        Prepare Piano
-      </Button>
+      {widthMode === WidthMode.Desktop && (
+        <Anchor
+          style={{
+            position: 'fixed',
+            top: 160,
+            left: `calc(50vw + ${Size.maxWidth / 2 + 20}px)`,
+          }}
+          affix={false}
+          targetOffset={40}
+        >
+          <Link href="#1" title="코러스 파트 연습" />
+          <Link href="#2" title="오른손 연습" />
+          <Link href="#3" title="왼손 연습" />
+          <Link href="#4" title="마장조 연습" />
+        </Anchor>
+      )}
       <Center>
         <img src={Title8}></img>
       </Center>
       <ResponsiveCont>
-        <TitleDivider title="코러스 파트 연습"></TitleDivider>
+        <TitleDivider title="코러스 파트 연습" id="1"></TitleDivider>
         <SmallTitle>이 파트에서는 무엇을 배우나요?</SmallTitle>
         <NotoSansText
           style={{
@@ -89,7 +100,7 @@ export default function SampleWorksheetRoute() {
         </Space>
       </ResponsiveCont>
       <ResponsiveCont>
-        <TitleDivider title="오른손 연습"></TitleDivider>
+        <TitleDivider title="오른손 연습" id="2"></TitleDivider>
         <SmallTitle>손가락 번호를 모르겠어요</SmallTitle>
         <Space direction="horizontal" size={40} align="start">
           <img src={Tip2}></img>
@@ -105,7 +116,7 @@ export default function SampleWorksheetRoute() {
         </Space>
       </ResponsiveCont>
       <ResponsiveCont>
-        <TitleDivider title="왼손 연습"></TitleDivider>
+        <TitleDivider title="왼손 연습" id="3"></TitleDivider>
         <SpaceBetween>
           <Youtube></Youtube>
           <Space direction="vertical" size={20}>
@@ -131,7 +142,7 @@ export default function SampleWorksheetRoute() {
         </SpaceBetween>
       </ResponsiveCont>
       <ResponsiveCont>
-        <TitleDivider title="마장조 연습"></TitleDivider>
+        <TitleDivider title="마장조 연습" id="4"></TitleDivider>
         <NotoSansText
           style={{
             width: 800,
@@ -294,9 +305,10 @@ function TipCard({
 
 type TitleDividerProps = {
   title: string;
+  id: string;
 };
 
-function TitleDivider({ title }: TitleDividerProps) {
+function TitleDivider({ title, id }: TitleDividerProps) {
   return (
     <Space
       direction="vertical"
@@ -310,6 +322,7 @@ function TitleDivider({ title }: TitleDividerProps) {
           fontFamily: 'Black Han Sans',
           fontSize: titleSize,
         }}
+        id={id}
       >
         {title}
       </NotoSansText>
