@@ -1,4 +1,6 @@
+import { ConsoleSqlOutlined } from '@ant-design/icons';
 import { useSheet } from 'hooks/useSheet';
+import { is } from 'immer/dist/internal';
 import { State } from 'modules/State';
 import { Fraction } from 'opensheetmusicdisplay/build/dist/src';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -7,6 +9,7 @@ import styled from 'styled-components';
 import {
   midiKeyNumberToBetterNoteName,
   midiKeyNumberToKeyType,
+  midiKeyNumberToNote,
   Note,
   noteArrayToBinaryKeys,
   noteToBetterNoteName,
@@ -390,7 +393,7 @@ function PianoRoll({
     if (playState !== PlayState.FINISH && playTime >= holdTiming) {
       setPlayState(PlayState.HOLD);
     }
-
+    
   }, [count]);
 
   useEffect(() => {
@@ -528,7 +531,7 @@ type PianoProps = {
 
 const PianoWrap = styled.div`
   height: 300px;
-  margin-bottom:10px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -557,7 +560,7 @@ function Piano({ lower, upper, guideFinger, pressedKeys }: PianoProps) {
       }
     });
     return keys;
-  }, [lower, upper, pressedKeys]);
+  }, [lower, upper, pressedKeys,guideFinger]);
 
   return (
     <PianoWrap>
@@ -613,13 +616,30 @@ const KeyText = styled.div`
 `;
 
 function Key({ midiKeyNumber, isPressed, fingerNumber }: KeyProp) {
+  let color = '';
+  if (fingerNumber > 0) {
+    color = Barcolor[midiKeyNumberToNote(midiKeyNumber).pitchClass];
+  } else if (isPressed) {
+    if (midiKeyNumberToKeyType(midiKeyNumber)) {
+      color = '#803435';
+    } else {
+      color = '#fe656a';
+    }
+  } else {
+    if (midiKeyNumberToKeyType(midiKeyNumber)) {
+      color = 'black';
+    } else {
+      color = 'white';
+    }
+  }
+
   if (midiKeyNumberToKeyType(midiKeyNumber)) {
     return (
       <BlackKeyWrap draggable="false">
         <BlackKey
           draggable="false"
           style={{
-            backgroundColor: isPressed ? '#803435' : 'black',
+            backgroundColor: color,
           }}
         />
       </BlackKeyWrap>
@@ -629,7 +649,7 @@ function Key({ midiKeyNumber, isPressed, fingerNumber }: KeyProp) {
       <WhiteKey
         draggable="false"
         style={{
-          backgroundColor: isPressed ? '#fe656a' : 'white',
+          backgroundColor: color,
         }}
       >
         <KeyText>{midiKeyNumberToBetterNoteName(midiKeyNumber)}</KeyText>
