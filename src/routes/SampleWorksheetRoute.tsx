@@ -15,8 +15,8 @@ import { ReactNode } from 'react';
 
 const tipTitleSize = 24;
 const tipTextSize = 18;
-const textSize = 25;
-const smallTitleSize = 34;
+const textSize = 20;
+const smallTitleSize = 28;
 const titleSize = 43;
 
 const Center = styled.div`
@@ -62,20 +62,20 @@ export default function SampleWorksheetRoute() {
           이번 파트에서는 드디어 노래의 하이라이트인 코러스 부분을 연주합니다.
         </NotoSansText>
       </ResponsiveCont>
-      <Space
-        direction="vertical"
-        size={8}
-        style={{
-          width: '100%',
-        }}
-      >
-        <SegmentViewer
-          sheetKey={'osmd-ptd-chorus-normal'}
-          title="코러스: 노말 버전"
-          oneStaff={false}
-          url="/sheetData/permissionToDance/source2.musicxml"
-        ></SegmentViewer>
-        <ResponsiveCont>
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          size={8}
+          style={{
+            width: '100%',
+          }}
+        >
+          <SegmentViewer
+            sheetKey={'osmd-ptd-chorus-normal'}
+            title="코러스: 노말 버전"
+            oneStaff={false}
+            url="/sheetData/permissionToDance/source2.musicxml"
+          ></SegmentViewer>
           <TipCard
             type={TipCardType.Default}
             title="연습 순서"
@@ -86,8 +86,8 @@ export default function SampleWorksheetRoute() {
               '4. 1~3번이 완벽히 될 때 리듬 연습',
             ]}
           ></TipCard>
-        </ResponsiveCont>
-      </Space>
+        </Space>
+      </ResponsiveCont>
       <ResponsiveCont>
         <TitleDivider title="오른손 연습"></TitleDivider>
         <SmallTitle>손가락 번호를 모르겠어요</SmallTitle>
@@ -144,20 +144,20 @@ export default function SampleWorksheetRoute() {
           연습하세요.
         </NotoSansText>
       </ResponsiveCont>
-      <Space
-        direction="vertical"
-        size={8}
-        style={{
-          width: '100%',
-        }}
-      >
-        <SegmentViewer
-          sheetKey={'osmd-ptd-chorus-hard'}
-          title="코러스: 하드 버전"
-          oneStaff={false}
-          url="/sheetData/permissionToDance/source1.musicxml"
-        ></SegmentViewer>
-        <ResponsiveCont>
+      <ResponsiveCont>
+        <Space
+          direction="vertical"
+          size={8}
+          style={{
+            width: '100%',
+          }}
+        >
+          <SegmentViewer
+            sheetKey={'osmd-ptd-chorus-hard'}
+            title="코러스: 하드 버전"
+            oneStaff={false}
+            url="/sheetData/permissionToDance/source1.musicxml"
+          ></SegmentViewer>
           <TipCard
             type={TipCardType.Instruction}
             title="연습 순서"
@@ -168,8 +168,8 @@ export default function SampleWorksheetRoute() {
               '4. 1~3번이 완벽히 될 때 리듬 연습',
             ]}
           ></TipCard>
-        </ResponsiveCont>
-      </Space>
+        </Space>
+      </ResponsiveCont>
       <Piano
         pressedKeys={pressedKeys}
         lower={noteToMidiKeyNumber(piano.min)}
@@ -307,8 +307,8 @@ function TitleDivider({ title }: TitleDividerProps) {
     >
       <NotoSansText
         style={{
+          fontFamily: 'Black Han Sans',
           fontSize: titleSize,
-          fontWeight: 'bold',
         }}
       >
         {title}

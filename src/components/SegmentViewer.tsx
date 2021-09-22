@@ -44,7 +44,6 @@ const TitleBar = styled.div`
   display: flex;
   background: linear-gradient(90deg, #dbdef1 0%, #f9f9f9 100%) 0% 0% no-repeat
     padding-box;
-  margin: 8px;
   height: 56px;
   justify-content: space-between;
   align-items: center;
@@ -226,7 +225,7 @@ export default function SegmentViewer({
       style={{
         width: '100%',
         position: 'relative',
-        marginBottom: -70,
+        marginBottom: -60,
       }}
     >
       <TitleBar>
