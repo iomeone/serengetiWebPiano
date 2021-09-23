@@ -1,11 +1,6 @@
-import { Anchor, Button, Divider, Space, Typography } from 'antd';
-import Piano from 'components/Piano';
+import { Anchor, Divider, Space } from 'antd';
 import SegmentViewer from 'components/SegmentViewer';
-import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
-import { State } from 'modules/State';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { noteToMidiKeyNumber } from 'utils/Note';
 import Tip from 'assets/tip.png';
 import Tip2 from 'assets/tip2.png';
 import Title8 from 'assets/title8.png';
@@ -14,8 +9,14 @@ import ResponsiveCont from 'components/ResponsiveCont';
 import { ReactNode } from 'react';
 import { useWidth } from 'hooks/useWidth';
 import { Size, WidthMode } from 'constants/layout';
+import InteractivePiano from 'components/InteractivePiano';
 
 const Link = Anchor.Link;
+
+enum TipCardType {
+  Default,
+  Instruction,
+}
 
 const tipTitleSize = 24;
 const tipTextSize = 18;
@@ -36,19 +37,19 @@ const SpaceBetween = styled.div`
 `;
 
 export default function SampleWorksheetRoute() {
-  const { initWithGesture, preloadWithGesture, isLoaded, pressedKeys } =
-    useIntergratedPressedKeys();
-
-  const piano = useSelector((state: State) => state.piano);
   const { widthMode } = useWidth();
   return (
-    <Space direction="vertical" size={100} style={{ width: '100%' }}>
+    <Space
+      direction="vertical"
+      size={100}
+      style={{ width: '100%', marginBottom: 100 }}
+    >
       {widthMode === WidthMode.Desktop && (
         <Anchor
           style={{
             position: 'fixed',
             top: 160,
-            left: `calc(50vw + ${Size.maxWidth / 2 + 20}px)`,
+            left: `calc(50vw + ${Size.maxWidth / 2 + 40}px)`,
           }}
           affix={false}
           targetOffset={40}
@@ -181,11 +182,7 @@ export default function SampleWorksheetRoute() {
           ></TipCard>
         </Space>
       </ResponsiveCont>
-      <Piano
-        pressedKeys={pressedKeys}
-        lower={noteToMidiKeyNumber(piano.min)}
-        upper={noteToMidiKeyNumber(piano.max)}
-      />
+      <InteractivePiano></InteractivePiano>
     </Space>
   );
 }
@@ -248,11 +245,6 @@ const TipCardCont = styled.div<TipCardContProps>`
   margin-right: 10px;
   width: ${({ expand }) => (expand ? '100%' : '520px')};
 `;
-
-enum TipCardType {
-  Default,
-  Instruction,
-}
 
 type TipCardProps = {
   title: string;

@@ -33,8 +33,7 @@ export default function PianoRollRoute() {
   const piano = useSelector((state: State) => state.piano);
   const [loadModal, setLoadModal] = useState(false);
   const dispatch = useDispatch();
-  const { initWithGesture,
-    isLoaded,pressedKeys } = useIntergratedPressedKeys();
+  const { initWithGesture, isReady, pressedKeys } = useIntergratedPressedKeys();
 
   return (
     <Main>
@@ -42,12 +41,13 @@ export default function PianoRollRoute() {
         sheetKey={sheetKey}
         visible={loadModal}
         onVisibleChange={setLoadModal}
-        pressedKeys={pressedKeys}/>
+        pressedKeys={pressedKeys}
+      />
       <Title>
         <LoadSheet sheetKey={sheetKey}></LoadSheet>
       </Title>
       <Space direction="horizontal" size={8}>
-      <Button
+        <Button
           onClick={() => {
             initWithGesture();
             setLoadModal(true);

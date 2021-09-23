@@ -27,7 +27,6 @@ import { index } from 'utils/List';
 import Horizontal from 'components/Horizontal';
 import ParagraphElementEditor from 'components/ParagraphElementEditor';
 import { useEffect, useState } from 'react';
-import { useControlKeys } from 'hooks/useControlKeys';
 import ImageElementEditor from 'components/ImageElementEditor';
 import TextEditor from 'components/TextEditor';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -45,6 +44,7 @@ import {
   DraftInfo,
   getDrafts,
 } from 'utils/Server';
+import { useControlKeys } from 'hooks/useKeyboard';
 
 const hMargin = Size.hMargin;
 
