@@ -17,12 +17,14 @@ import { setPianoVisibility } from 'modules/piano';
 import { State } from 'modules/State';
 import { relative } from 'path';
 import { NotoSansText } from './NotoSansText';
+import { AlignLeftOutlined } from '@ant-design/icons';
 enum Control {
   PLAY,
   PAUSE,
   STOP,
   METRONOME,
   PIANO,
+  PIANOROLL,
 }
 
 type LoadingProps = {
@@ -69,12 +71,18 @@ const ControlButton = styled.div`
 
 type SegmentViewerProps = {
   sheetKey: string;
+  enablePianoRoll?: boolean;
+  setSheetKeyOfPianoRoll?: (key:string)=>void;
+  setPianoRollModal?: (visible: boolean)=> void;
   title?: string;
   url?: string;
   oneStaff?: boolean;
 };
 export default function SegmentViewer({
   sheetKey,
+  enablePianoRoll,
+  setSheetKeyOfPianoRoll,
+  setPianoRollModal,
   title,
   url,
   oneStaff,
@@ -141,7 +149,7 @@ export default function SegmentViewer({
     if (isLoaded) {
       switch (sheet?.playbackState) {
         case null:
-          toShow = [Control.PLAY, Control.METRONOME, Control.PIANO];
+          toShow = [Control.PLAY, Control.METRONOME, Control.PIANO,Control.PIANOROLL];
           break;
         case PlaybackState.INIT:
         case PlaybackState.PAUSED:
@@ -151,6 +159,7 @@ export default function SegmentViewer({
             Control.STOP,
             Control.METRONOME,
             Control.PIANO,
+            Control.PIANOROLL,
           ];
           break;
         case PlaybackState.PLAYING:
@@ -215,6 +224,19 @@ export default function SegmentViewer({
             <CgPiano></CgPiano>
           </ControlButton>
         );
+      case Control.PIANOROLL:
+        return (
+          enablePianoRoll && <ControlButton
+          onClick={() => {
+            if(setPianoRollModal !== undefined && setSheetKeyOfPianoRoll !== undefined){
+              setPianoRollModal(true);
+              setSheetKeyOfPianoRoll(sheetKey);
+            }
+          }}
+        >
+          <AlignLeftOutlined />
+        </ControlButton>
+        )
     }
   };
 

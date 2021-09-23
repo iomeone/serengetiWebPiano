@@ -6,10 +6,11 @@ import Tip2 from 'assets/tip2.png';
 import Title8 from 'assets/title8.png';
 import { NotoSansText } from 'components/NotoSansText';
 import ResponsiveCont from 'components/ResponsiveCont';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { useWidth } from 'hooks/useWidth';
 import { Size, WidthMode } from 'constants/layout';
 import InteractivePiano from 'components/InteractivePiano';
+import PianoRollModal from 'components/PianoRollModal';
 
 const Link = Anchor.Link;
 
@@ -38,6 +39,10 @@ const SpaceBetween = styled.div`
 
 export default function SampleWorksheetRoute() {
   const { widthMode } = useWidth();
+
+  const [sheetKeyOfPianoRoll, setSheetKeyOfPianoRoll] = useState('');
+  const [pianoRollModal, setPianoRollModal] = useState(false);
+
   return (
     <Space
       direction="vertical"
@@ -60,6 +65,11 @@ export default function SampleWorksheetRoute() {
           <Link href="#4" title="마장조 연습" />
         </Anchor>
       )}
+      <PianoRollModal 
+        sheetKey={sheetKeyOfPianoRoll}
+        visible={pianoRollModal}
+        onVisibleChange={setPianoRollModal}
+      />
       <Center>
         <img src={Title8}></img>
       </Center>
@@ -84,6 +94,9 @@ export default function SampleWorksheetRoute() {
         >
           <SegmentViewer
             sheetKey={'osmd-ptd-chorus-normal'}
+            enablePianoRoll={true}
+            setSheetKeyOfPianoRoll={setSheetKeyOfPianoRoll}
+            setPianoRollModal={setPianoRollModal}
             title="코러스: 노말 버전"
             oneStaff={false}
             url="/sheetData/permissionToDance/source2.musicxml"

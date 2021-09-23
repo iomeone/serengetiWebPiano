@@ -1,4 +1,5 @@
-import { ConsoleSqlOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ConsoleSqlOutlined } from '@ant-design/icons';
+import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
 import { useSheet } from 'hooks/useSheet';
 import { is } from 'immer/dist/internal';
 import { State } from 'modules/State';
@@ -27,7 +28,6 @@ type PianoRollModalProps = {
   sheetKey: string;
   visible: boolean;
   onVisibleChange: (visible: boolean) => void;
-  pressedKeys: Note[];
 };
 type WrapProps = {
   visibility: boolean;
@@ -73,12 +73,13 @@ export default function PianoRollModal({
   sheetKey,
   visible,
   onVisibleChange,
-  pressedKeys,
 }: PianoRollModalProps) {
   const piano = useSelector((state: State) => state.piano);
   const { sheet, isLoaded } = useSheet(sheetKey);
 
   const [guide, setGuide] = useState<GuideSchedule[]>([]);
+
+  const { pressedKeys } = useIntergratedPressedKeys();
 
   const { noteSchedules, bpm, timeSignature } = useMemo(() => {
     if (isLoaded) {
@@ -138,6 +139,14 @@ export default function PianoRollModal({
   return (
     <Wrap visibility={visible}>
       <Modal width={dimensions.width} height={dimensions.height}>
+      <ArrowLeftOutlined
+        style={{
+          position: 'absolute',
+          left: 20,
+          top: 20,
+          fontSize: 30
+        }}
+      />
         <PianoRoll
           width={dimensions.width}
           height={680}
@@ -393,7 +402,6 @@ function PianoRoll({
     if (playState !== PlayState.FINISH && playTime >= holdTiming) {
       setPlayState(PlayState.HOLD);
     }
-    
   }, [count]);
 
   useEffect(() => {
@@ -560,7 +568,7 @@ function Piano({ lower, upper, guideFinger, pressedKeys }: PianoProps) {
       }
     });
     return keys;
-  }, [lower, upper, pressedKeys,guideFinger]);
+  }, [lower, upper, pressedKeys, guideFinger]);
 
   return (
     <PianoWrap>
