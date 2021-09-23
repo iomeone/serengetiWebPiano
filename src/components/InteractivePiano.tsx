@@ -71,10 +71,12 @@ const Blind = styled.div`
 
 const ControlPanel = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  align-items: flex-end;
   margin-left: 30px;
   margin-right: 30px;
+  margin-bottom: 10px;
+  position: relative;
 `;
 
 const PianoCont = styled.div`
@@ -89,7 +91,6 @@ const DownArrow: React.FunctionComponent<AntdIconProps> = styled(
   cursor: pointer;
   color: #fe656a;
   font-size: 30px;
-  margin-bottom: 10px;
 `;
 
 export default function InteractivePiano() {
@@ -143,9 +144,15 @@ export default function InteractivePiano() {
   return (
     <Wrap isInit={isInit} visibility={piano.visibility}>
       <ControlPanel>
-        <div></div>
         <DownArrow onTouchEnd={onClose} onMouseUp={onClose} />
-        {midiControlPanel()}
+        <span
+          style={{
+            position: 'absolute',
+            right: 0,
+          }}
+        >
+          {midiControlPanel()}
+        </span>
       </ControlPanel>
       <PianoCont>
         <Piano
