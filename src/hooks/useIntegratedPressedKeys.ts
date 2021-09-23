@@ -20,7 +20,11 @@ export function useIntergratedPressedKeys(): IntergratedPressedKeysRes {
   const { isReady, getOrCreateFrontAudioServiceWithGesture } =
     useFrontAudioService();
   const { onKeyUp, onKeyDown, pressedBinaryKeys } = useBinaryPressedKeys();
-  const { isMIDIConnected, isMIDISupported } = useFrontMIDIAudio(
+  const {
+    isMIDIConnected,
+    isMIDISupported,
+    initWithGesture: initMIDIWithGesture,
+  } = useFrontMIDIAudio(
     (note: number) => {
       onKeyDown(note);
     },
@@ -50,6 +54,7 @@ export function useIntergratedPressedKeys(): IntergratedPressedKeysRes {
 
   const initWithGesture = async () => {
     await getOrCreateFrontAudioServiceWithGesture();
+    await initMIDIWithGesture();
   };
 
   return {

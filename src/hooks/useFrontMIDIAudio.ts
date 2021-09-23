@@ -7,18 +7,14 @@ import { useFrontMIDIService } from './useFrontMIDIService';
 type FrontMIDIAudioRes = {
   isMIDISupported: boolean | null;
   isMIDIConnected: boolean | null;
-  initWithGesture: () => void;
+  initWithGesture: () => Promise<void>;
 };
 
 export function useFrontMIDIAudio(
   onNoteOn: NoteOnListener | null,
   onNoteOff: NoteOffListener | null,
 ): FrontMIDIAudioRes {
-  const {
-    audioService,
-    isReady: isAudioServiceReady,
-    getOrCreateFrontAudioServiceWithGesture,
-  } = useFrontAudioService();
+  const { getOrCreateFrontAudioServiceWithGesture } = useFrontAudioService();
 
   const { frontMIDIService, isMIDISupported, isMIDIConnected } =
     useFrontMIDIService(onNoteOn, onNoteOff);
