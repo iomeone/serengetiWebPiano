@@ -8,57 +8,52 @@ import { useFrontMIDIAudio } from './useFrontMIDIAudio';
 import { useKeyboardMIDI } from './useKeyboardMIDI';
 
 type IntergratedPressedKeysRes = {
-  preloadWithGesture: () => Promise<FrontAudioService>;
-  isLoaded: boolean;
+  initWithGesture: () => Promise<void>;
+  isReady: boolean;
   pressedKeys: Note[];
   pressedBinaryKeys: boolean[];
-  initWithGesture: () => void;
   isMIDIConnected: boolean | null;
   isMIDISupported: boolean | null;
 };
 
 export function useIntergratedPressedKeys(): IntergratedPressedKeysRes {
-  const {
-    frontAudioService,
-    getOrCreateFrontAudioServiceWithGesture: preloadWithGesture,
-  } = useFrontAudioService();
+  const { isReady, getOrCreateFrontAudioServiceWithGesture } =
+    useFrontAudioService();
   const { onKeyUp, onKeyDown, pressedBinaryKeys } = useBinaryPressedKeys();
-  const { initWithGesture, isMIDIConnected, isMIDISupported } =
-    useFrontMIDIAudio(
-      (note: number) => {
-        onKeyDown(note);
-      },
-      (note: number) => {
-        onKeyUp(note);
-      },
-    );
+  const { isMIDIConnected, isMIDISupported } = useFrontMIDIAudio(
+    (note: number) => {
+      onKeyDown(note);
+    },
+    (note: number) => {
+      onKeyUp(note);
+    },
+  );
 
   const play = async (note: NotePlayOption) => {
-    let fas: FrontAudioService | null = frontAudioService;
-    //fas 가 키보드로 눌렀을 때 계속 null임
-    if (frontAudioService === null) {
-      fas = await preloadWithGesture();
+    if (isReady) {
+      const fas = await getOrCreateFrontAudioServiceWithGesture();
+      fas.play(note);
     }
-    fas?.play(note);
   };
 
   const { pressedBinaryKeysByKeyboard } = useKeyboardMIDI(play);
+
   const integratedPressedBinaryKeys = useMemo(() => {
     return pressedBinaryKeys.map(
       (value, index) => value || pressedBinaryKeysByKeyboard[index],
     );
   }, [pressedBinaryKeys, pressedBinaryKeysByKeyboard]);
+
   const integratedPressedKeys = useMemo(() => {
     return binaryKeysToNoteArray(integratedPressedBinaryKeys);
   }, [integratedPressedBinaryKeys]);
 
-  const isLoaded = useMemo(() => {
-    return frontAudioService !== null;
-  }, [frontAudioService]);
+  const initWithGesture = async () => {
+    await getOrCreateFrontAudioServiceWithGesture();
+  };
 
   return {
-    preloadWithGesture,
-    isLoaded,
+    isReady,
     initWithGesture,
     isMIDIConnected,
     isMIDISupported,

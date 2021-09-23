@@ -10,6 +10,7 @@ import {
   PlaybackServiceType,
   PlaybackState,
 } from 'services/IPlaybackService';
+import { AudioServiceType, IAudioService } from 'services/IAudioService';
 
 export const ADD_SHEET = '@AUDIO/ADD_SHEET';
 export const addSheet = (sheetKey: string, osmd: OSMD) =>
@@ -63,6 +64,13 @@ export const setCurrentMeasureInd = (
 ) => action(SET_CURRENT_MEASURE_IND, { sheetKey, currentMeasureInd });
 export type SetCurrentMeasureInd = ActionType<typeof setCurrentMeasureInd>;
 
+export const SET_AUDIO_SERVICE = '@AUDIO/SET_AUDIO_SERVICE';
+export const setAudioService = (
+  audioService: IAudioService | null,
+  serviceType: AudioServiceType | null,
+) => action(SET_AUDIO_SERVICE, { audioService, serviceType });
+export type SetAudioService = ActionType<typeof setAudioService>;
+
 export type AudioActions =
   | AddSheet
   | DeleteSheet
@@ -72,7 +80,8 @@ export type AudioActions =
   | SetPlaybackService
   | SetMetronomeState
   | SetPlaybackState
-  | SetCurrentMeasureInd;
+  | SetCurrentMeasureInd
+  | SetAudioService;
 
 /* thunks */
 
@@ -220,6 +229,14 @@ export const audioReducer = (
       return produce<AudioState>(state, (draft) => {
         draft.sheets[payload.sheetKey].currentMeasureInd =
           payload.currentMeasureInd;
+      });
+    }
+    case SET_AUDIO_SERVICE: {
+      const { payload } = action as SetAudioService;
+      return produce<AudioState>(state, (draft) => {
+        // should I manually close the previous audio service?
+        draft.audioService = payload.audioService;
+        draft.audioServiceType = payload.serviceType;
       });
     }
     default:

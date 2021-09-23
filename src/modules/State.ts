@@ -1,6 +1,8 @@
 import { WidthMode } from 'constants/layout';
+import { KeyEvent, KeyMap } from 'models/KeyMap';
 import { Sheet } from 'models/Sheet';
 import { Worksheet } from 'models/Worksheet';
+import { AudioServiceType, IAudioService } from 'services/IAudioService';
 import { IAudioContext } from 'standardized-audio-context';
 import { Note } from 'utils/Note';
 
@@ -9,6 +11,8 @@ export type AudioState = {
     [sheetKey: string]: Sheet;
   };
   audioContext: IAudioContext | null;
+  audioService: IAudioService | null;
+  audioServiceType: AudioServiceType | null;
 };
 
 export type PianoState = {
@@ -31,9 +35,15 @@ export type EditorState = {
   redoable: boolean;
 };
 
+export type KeyboardState = {
+  keyMap: KeyMap;
+  keyEvent: KeyEvent | null;
+};
+
 export type State = {
   audio: AudioState;
   piano: PianoState;
   layout: LayoutState;
   editor: EditorState;
+  keyboard: KeyboardState;
 };

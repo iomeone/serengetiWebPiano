@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { FrontAudioService } from 'services/FrontAudioService';
 import { NoteOffListener, NoteOnListener } from 'services/FrontMIDIService';
 import { useFrontAudioService } from './useFrontAudioService';
 import { useFrontMIDIService } from './useFrontMIDIService';
@@ -12,19 +14,18 @@ export function useFrontMIDIAudio(
   onNoteOn: NoteOnListener | null,
   onNoteOff: NoteOffListener | null,
 ): FrontMIDIAudioRes {
-  const { frontAudioService, getOrCreateFrontAudioServiceWithGesture } =
-    useFrontAudioService();
+  const {
+    audioService,
+    isReady: isAudioServiceReady,
+    getOrCreateFrontAudioServiceWithGesture,
+  } = useFrontAudioService();
 
   const { frontMIDIService, isMIDISupported, isMIDIConnected } =
     useFrontMIDIService(onNoteOn, onNoteOff);
 
-  const initWithGesture = async () => {
-    let fas = frontAudioService;
-    if (fas === null) {
-      fas = await getOrCreateFrontAudioServiceWithGesture();
-    }
+  const init = (frontAudioService: FrontAudioService) => {
     const input: { onmidimessage: any } = { onmidimessage: null };
-    fas?.Player?.listenToMidi(input, {
+    frontAudioService.Player?.listenToMidi(input, {
       gain: (vel: number) => (vel * 5) / 127,
     });
     if (frontMIDIService !== null) {
@@ -33,5 +34,11 @@ export function useFrontMIDIAudio(
       };
     }
   };
+
+  const initWithGesture = async () => {
+    const fas = await getOrCreateFrontAudioServiceWithGesture();
+    init(fas);
+  };
+
   return { initWithGesture, isMIDISupported, isMIDIConnected };
 }

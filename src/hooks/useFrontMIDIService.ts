@@ -21,14 +21,16 @@ export function useFrontMIDIService(
   const [isMIDISupported, setIsMIDISupported] = useState<boolean | null>(null);
   const [isMIDIConnected, setIsMIDIConnected] = useState<boolean | null>(null);
 
+  const init = async () => {
+    const fms = new FrontMIDIService();
+    await fms.init();
+    setIsMIDISupported(fms.IsMIDISupported);
+    setIsMIDIConnected(fms.IsMIDIConnected);
+    setFrontMIDIService(fms);
+  };
+
   useEffect(() => {
-    (async () => {
-      const fms = new FrontMIDIService();
-      await fms.init();
-      setIsMIDISupported(fms.IsMIDISupported);
-      setIsMIDIConnected(fms.IsMIDIConnected);
-      setFrontMIDIService(fms);
-    })();
+    init();
   }, []);
 
   useEffect(() => {

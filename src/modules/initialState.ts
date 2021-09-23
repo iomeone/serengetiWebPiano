@@ -6,9 +6,11 @@ const inistialState: State = {
   audio: {
     sheets: {},
     audioContext: null,
+    audioService: null,
+    audioServiceType: null,
   },
   piano: {
-    visibility: true,
+    visibility: false,
     min: parseNoteNameToNote('A0'),
     max: parseNoteNameToNote('C8'),
   },
@@ -23,6 +25,10 @@ const inistialState: State = {
     worksheetHistory: [[]],
     undoable: false,
     redoable: false,
+  },
+  keyboard: {
+    keyMap: {},
+    keyEvent: null,
   },
 };
 
