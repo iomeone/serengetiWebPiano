@@ -15,6 +15,7 @@ import produce from 'immer';
 import {
   ADD_SHEET,
   SET_AUDIO_CONTEXT,
+  SET_AUDIO_SERVICE,
   SET_PLAYBACK_SERVICE,
 } from 'modules/audio';
 
@@ -44,6 +45,12 @@ if (process.env.NODE_ENV === 'production') {
                 ? 'Playback Service Object'
                 : null,
           };
+        case SET_AUDIO_SERVICE:
+          return {
+            ...action,
+            audioService:
+              action.audioService !== null ? 'Audio Service Object' : null,
+          };
         default:
           return action;
       }
@@ -61,6 +68,10 @@ if (process.env.NODE_ENV === 'production') {
         if (draft.audio.audioContext !== null) {
           //@ts-ignore
           draft.audio.audioContext = 'Audio Context Object';
+        }
+        if (draft.audio.audioService !== null) {
+          //@ts-ignore
+          draft.audio.audioService = 'Audio Service Object';
         }
       }) as any;
     },
