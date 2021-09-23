@@ -11,22 +11,14 @@ type PianoRes = {
 
 export function usePiano(): PianoRes {
   const {
-    frontAudioService,
+    isReady,
     getOrCreateFrontAudioServiceWithGesture: preloadWithGesture,
   } = useFrontAudioService();
 
-  const isLoaded = useMemo(() => {
-    return frontAudioService !== null;
-  }, [frontAudioService]);
-
   const play = async (note: NotePlayOption) => {
-    let fas: FrontAudioService | null = frontAudioService;
-    if (frontAudioService === null) {
-      fas = await preloadWithGesture();
-    }
-
+    const fas = await preloadWithGesture();
     fas?.play(note);
   };
 
-  return { preloadWithGesture, isLoaded, play };
+  return { preloadWithGesture, isLoaded: isReady, play };
 }
