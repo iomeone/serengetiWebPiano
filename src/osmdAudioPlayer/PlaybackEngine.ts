@@ -300,7 +300,7 @@ export default class PlaybackEngine {
       {
         articulation: ArticulationStyle.None,
         duration: 1,
-        gain: 1.5,
+        gain: 1.9,
         note: info.note,
       },
     ]);
