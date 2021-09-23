@@ -10,6 +10,10 @@ export type NotePlayOption = {
   articulation: Articulation;
 };
 
+export enum AudioServiceType {
+  FrontService = 'FrontService',
+}
+
 export interface IAudioService {
   schedule: (time: number, notes: NotePlayOption[]) => void;
   play: (note: NotePlayOption) => void;
