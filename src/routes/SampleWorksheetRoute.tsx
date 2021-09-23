@@ -1,4 +1,4 @@
-import { Anchor, Divider, Space } from 'antd';
+import { Anchor, Divider, Progress, Space } from 'antd';
 import SegmentViewer from 'components/SegmentViewer';
 import styled from 'styled-components';
 import Tip from 'assets/tip.png';
@@ -65,7 +65,7 @@ export default function SampleWorksheetRoute() {
           <Link href="#4" title="마장조 연습" />
         </Anchor>
       )}
-      <PianoRollModal 
+      <PianoRollModal
         sheetKey={sheetKeyOfPianoRoll}
         visible={pianoRollModal}
         onVisibleChange={setPianoRollModal}
@@ -94,7 +94,6 @@ export default function SampleWorksheetRoute() {
         >
           <SegmentViewer
             sheetKey={'osmd-ptd-chorus-normal'}
-            enablePianoRoll={true}
             setSheetKeyOfPianoRoll={setSheetKeyOfPianoRoll}
             setPianoRollModal={setPianoRollModal}
             title="코러스: 노말 버전"
@@ -115,6 +114,15 @@ export default function SampleWorksheetRoute() {
       </ResponsiveCont>
       <ResponsiveCont>
         <TitleDivider title="오른손 연습" id="2"></TitleDivider>
+        <SegmentViewer
+          sheetKey={'osmd-ptd-chorus-normal-right'}
+          setSheetKeyOfPianoRoll={setSheetKeyOfPianoRoll}
+          setPianoRollModal={setPianoRollModal}
+          title="코러스: 오른손 연습"
+          oneStaff={false}
+          enablePianoRoll={true}
+          url="/sheetData/permissionToDance/source2-right.musicxml"
+        ></SegmentViewer>
         <SmallTitle>손가락 번호를 모르겠어요</SmallTitle>
         <Space direction="horizontal" size={40} align="start">
           <img src={Tip2}></img>
@@ -131,6 +139,15 @@ export default function SampleWorksheetRoute() {
       </ResponsiveCont>
       <ResponsiveCont>
         <TitleDivider title="왼손 연습" id="3"></TitleDivider>
+        <SegmentViewer
+          sheetKey={'osmd-ptd-chorus-normal-left'}
+          setSheetKeyOfPianoRoll={setSheetKeyOfPianoRoll}
+          setPianoRollModal={setPianoRollModal}
+          title="코러스: 왼손 연습"
+          oneStaff={false}
+          enablePianoRoll={true}
+          url="/sheetData/permissionToDance/source2-left.musicxml"
+        ></SegmentViewer>
         <SpaceBetween>
           <Youtube></Youtube>
           <Space direction="vertical" size={20}>
@@ -195,6 +212,9 @@ export default function SampleWorksheetRoute() {
           ></TipCard>
         </Space>
       </ResponsiveCont>
+      <ResponsiveCont>
+        <ProgressCard></ProgressCard>
+      </ResponsiveCont>
       <InteractivePiano></InteractivePiano>
     </Space>
   );
@@ -227,7 +247,7 @@ function Youtube() {
         <iframe
           width={youtube.w}
           height={youtube.h}
-          src="https://www.youtube.com/embed/E7wJTI-1dvQ"
+          src="https://www.youtube.com/embed/tHe3RGfG4R4"
           allow="autoplay; encrypted-media"
           allowFullScreen
           title="video"
@@ -254,8 +274,6 @@ const TipCardCont = styled.div<TipCardContProps>`
   }};
   border-radius: 8px;
   padding: 16px 20px 16px 20px;
-  margin-left: 10px;
-  margin-right: 10px;
   width: ${({ expand }) => (expand ? '100%' : '520px')};
 `;
 
@@ -352,5 +370,57 @@ function SmallTitle({ children }: SmallTitleProps) {
         {children}
       </span>
     </div>
+  );
+}
+
+const ProgressCont = styled.div`
+  border-radius: 8px;
+  background-color: #309fff05;
+  border: 1px solid #309fff;
+  padding: 16px 20px 16px 20px;
+  box-shadow: 0px 3px 9px #309fff2a;
+`;
+
+function ProgressCard() {
+  return (
+    <ProgressCont>
+      <Space direction="horizontal" size={20} align="center">
+        <Progress type="circle" percent={54}></Progress>
+        <Space direction="vertical" size={10}>
+          <NotoSansText
+            style={{
+              fontSize: tipTitleSize,
+              fontWeight: 'bold',
+            }}
+          >
+            진행도
+          </NotoSansText>
+          <Space direction="vertical" size={0}>
+            <NotoSansText
+              style={{
+                fontSize: tipTextSize,
+              }}
+            >
+              절반 정도 왔어요!
+            </NotoSansText>
+            <NotoSansText
+              style={{
+                fontSize: tipTextSize,
+              }}
+            >
+              곧 코러스 파트를 완벽하게 연주할 수 있을 거에요.
+            </NotoSansText>
+          </Space>
+          <NotoSansText
+            style={{
+              color: '#a1a1a1',
+              fontSize: tipTextSize - 2,
+            }}
+          >
+            예상 남은 연습 기간: 1일
+          </NotoSansText>
+        </Space>
+      </Space>
+    </ProgressCont>
   );
 }
