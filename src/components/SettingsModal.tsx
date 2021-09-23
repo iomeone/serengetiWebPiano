@@ -1,7 +1,7 @@
 import { getAuth, User } from 'firebase/auth';
 import { Button, Modal, Slider, Checkbox, Space, Typography, Spin } from 'antd';
 import produce from 'immer';
-import { setPianoRange, setPianoVisibility } from 'modules/piano';
+import { setPianoRange, setPianoVisibility, setVolume } from 'modules/piano';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,6 +27,7 @@ type GeneralOption = {
 type PianoOption = {
   visibility: boolean;
   range: [Note, Note];
+  volume: number;
 };
 
 const useSettings = () => {
@@ -34,14 +35,16 @@ const useSettings = () => {
   const visibility = useSelector((state: State) => state.piano.visibility);
   const max = useSelector((state: State) => state.piano.max);
   const min = useSelector((state: State) => state.piano.min);
+  const volume = useSelector((state: State) => state.piano.volume);
   useEffect(() => {
     setOption({
       piano: {
         visibility,
         range: [min, max],
+        volume
       },
     });
-  }, [visibility, max, min]);
+  }, [visibility, max, min,volume]);
 
   return option;
 };
@@ -87,6 +90,7 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
   const dispatchOption = (nextOption: GeneralOption) => {
     dispatch(setPianoVisibility(nextOption.piano.visibility));
     dispatch(setPianoRange(nextOption.piano.range));
+    dispatch(setVolume(nextOption.piano.volume))
   };
 
   if (option === null || newOption === null) return <div></div>;
@@ -166,6 +170,21 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
             }}
           />
         </Space>
+        <Typography.Text>Piano Render Range</Typography.Text>
+          <Slider
+            min={0}
+            max={1}
+            value={
+              newOption.piano.volume
+            }
+            onChange={(volume) => {
+              handleOption(
+                produce(newOption, (draft) => {
+                  draft.piano.volume = volume;
+                }),
+              );
+            }}
+          />
       </Space>
     </Modal>
   );
