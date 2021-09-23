@@ -100,7 +100,6 @@ export default function SheetEditor({
   }, []);
 
   const MeasureClick = (ind: number) => {
-    console.log(startInd, endInd);
     if (startInd === null) {
       setStartInd(ind);
     } else {
