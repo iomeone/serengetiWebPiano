@@ -41,10 +41,10 @@ const useSettings = () => {
       piano: {
         visibility,
         range: [min, max],
-        volume
+        volume,
       },
     });
-  }, [visibility, max, min,volume]);
+  }, [visibility, max, min, volume]);
 
   return option;
 };
@@ -90,7 +90,7 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
   const dispatchOption = (nextOption: GeneralOption) => {
     dispatch(setPianoVisibility(nextOption.piano.visibility));
     dispatch(setPianoRange(nextOption.piano.range));
-    dispatch(setVolume(nextOption.piano.volume))
+    dispatch(setVolume(nextOption.piano.volume));
   };
 
   if (option === null || newOption === null) return <div></div>;
@@ -170,21 +170,19 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
             }}
           />
         </Space>
-        <Typography.Text>Piano Render Range</Typography.Text>
-          <Slider
-            min={0}
-            max={1}
-            value={
-              newOption.piano.volume
-            }
-            onChange={(volume) => {
-              handleOption(
-                produce(newOption, (draft) => {
-                  draft.piano.volume = volume;
-                }),
-              );
-            }}
-          />
+        <Typography.Text>Piano MIDI Volume</Typography.Text>
+        <Slider
+          min={0}
+          max={1}
+          value={newOption.piano.volume}
+          onChange={(volume) => {
+            handleOption(
+              produce(newOption, (draft) => {
+                draft.piano.volume = volume;
+              }),
+            );
+          }}
+        />
       </Space>
     </Modal>
   );
