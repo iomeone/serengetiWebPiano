@@ -41,7 +41,6 @@ export default function PianoRollRoute() {
         sheetKey={sheetKey}
         visible={loadModal}
         onVisibleChange={setLoadModal}
-        pressedKeys={pressedKeys}
       />
       <Title>
         <LoadSheet sheetKey={sheetKey}></LoadSheet>
