@@ -13,6 +13,7 @@ const inistialState: State = {
     visibility: false,
     min: parseNoteNameToNote('A0'),
     max: parseNoteNameToNote('C8'),
+    volume: 1
   },
   layout: {
     ready: false,

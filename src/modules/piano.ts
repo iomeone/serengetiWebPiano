@@ -13,7 +13,12 @@ export const SET_PIANO_RANGE = '@PIANO/SET_PIANO_RANGE';
 export const setPianoRange = (range: [Note, Note]) =>
   action(SET_PIANO_RANGE, { range });
 export type SetPianoRange = ActionType<typeof setPianoRange>;
-export type PianoActions = SetPianoVisibility | SetPianoRange;
+
+export const SET_VOLUME = '@PIANO/SET_VOLUME';
+export const setVolume = (volume: number) => action(SET_VOLUME, { volume });
+export type SetVolume = ActionType<typeof setVolume>;
+
+export type PianoActions = SetPianoVisibility | SetPianoRange | SetVolume;
 
 export const pianoReducer = (
   state: PianoState = inistialState.piano,
@@ -31,6 +36,12 @@ export const pianoReducer = (
       return produce<PianoState>(state, (draft) => {
         draft.min = payload.range[0];
         draft.max = payload.range[1];
+      });
+    }
+    case SET_VOLUME: {
+      const { payload } = action as SetVolume;
+      return produce<PianoState>(state, (draft) => {
+        draft.volume = payload.volume;
       });
     }
     default:

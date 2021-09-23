@@ -19,6 +19,7 @@ export type PianoState = {
   visibility: boolean;
   min: Note;
   max: Note;
+  volume: number;
 };
 
 export type LayoutState = {

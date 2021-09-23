@@ -2,6 +2,7 @@ import { ArrowLeftOutlined, ConsoleSqlOutlined } from '@ant-design/icons';
 import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
 import { useSheet } from 'hooks/useSheet';
 import { is } from 'immer/dist/internal';
+import { StaffType } from 'models/Worksheet';
 import { State } from 'modules/State';
 import { Fraction } from 'opensheetmusicdisplay/build/dist/src';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -207,6 +208,9 @@ function PianoRoll({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [playState, setPlayState] = useState<PlayState>(PlayState.PREPARE);
 
+  
+  const staffType = StaffType.RightHand; //TODO: get StaffType
+
   const velocity = useMemo(() => {
     if (timeSigniture !== null && bpm !== null) {
       return 80 / timeSigniture.Numerator / 60000;
@@ -284,20 +288,32 @@ function PianoRoll({
     bottomY: number,
     timeSigniture: number,
     noteSchedule: NoteSchedule,
+    staffType: StaffType
   ) => {
-    // midikey => color,y
-
     const width = (measureLength * noteSchedule.length) / timeSigniture;
     const height = 60;
     const x =
       cursorX +
       measureLength *
         (noteSchedule.timing / timeSigniture - playTime * velocity);
-    const y =
-      bottomY +
-      height * 2 +
-      height / 2 -
-      (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
+    let y;
+    switch(staffType){
+      case StaffType.RightHand:
+      case StaffType.BothHands:
+      y =
+        bottomY +
+        height * 2 +
+        height / 2 -
+        (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
+      break;
+      case StaffType.LeftHand:
+      y =
+        bottomY +
+        height * 2 +
+        height / 2 -
+        (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 12);
+    }
+
     const radius = height / 2;
     context.fillStyle = Barcolor[noteSchedule.note.pitchClass];
     context.beginPath();
@@ -350,6 +366,7 @@ function PianoRoll({
               bottom,
               timeSigniture.RealValue,
               schedule,
+              staffType
             );
           });
 
