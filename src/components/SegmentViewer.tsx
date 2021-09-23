@@ -226,6 +226,7 @@ export default function SegmentViewer({
         width: '100%',
         position: 'relative',
         marginBottom: -60,
+        minHeight: height,
       }}
     >
       <TitleBar>
