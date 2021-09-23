@@ -23,6 +23,8 @@ import EditorRoute from 'routes/EditorRoute';
 import OSMDEditor from 'routes/OSMDEditorRoute';
 import { useWidthStartup } from 'hooks/useWidth';
 import SampleWorksheetRoute from 'routes/SampleWorksheetRoute';
+import { Scrollbars } from 'react-custom-scrollbars';
+import { useKeyboardStartup } from 'hooks/useKeyboard';
 
 const hMargin = Size.hMargin;
 
@@ -229,4 +231,5 @@ export default App;
 
 function useStartup() {
   useWidthStartup();
+  useKeyboardStartup();
 }
