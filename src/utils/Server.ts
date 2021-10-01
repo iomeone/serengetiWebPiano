@@ -70,7 +70,7 @@ export async function getWorksheetDetail(
     };
 
     const firebaseData = JSON.parse(worksheet.data) as Worksheet;
-    const data = await firestoreWorksheetToWorksheet(firebaseData);
+    const data = await firestoreWorksheetToWorksheet(firebaseData, true);
     if (data === null) return null;
 
     return {
@@ -147,6 +147,7 @@ export const getMusicxmlFile = async (id: string) => getFile('sheets', id);
 
 export async function firestoreWorksheetToWorksheet(
   firestoreWorksheet: Worksheet,
+  isWorksheet: boolean = false,
 ): Promise<Worksheet> {
   const res = [];
   for (const elem of firestoreWorksheet) {
@@ -164,15 +165,22 @@ export async function firestoreWorksheetToWorksheet(
         break;
       }
       case ContentType.Sheet: {
-        const file = await getMusicxmlFile(elem.key);
-        if (file === null) {
-          res.push({ ...elem, musicxml: null });
+        if (isWorksheet) {
+          const keyRef = ref(storage, `sheets/${elem.key}`);
+          const downloadUrl = await getDownloadURL(keyRef);
+          res.push({ ...elem, musicxml: downloadUrl });
         } else {
-          res.push({
-            ...elem,
-            musicxml: await file.text(),
-          });
+          const file = await getMusicxmlFile(elem.key);
+          if (file === null) {
+            res.push({ ...elem, musicxml: null });
+          } else {
+            res.push({
+              ...elem,
+              musicxml: await file.text(),
+            });
+          }
         }
+
         break;
       }
     }
