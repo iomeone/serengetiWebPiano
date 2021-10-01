@@ -278,8 +278,6 @@ type SheetContProps = {
 };
 
 const SheetCont = styled.div<SheetContProps>`
-  display: flex;
-  justify-content: center;
   position: relative;
   min-height: ${({ height }) => height}px;
 `;
