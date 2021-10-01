@@ -3,7 +3,7 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Try it online here!
-https://d3lutpt5vkh7di.cloudfront.net/
+https://www.sabanamusic.com
 
 ## Available Scripts
 
