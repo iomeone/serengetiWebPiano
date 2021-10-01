@@ -253,66 +253,73 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
           marginTop: 30,
         }}
       >
-        {worksheetDetail.worksheet.map((content, contentKey) => {
-          switch (content.type) {
-            case ContentType.Paragraph: {
-              return (
-                <ResponsiveCont key={contentKey}>
-                  <Space
-                    direction="vertical"
-                    size={20}
-                    style={{
-                      width: '100%',
-                    }}
-                  >
-                    {content.content.map((lines, lineKey) => (
-                      <Space
-                        key={lineKey}
-                        direction="vertical"
-                        size={8}
-                        style={{
-                          width: '100%',
-                        }}
-                      >
-                        {lines.map((line, key) => (
-                          <Typo key={key}>{line}</Typo>
-                        ))}
-                      </Space>
-                    ))}
-                  </Space>
-                </ResponsiveCont>
-              );
-            }
-            case ContentType.Sheet: {
-              return (
-                <div key={contentKey}>
-                  <SegmentViewer
-                    sheetKey={content.key}
-                    title={content.title}
-                    url={content.musicxml ?? ''}
-                    oneStaff={content.staffType !== StaffType.BothHands}
-                  ></SegmentViewer>
-                </div>
-              );
-            }
-            case ContentType.Image: {
-              return (
-                <ResponsiveCont key={contentKey}>
-                  <img
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                    }}
-                    alt={content.title}
-                    src={content.url ?? ''}
-                  ></img>
-                </ResponsiveCont>
-              );
-            }
-            default:
-              return <div key={contentKey}></div>;
-          }
-        })}
+        <ResponsiveCont>
+          <Space
+            direction="vertical"
+            size={20}
+            style={{
+              width: '100%',
+            }}
+          >
+            {worksheetDetail.worksheet.map((content, contentKey) => {
+              switch (content.type) {
+                case ContentType.Paragraph: {
+                  return (
+                    <Space
+                      key={contentKey}
+                      direction="vertical"
+                      size={20}
+                      style={{
+                        width: '100%',
+                      }}
+                    >
+                      {content.content.map((lines, lineKey) => (
+                        <Space
+                          key={lineKey}
+                          direction="vertical"
+                          size={8}
+                          style={{
+                            width: '100%',
+                          }}
+                        >
+                          {lines.map((line, key) => (
+                            <Typo key={key}>{line}</Typo>
+                          ))}
+                        </Space>
+                      ))}
+                    </Space>
+                  );
+                }
+                case ContentType.Sheet: {
+                  return (
+                    <SegmentViewer
+                      key={contentKey}
+                      sheetKey={content.key}
+                      title={content.title}
+                      url={content.musicxml ?? ''}
+                      oneStaff={content.staffType !== StaffType.BothHands}
+                    ></SegmentViewer>
+                  );
+                }
+                case ContentType.Image: {
+                  return (
+                    <img
+                      key={contentKey}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                      }}
+                      alt={content.title}
+                      src={content.url ?? ''}
+                    ></img>
+                  );
+                }
+                default:
+                  return <div key={contentKey}></div>;
+              }
+            })}
+          </Space>
+        </ResponsiveCont>
       </Space>
     </Space>
   );
