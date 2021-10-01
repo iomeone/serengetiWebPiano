@@ -224,6 +224,7 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
       style={{
         width: '100%',
         marginTop: 30,
+        marginBottom: 100,
       }}
     >
       <ResponsiveCont>
@@ -244,83 +245,73 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
             {worksheetDetail.title}
           </Typography.Text>
         </Space>
-      </ResponsiveCont>
-      <Space
-        direction="vertical"
-        size={50}
-        style={{
-          width: '100%',
-          marginTop: 30,
-        }}
-      >
-        <ResponsiveCont>
-          <Space
-            direction="vertical"
-            size={20}
-            style={{
-              width: '100%',
-            }}
-          >
-            {worksheetDetail.worksheet.map((content, contentKey) => {
-              switch (content.type) {
-                case ContentType.Paragraph: {
-                  return (
-                    <Space
-                      key={contentKey}
-                      direction="vertical"
-                      size={20}
-                      style={{
-                        width: '100%',
-                      }}
-                    >
-                      {content.content.map((lines, lineKey) => (
-                        <Space
-                          key={lineKey}
-                          direction="vertical"
-                          size={8}
-                          style={{
-                            width: '100%',
-                          }}
-                        >
-                          {lines.map((line, key) => (
-                            <Typo key={key}>{line}</Typo>
-                          ))}
-                        </Space>
-                      ))}
-                    </Space>
-                  );
-                }
-                case ContentType.Sheet: {
-                  return (
-                    <SegmentViewer
-                      key={contentKey}
-                      sheetKey={content.key}
-                      title={content.title}
-                      url={content.musicxml ?? ''}
-                      oneStaff={content.staffType !== StaffType.BothHands}
-                    ></SegmentViewer>
-                  );
-                }
-                case ContentType.Image: {
-                  return (
-                    <img
-                      key={contentKey}
-                      style={{
-                        width: '100%',
-                        height: 'auto',
-                      }}
-                      alt={content.title}
-                      src={content.url ?? ''}
-                    ></img>
-                  );
-                }
-                default:
-                  return <div key={contentKey}></div>;
+        <Space
+          direction="vertical"
+          size={50}
+          style={{
+            width: '100%',
+            marginTop: 30,
+          }}
+        >
+          {worksheetDetail.worksheet.map((content, contentKey) => {
+            switch (content.type) {
+              case ContentType.Paragraph: {
+                return (
+                  <Space
+                    key={contentKey}
+                    direction="vertical"
+                    size={20}
+                    style={{
+                      width: '100%',
+                    }}
+                  >
+                    {content.content.map((lines, lineKey) => (
+                      <Space
+                        key={lineKey}
+                        direction="vertical"
+                        size={8}
+                        style={{
+                          width: '100%',
+                        }}
+                      >
+                        {lines.map((line, key) => (
+                          <Typo key={key}>{line}</Typo>
+                        ))}
+                      </Space>
+                    ))}
+                  </Space>
+                );
               }
-            })}
-          </Space>
-        </ResponsiveCont>
-      </Space>
+              case ContentType.Sheet: {
+                return (
+                  <SegmentViewer
+                    key={contentKey}
+                    sheetKey={content.key}
+                    title={content.title}
+                    url={content.musicxml ?? ''}
+                    oneStaff={content.staffType !== StaffType.BothHands}
+                  ></SegmentViewer>
+                );
+              }
+              case ContentType.Image: {
+                return (
+                  <img
+                    key={contentKey}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                    }}
+                    alt={content.title}
+                    src={content.url ?? ''}
+                  ></img>
+                );
+              }
+              default:
+                return <div key={contentKey}></div>;
+            }
+          })}
+        </Space>
+      </ResponsiveCont>
     </Space>
   );
 }
