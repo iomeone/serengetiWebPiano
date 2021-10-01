@@ -7,7 +7,6 @@ const Cont = styled.div`
   width: 100%;
   justify-content: center;
   background: ${(props) => props.color};
-  justify-self: end;
 `;
 
 type InnerProps = { mode: WidthMode };
