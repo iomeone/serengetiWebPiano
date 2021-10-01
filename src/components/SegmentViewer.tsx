@@ -72,8 +72,8 @@ const ControlButton = styled.div`
 type SegmentViewerProps = {
   sheetKey: string;
   enablePianoRoll?: boolean;
-  setSheetKeyOfPianoRoll?: (key:string)=>void;
-  setPianoRollModal?: (visible: boolean)=> void;
+  setSheetKeyOfPianoRoll?: (key: string) => void;
+  setPianoRollModal?: (visible: boolean) => void;
   title?: string;
   url?: string;
   oneStaff?: boolean;
@@ -149,7 +149,12 @@ export default function SegmentViewer({
     if (isLoaded) {
       switch (sheet?.playbackState) {
         case null:
-          toShow = [Control.PLAY, Control.METRONOME, Control.PIANO,Control.PIANOROLL];
+          toShow = [
+            Control.PLAY,
+            Control.METRONOME,
+            Control.PIANO,
+            Control.PIANOROLL,
+          ];
           break;
         case PlaybackState.INIT:
         case PlaybackState.PAUSED:
@@ -226,17 +231,22 @@ export default function SegmentViewer({
         );
       case Control.PIANOROLL:
         return (
-          enablePianoRoll && <ControlButton
-          onClick={() => {
-            if(setPianoRollModal !== undefined && setSheetKeyOfPianoRoll !== undefined){
-              setPianoRollModal(true);
-              setSheetKeyOfPianoRoll(sheetKey);
-            }
-          }}
-        >
-          <AlignLeftOutlined />
-        </ControlButton>
-        )
+          enablePianoRoll && (
+            <ControlButton
+              onClick={() => {
+                if (
+                  setPianoRollModal !== undefined &&
+                  setSheetKeyOfPianoRoll !== undefined
+                ) {
+                  setPianoRollModal(true);
+                  setSheetKeyOfPianoRoll(sheetKey);
+                }
+              }}
+            >
+              <AlignLeftOutlined />
+            </ControlButton>
+          )
+        );
     }
   };
 
@@ -246,19 +256,30 @@ export default function SegmentViewer({
       size={10}
       style={{
         width: '100%',
-        position: 'relative',
         marginBottom: -60,
-        minHeight: height,
       }}
     >
       <TitleBar>
         <NotoSansText>{viewerTitle}</NotoSansText>
         {controlPanel()}
       </TitleBar>
-      <Viewer sheetKey={sheetKey}></Viewer>
-      <Loading isLoading={isSheetLoading}>
-        <Spin size="large"></Spin>
-      </Loading>
+      <SheetCont height={height}>
+        <Viewer sheetKey={sheetKey}></Viewer>
+        <Loading isLoading={isSheetLoading}>
+          <Spin size="large"></Spin>
+        </Loading>
+      </SheetCont>
     </Space>
   );
 }
+
+type SheetContProps = {
+  height: number;
+};
+
+const SheetCont = styled.div<SheetContProps>`
+  display: flex;
+  justify-content: center;
+  position: relative;
+  min-height: ${({ height }) => height}px;
+`;
