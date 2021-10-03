@@ -4,18 +4,21 @@ import {
   loadSheetWithUrlThunk,
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import Viewer from './Viewer';
-import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
+import Viewer, { ResizeState } from './Viewer';
 import { useSheet } from 'hooks/useSheet';
 import { GiMetronome } from 'react-icons/gi';
-import { setPianoVisibility } from 'modules/piano';
-import { State } from 'modules/State';
 import { NotoSansText } from './NotoSansText';
 import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
 import { CgPiano } from 'react-icons/cg';
+import {
+  getStaffLines,
+  StaffLine,
+  getMeasureBoundingBoxes,
+  Rect,
+} from 'utils/OSMD';
 
 enum Control {
   METRONOME,
@@ -139,7 +142,9 @@ export default function AlignmentViewer({
       case Control.MIDIREADY:
         return (
           <ControlButton
-            onClick={initWithGesture}
+            onClick={() => {
+              initWithGesture();
+            }}
             style={{
               color: isReady ? 'black' : '#888888',
             }}
@@ -148,6 +153,47 @@ export default function AlignmentViewer({
           </ControlButton>
         );
     }
+  };
+
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [staffLines, setStaffLine] = useState<StaffLine[] | null>(null);
+  const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
+  const [resize, setResize] = useState<ResizeState>(ResizeState.Init);
+
+  useEffect(() => {
+    if (isLoaded && resize === ResizeState.ResizeEnd) {
+      setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
+      setStaffLine(getStaffLines(sheet?.osmd));
+    }
+  }, [sheet, isLoaded, resize]);
+
+  const [lastMeasureInd, setLastMeasureInd] = useState(-1);
+  const refreshLastMeasureInd = () => {
+    const rect = sheetRef.current?.getBoundingClientRect();
+    const y = rect?.y;
+    if (y !== undefined) {
+      let measureInd = -1;
+      if (staffLines !== null) {
+        for (const line of staffLines) {
+          if (line.bottom + y > window.innerHeight) {
+            break;
+          } else {
+            measureInd = line.lastMeasureInd;
+          }
+        }
+      }
+      setLastMeasureInd(measureInd);
+    }
+  };
+
+  useEffect(() => {
+    if (staffLines !== null) {
+      refreshLastMeasureInd();
+    }
+  }, [staffLines]);
+
+  onscroll = () => {
+    refreshLastMeasureInd();
   };
 
   return (
@@ -163,8 +209,21 @@ export default function AlignmentViewer({
         <NotoSansText>{viewerTitle}</NotoSansText>
         {controlPanel()}
       </TitleBar>
-      <SheetCont>
-        <Viewer sheetKey={sheetKey}></Viewer>
+      <SheetCont ref={sheetRef}>
+        <Viewer sheetKey={sheetKey} onResize={setResize}></Viewer>
+        {measureBoxes !== null &&
+          measureBoxes.map((box, ind) => (
+            <Box
+              key={ind}
+              selected={ind === lastMeasureInd}
+              style={{
+                left: box.left,
+                top: box.top,
+                width: box.right - box.left,
+                height: box.bottom - box.top,
+              }}
+            ></Box>
+          ))}
         <Loading isLoading={isSheetLoading}>
           <Spin size="large"></Spin>
         </Loading>
@@ -175,4 +234,15 @@ export default function AlignmentViewer({
 
 const SheetCont = styled.div`
   position: relative;
+`;
+
+type BoxProps = {
+  selected: boolean;
+};
+
+const Box = styled.div<BoxProps>`
+  position: absolute;
+  background-color: ${(props) =>
+    props.selected ? '#91eebb44' : 'transparent'};
+  cursor: pointer;
 `;
