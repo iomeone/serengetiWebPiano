@@ -7,7 +7,6 @@ import {
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import Viewer from './Viewer';
 import { IoStop, IoPlay, IoPause } from 'react-icons/io5';
 import { PlaybackState } from 'osmdAudioPlayer/PlaybackEngine';
 import { useSheet } from 'hooks/useSheet';
@@ -15,9 +14,9 @@ import { GiMetronome } from 'react-icons/gi';
 import { CgPiano } from 'react-icons/cg';
 import { setPianoVisibility } from 'modules/piano';
 import { State } from 'modules/State';
-import { relative } from 'path';
 import { NotoSansText } from './NotoSansText';
 import { AlignLeftOutlined } from '@ant-design/icons';
+import MeasureClickableViewer from './MeasureClickableViewer';
 enum Control {
   PLAY,
   PAUSE,
@@ -264,7 +263,7 @@ export default function SegmentViewer({
         {controlPanel()}
       </TitleBar>
       <SheetCont height={height}>
-        <Viewer sheetKey={sheetKey}></Viewer>
+        <MeasureClickableViewer sheetKey={sheetKey}></MeasureClickableViewer>
         <Loading isLoading={isSheetLoading}>
           <Spin size="large"></Spin>
         </Loading>
