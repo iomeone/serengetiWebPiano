@@ -1,5 +1,7 @@
+import { latest } from 'immer/dist/internal';
 import {
   GraphicalMeasure,
+  MeasureBuildParameters,
   OpenSheetMusicDisplay as OSMD,
 } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
@@ -74,6 +76,38 @@ export function getMeasureBoundingBoxes(osmd: OSMD): Rect[] {
       (acc, measure) => {
         const { x, y } = measure.PositionAndShape.AbsolutePosition;
         const { width } = measure.PositionAndShape.BoundingRectangle;
+        const height = measure.ParentStaffLine.BottomLineOffset;
+        let left = x;
+        let right = x + width;
+        let top = y;
+        let bottom = y + height;
+
+        const res = { left: 0, right: 0, top: 0, bottom: 0 };
+
+        // acc와 rect의 모든 점을 포괄하는 가장 큰 직사각형 만들기
+        res.left = Math.min(acc.left, left * OSMD_UNIT);
+        res.right = Math.max(acc.right, right * OSMD_UNIT);
+        res.top = Math.min(acc.top, top * OSMD_UNIT);
+        res.bottom = Math.max(acc.bottom, bottom * OSMD_UNIT);
+        return res;
+      },
+      { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity },
+    ),
+  );
+}
+
+export type StaffLine = {
+  lastMeasureInd: number;
+  bottom: number;
+};
+
+export function getStaffLines(osmd: OSMD): StaffLine[] {
+  const filtered = _filterMeasures(osmd.GraphicSheet.MeasureList);
+  const boxes = filtered.map((measures) =>
+    measures.reduce(
+      (acc, measure) => {
+        const { x, y } = measure.PositionAndShape.AbsolutePosition;
+        const { width } = measure.PositionAndShape.BoundingRectangle;
         const { height } =
           measure.ParentStaffLine.PositionAndShape.BoundingRectangle;
         let left = x;
@@ -93,4 +127,38 @@ export function getMeasureBoundingBoxes(osmd: OSMD): Rect[] {
       { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity },
     ),
   );
+
+  const boxGroupByTop: {
+    ind: number;
+    box: Rect;
+  }[][] = [];
+
+  let lastTop = -Infinity;
+  for (const [ind, box] of boxes.entries()) {
+    if (box.top > lastTop) {
+      boxGroupByTop.push([{ ind, box }]);
+      lastTop = box.top;
+    } else if (box.top === lastTop) {
+      const lastInd = boxGroupByTop.length - 1;
+      boxGroupByTop[lastInd].push({ ind, box });
+    } else {
+      throw new Error('logic error');
+    }
+  }
+
+  return boxGroupByTop.map((boxGroup) => {
+    const lastInd = boxGroup.length - 1;
+    const lastMeasureInd = boxGroup[lastInd].ind;
+    let maxBottom = 0;
+    for (const box of boxGroup.map((box) => box.box)) {
+      if (box.bottom > maxBottom) {
+        maxBottom = box.bottom;
+      }
+    }
+
+    return {
+      lastMeasureInd: lastMeasureInd,
+      bottom: maxBottom,
+    };
+  });
 }
