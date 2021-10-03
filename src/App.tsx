@@ -24,6 +24,7 @@ import OSMDEditor from 'routes/OSMDEditorRoute';
 import { useWidthStartup } from 'hooks/useWidth';
 import SampleWorksheetRoute from 'routes/SampleWorksheetRoute';
 import { useKeyboardStartup } from 'hooks/useKeyboard';
+import AlignmentRoute from 'routes/AlignmentRoute';
 
 const hMargin = Size.hMargin;
 
@@ -122,6 +123,11 @@ const routeMap: BreadCrumbMap = {
   '/sampleWorksheet': {
     routeName: 'Sample Worksheet',
     component: SampleWorksheetRoute,
+    exact: true,
+  },
+  '/alignment': {
+    routeName: 'Alignment',
+    component: AlignmentRoute,
     exact: true,
   },
 };

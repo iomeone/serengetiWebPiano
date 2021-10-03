@@ -58,7 +58,14 @@ const items: RouteCard[] = [
   {
     title: 'Sample Worksheet',
     path: '/sampleWorksheet',
-    description: '2021년 K-startup 영상 자료 개발',
+    description:
+      '2021년 K-startup 영상 자료 촬영, 새로운 Worksheet 컴포넌트 개발',
+  },
+  {
+    title: 'Music Alignment',
+    path: '/alignment',
+    description:
+      'Audio-Score 및 Score-Score Music Alignment에 대한 연구, 자동 넘김 악보 테스트, 연주 위치 추적 기술 연구',
   },
 ];
 
