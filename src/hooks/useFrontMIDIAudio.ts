@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FrontAudioService } from 'services/FrontAudioService';
 import { NoteOffListener, NoteOnListener } from 'services/FrontMIDIService';
-import { isJSDocReadonlyTag } from 'typescript';
 import { useFrontAudioService } from './useFrontAudioService';
 import { useFrontMIDIService } from './useFrontMIDIService';
 
@@ -19,7 +18,8 @@ export function useFrontMIDIAudio(
   onNoteOn: NoteOnListener | null,
   onNoteOff: NoteOffListener | null,
 ): FrontMIDIAudioRes {
-  const { getOrCreateFrontAudioServiceWithGesture,isReady } = useFrontAudioService();
+  const { getOrCreateFrontAudioServiceWithGesture, isReady } =
+    useFrontAudioService();
 
   const { frontMIDIService, isMIDISupported, isMIDIConnected } =
     useFrontMIDIService(onNoteOn, onNoteOff);
@@ -39,12 +39,11 @@ export function useFrontMIDIAudio(
     }
   };
 
-  useEffect(()=>{
-    if(isReady){
+  useEffect(() => {
+    if (isReady) {
       initWithGesture();
     }
-    
-  },[isReady, volume]);
+  }, [isReady, volume]);
 
   const initWithGesture = async () => {
     const fas = await getOrCreateFrontAudioServiceWithGesture();

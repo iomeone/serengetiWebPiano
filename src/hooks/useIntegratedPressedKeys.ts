@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { FrontAudioService } from 'services/FrontAudioService';
 import { NotePlayOption } from 'services/IAudioService';
 import { binaryKeysToNoteArray, Note } from 'utils/Note';
 import { useBinaryPressedKeys } from './useBinaryPressedKeys';

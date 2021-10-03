@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { FrontPlaybackService } from 'services/FrontPlaybackService';
 import { useAudioContext } from './useAudioContext';
 import { useDispatch, useSelector } from 'react-redux';
