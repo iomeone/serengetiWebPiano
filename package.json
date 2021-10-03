@@ -52,7 +52,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "react-scripts build && aws s3 sync ./build s3://sabana-serengeti --profile=mathod-react",
+    "deploy": "aws s3 sync ./build s3://sabana-serengeti --profile=mathod-react",
     "invalidate": "aws cloudfront create-invalidation --profile=mathod-react --distribution-id=E1AIF31QADGXJA --paths / /index.html /error.html /service-worker.js /manifest.json /favicon.ico",
     "shortcut": "yarn build & yarn deploy & yarn invalidate"
   },
