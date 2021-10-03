@@ -1,13 +1,11 @@
 import { Button, Space } from 'antd';
 import styled from 'styled-components';
-import { useDispatch, useSelector } from 'react-redux';
-import { State } from 'modules/State';
+import { useDispatch } from 'react-redux';
 import Viewer from 'components/Viewer';
-import { noteToMidiKeyNumber } from 'utils/Note';
-import Piano from 'components/Piano';
 import { setPianoVisibility } from 'modules/piano';
 import LoadSheet from 'components/LoadSheet';
 import { Size } from 'constants/layout';
+import InteractivePiano from 'components/InteractivePiano';
 
 const hMargin = Size.hMargin;
 const margin = Size.margin;
@@ -26,7 +24,6 @@ const Title = styled.div`
 const sheetKey = 'osmd-sheet-key';
 
 export default function SheetRoute() {
-  const piano = useSelector((state: State) => state.piano);
   const dispatch = useDispatch();
 
   return (
@@ -44,10 +41,7 @@ export default function SheetRoute() {
         </Button>
       </Space>
       <Viewer sheetKey={sheetKey}></Viewer>
-      <Piano
-        lower={noteToMidiKeyNumber(piano.min)}
-        upper={noteToMidiKeyNumber(piano.max)}
-      />
+      <InteractivePiano></InteractivePiano>
     </Main>
   );
 }
