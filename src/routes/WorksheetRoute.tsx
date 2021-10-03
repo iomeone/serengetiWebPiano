@@ -169,7 +169,7 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
     if (id !== undefined && !authLoading) {
       refresh();
     }
-  }, [id, authLoading]);
+  }, [id, authLoading, refresh]);
 
   if (loading)
     return (
