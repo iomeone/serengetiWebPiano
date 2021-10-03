@@ -19,6 +19,7 @@ export function useKeyEvent(
     } else {
       onKeyUp(keyEvent.key);
     }
+    //eslint-disable-next-line
   }, [keyEvent]);
 }
 

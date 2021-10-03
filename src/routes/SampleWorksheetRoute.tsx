@@ -71,7 +71,7 @@ export default function SampleWorksheetRoute() {
         onVisibleChange={setPianoRollModal}
       />
       <Center>
-        <img src={Title8}></img>
+        <img src={Title8} alt="title8" />
       </Center>
       <ResponsiveCont>
         <TitleDivider title="코러스 파트 연습" id="1"></TitleDivider>
@@ -125,7 +125,7 @@ export default function SampleWorksheetRoute() {
         ></SegmentViewer>
         <SmallTitle>손가락 번호를 모르겠어요</SmallTitle>
         <Space direction="horizontal" size={40} align="start">
-          <img src={Tip2}></img>
+          <img src={Tip2} alt="tip2" />
           <NotoSansText
             style={{
               fontSize: textSize,
@@ -293,7 +293,7 @@ function TipCard({
     <TipCardCont type={type} expand={expand}>
       <Space direction="vertical" size={10}>
         <Space direction="horizontal" size={20} align="center">
-          <img width={20} src={Tip} />
+          <img width={20} src={Tip} alt="tip" />
           <NotoSansText
             style={{
               fontWeight: 'bold',

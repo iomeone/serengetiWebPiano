@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-import { FrontAudioService } from 'services/FrontAudioService';
 import { NotePlayOption } from 'services/IAudioService';
 import { useFrontAudioService } from './useFrontAudioService';
 

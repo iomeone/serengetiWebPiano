@@ -1,20 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import {
-  IOSMDOptions,
-  OpenSheetMusicDisplay as OSMD,
-  VexFlowMusicSheetCalculator,
-} from 'opensheetmusicdisplay';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-  addSheet,
-  cleanupSheetThunk,
-  stopOtherPlaybackServicesThunk,
-} from 'modules/audio';
+import { stopOtherPlaybackServicesThunk } from 'modules/audio';
 import styled from 'styled-components';
 import { getMeasureBoundingBoxes, Rect } from 'utils/OSMD';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { useSheet } from 'hooks/useSheet';
-import { PlaybackState } from 'services/IPlaybackService';
 import Viewer, { ResizeState } from './Viewer';
 
 const Cont = styled.div`

@@ -161,15 +161,18 @@ function WorksheetViewer({ id }: WorksheetViewerProps) {
   const [worksheetDetail, setWorksheetDetail] =
     useState<WorksheetDetail | null>(null);
   const [loading, setLoading] = useState(true);
+
   const refresh = async () => {
     setWorksheetDetail(await getWorksheetDetail(id));
     setLoading(false);
   };
+
   useEffect(() => {
     if (id !== undefined && !authLoading) {
       refresh();
     }
-  }, [id, authLoading, refresh]);
+    //eslint-disable-next-line
+  }, [id, authLoading]);
 
   if (loading)
     return (

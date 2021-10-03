@@ -80,7 +80,7 @@ export default function AlignmentViewer({
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
 
-  const { pressedKeys, initWithGesture, isReady } = useIntergratedPressedKeys();
+  const { initWithGesture, isReady } = useIntergratedPressedKeys();
 
   const { sheet, isLoaded } = useSheet(sheetKey);
   const [isSheetLoading, setIsSheetLoading] = useState(false);
@@ -190,6 +190,7 @@ export default function AlignmentViewer({
     if (staffLines !== null) {
       refreshLastMeasureInd();
     }
+    //eslint-disable-next-line
   }, [staffLines]);
 
   onscroll = () => {

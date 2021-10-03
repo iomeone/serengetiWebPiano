@@ -1,7 +1,6 @@
-import { ArrowLeftOutlined, ConsoleSqlOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useIntergratedPressedKeys } from 'hooks/useIntegratedPressedKeys';
 import { useSheet } from 'hooks/useSheet';
-import { is } from 'immer/dist/internal';
 import { StaffType } from 'models/Worksheet';
 import { State } from 'modules/State';
 import { Fraction } from 'opensheetmusicdisplay/build/dist/src';
@@ -73,7 +72,6 @@ const Modal = styled.div`
 export default function PianoRollModal({
   sheetKey,
   visible,
-  onVisibleChange,
 }: PianoRollModalProps) {
   const piano = useSelector((state: State) => state.piano);
   const { sheet, isLoaded } = useSheet(sheetKey);
@@ -140,14 +138,14 @@ export default function PianoRollModal({
   return (
     <Wrap visibility={visible}>
       <Modal width={dimensions.width} height={dimensions.height}>
-      <ArrowLeftOutlined
-        style={{
-          position: 'absolute',
-          left: 20,
-          top: 20,
-          fontSize: 30
-        }}
-      />
+        <ArrowLeftOutlined
+          style={{
+            position: 'absolute',
+            left: 20,
+            top: 20,
+            fontSize: 30,
+          }}
+        />
         <PianoRoll
           width={dimensions.width}
           height={680}
@@ -208,7 +206,6 @@ function PianoRoll({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [playState, setPlayState] = useState<PlayState>(PlayState.PREPARE);
 
-  
   const staffType = StaffType.RightHand; //TODO: get StaffType
 
   const velocity = useMemo(() => {
@@ -288,7 +285,7 @@ function PianoRoll({
     bottomY: number,
     timeSigniture: number,
     noteSchedule: NoteSchedule,
-    staffType: StaffType
+    staffType: StaffType,
   ) => {
     const width = (measureLength * noteSchedule.length) / timeSigniture;
     const height = 60;
@@ -297,21 +294,21 @@ function PianoRoll({
       measureLength *
         (noteSchedule.timing / timeSigniture - playTime * velocity);
     let y;
-    switch(staffType){
+    switch (staffType) {
       case StaffType.RightHand:
       case StaffType.BothHands:
-      y =
-        bottomY +
-        height * 2 +
-        height / 2 -
-        (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
-      break;
+        y =
+          bottomY +
+          height * 2 +
+          height / 2 -
+          (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 24);
+        break;
       case StaffType.LeftHand:
-      y =
-        bottomY +
-        height * 2 +
-        height / 2 -
-        (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 12);
+        y =
+          bottomY +
+          height * 2 +
+          height / 2 -
+          (leading / 2) * (noteToDiatonicNumber(noteSchedule.note) - 12);
     }
 
     const radius = height / 2;
@@ -366,7 +363,7 @@ function PianoRoll({
               bottom,
               timeSigniture.RealValue,
               schedule,
-              staffType
+              staffType,
             );
           });
 

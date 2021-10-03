@@ -1,7 +1,5 @@
-import { latest } from 'immer/dist/internal';
 import {
   GraphicalMeasure,
-  MeasureBuildParameters,
   OpenSheetMusicDisplay as OSMD,
 } from 'opensheetmusicdisplay';
 import { midiKeyNumberToNote, Note } from 'utils/Note';
