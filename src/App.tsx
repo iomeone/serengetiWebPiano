@@ -11,6 +11,7 @@ import {
   Link,
   Redirect,
   RouteComponentProps,
+  useHistory,
 } from 'react-router-dom';
 import MainRoute from 'routes/MainRoute';
 import SheetRoute from 'routes/SheetRoute';
@@ -53,6 +54,7 @@ const HeaderCont = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
 `;
 
 const BreadCrumbCont = styled.div`
@@ -166,6 +168,9 @@ function App() {
     return mainBreadcrumb.concat(extraBreadcrumbs);
   }, [pathSnippets]);
 
+  const history = useHistory();
+  const loc = useLocation();
+
   return (
     <Screen>
       <SettingsModal
@@ -173,7 +178,15 @@ function App() {
         onVisibleChange={setSettingsModal}
       ></SettingsModal>
       <Header>
-        <HeaderCont>
+        <HeaderCont
+          onClick={() => {
+            if (loc.pathname === '/') {
+              history.go(0);
+            } else {
+              history.push('/');
+            }
+          }}
+        >
           <Space size={8}>
             <Typography.Text
               style={{
