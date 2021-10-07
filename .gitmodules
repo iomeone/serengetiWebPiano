@@ -1,0 +1,3 @@
+[submodule "midi-similarity-measurement"]
+	path = midi-similarity-measurement
+	url = https://github.com/sabana-music/midi-similarity-measurement
