@@ -237,6 +237,13 @@ export default function AlignmentViewer({
     }
     //eslint-disable-next-line
   }, [staffLines]);
+
+  /* alignment service */
+
+  useEffect(() => {
+    if (alignmentService === null) return;
+    alignmentService.init();
+  }, [alignmentService]);
   const [sequenceLastMeasure, setSequenceLastMeasure] =
     useState<Uint8Array | null>(null);
   const [matrixLastMeasure, setMatrixLastMeasure] = useState<number[][] | null>(
@@ -244,42 +251,14 @@ export default function AlignmentViewer({
   );
   const measureSamples = useMemo(() => {
     if (alignmentService === null) return null;
-
     const realValueSec = (60 / bpm) * 4;
     const sampleRate = alignmentService.sampleRate;
     const measureSamples = Math.floor(realValueSec * sampleRate);
     return measureSamples;
   }, [alignmentService, bpm]);
   useEffect(() => {
-    const filtered = noteSchedules?.filter(
-      (schedule) => schedule.measureInd === lastMeasureInd,
-    );
-    if (
-      filtered === undefined ||
-      filtered.length === 0 ||
-      measureSamples === null
-    )
-      return;
-
-    const baseTime = filtered[0].timing;
-    const matrix: number[][] = Array.from(
-      {
-        length: measureSamples,
-      },
-      () => [],
-    );
-
-    for (const schedule of filtered) {
-      const time = schedule.timing - baseTime;
-      const length = schedule.length;
-
-      const startFrame = Math.floor(time * measureSamples);
-      const endFrame = startFrame + Math.floor(length * measureSamples);
-      for (let i = startFrame; i < endFrame; i++) {
-        matrix[i].push(noteToMidiKeyNumber(schedule.note));
-      }
-    }
-
+    const matrix = getMatrix(noteSchedules, lastMeasureInd, measureSamples);
+    if (matrix === null) return;
     setMatrixLastMeasure(matrix);
     setSequenceLastMeasure(AlignmentService.EventMatrixToSequence(matrix));
 
@@ -289,29 +268,18 @@ export default function AlignmentViewer({
     refreshLastMeasureInd();
   };
 
-  // for-test
-  useEffect(() => {
-    if (sequenceLastMeasure !== null) {
-      console.log(sequenceLastMeasure);
+  /* similarity */
+
+  useSimilarityInterval(() => {
+    if (alignmentService !== null && sequenceLastMeasure !== null) {
+      const sequencePlayed = alignmentService.getEventSequence();
+      const score = alignmentService.scoreSimilarity(
+        sequencePlayed,
+        sequenceLastMeasure,
+      );
+      console.log('similarity: ', score);
     }
-  }, [sequenceLastMeasure]);
-
-  useEffect(() => {
-    (async () => {
-      if (alignmentService === null) return;
-      await alignmentService.init();
-
-      const source = new Uint8Array([
-        3, 0, 9, 3, 5, 1, 3, 5, 4, 2, 1, 9, 2, 37, 11,
-      ]);
-      const target = new Uint8Array([
-        5, 3, 127, 91, 1, 0, 7, 11, 22, 33, 44, 55, 66, 77,
-      ]);
-      const res = alignmentService?.scoreSimilarity(source, target);
-
-      console.log('엄마 왜 난 박재우가 아니야? ', res);
-    })();
-  }, [alignmentService]);
+  });
 
   return (
     <Space
@@ -449,3 +417,61 @@ function InputMonitor({
     </Cont>
   );
 }
+
+function getMatrix(
+  noteSchedules: NoteSchedule[] | null,
+  lastMeasureInd: number | null,
+  measureSamples: number | null,
+): number[][] | null {
+  const filtered = noteSchedules?.filter(
+    (schedule) => schedule.measureInd === lastMeasureInd,
+  );
+  if (
+    filtered === undefined ||
+    filtered.length === 0 ||
+    measureSamples === null
+  ) {
+    return null;
+  }
+
+  const baseTime = filtered[0].timing;
+  const matrix: number[][] = Array.from(
+    {
+      length: measureSamples,
+    },
+    () => [],
+  );
+
+  for (const schedule of filtered) {
+    const time = schedule.timing - baseTime;
+    const length = schedule.length;
+
+    const startFrame = Math.floor(time * measureSamples);
+    const endFrame = startFrame + Math.floor(length * measureSamples);
+    for (let i = startFrame; i < endFrame; i++) {
+      matrix[i].push(noteToMidiKeyNumber(schedule.note));
+    }
+  }
+
+  return matrix;
+}
+
+const CALC_SIMILARITY_PERIOD = 200;
+const useSimilarityInterval = (callback: () => void) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCount((c) => c + 1);
+    }, CALC_SIMILARITY_PERIOD);
+
+    return () => {
+      clearInterval(timer);
+    };
+    //eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    callback();
+    //eslint-disable-next-line
+  }, [count]);
+};
