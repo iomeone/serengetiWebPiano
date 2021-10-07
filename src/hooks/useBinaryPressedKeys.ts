@@ -8,7 +8,7 @@ import {
 
 type BinaryPressedKeysRes = {
   pressedKeys: Note[];
-  pressedBinaryKeys: boolean[];
+  pressedBinaryKeys: Uint8Array;
   onKeyDown: (midiKeyNumber: number) => void;
   onKeyUp: (midiKeyNumber: number) => void;
 };
@@ -17,23 +17,23 @@ const noteA0 = parseNoteNameToNote('A0');
 const noteA0MidiKeyNumber = noteToMidiKeyNumber(noteA0);
 
 export function useBinaryPressedKeys(): BinaryPressedKeysRes {
-  const [pressedBinaryKeys, setPressedBinaryKeys] = useState<boolean[]>(
-    Array.from({ length: 88 }, () => false),
+  const [pressedBinaryKeys, setPressedBinaryKeys] = useState<Uint8Array>(
+    Uint8Array.from({ length: 88 }, () => 0),
   );
 
   const onKeyDown = (midiKeyNumber: number) => {
     setPressedBinaryKeys((pressedKeys) => {
-      const nextPressedBinaryKeys = [...pressedKeys];
-      nextPressedBinaryKeys[midiKeyNumber - noteA0MidiKeyNumber] = true;
-      return nextPressedBinaryKeys;
+      const nextPressedKeys = pressedKeys.slice();
+      nextPressedKeys[midiKeyNumber - noteA0MidiKeyNumber] = 1;
+      return nextPressedKeys;
     });
   };
 
   const onKeyUp = (midiKeyNumber: number) => {
     setPressedBinaryKeys((pressedKeys) => {
-      const nextPressedBinaryKeys = [...pressedKeys];
-      nextPressedBinaryKeys[midiKeyNumber - noteA0MidiKeyNumber] = false;
-      return nextPressedBinaryKeys;
+      const nextPressedKeys = pressedKeys.slice();
+      nextPressedKeys[midiKeyNumber - noteA0MidiKeyNumber] = 0;
+      return nextPressedKeys;
     });
   };
 

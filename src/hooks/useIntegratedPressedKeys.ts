@@ -10,7 +10,7 @@ type IntergratedPressedKeysRes = {
   initWithGesture: () => Promise<void>;
   isReady: boolean;
   pressedKeys: Note[];
-  pressedBinaryKeys: boolean[];
+  pressedBinaryKeys: Uint8Array;
   isMIDIConnected: boolean | null;
   isMIDISupported: boolean | null;
 };
@@ -42,9 +42,10 @@ export function useIntergratedPressedKeys(): IntergratedPressedKeysRes {
   const { pressedBinaryKeysByKeyboard } = useKeyboardMIDI(play);
 
   const integratedPressedBinaryKeys = useMemo(() => {
-    return pressedBinaryKeys.map(
-      (value, index) => value || pressedBinaryKeysByKeyboard[index],
-    );
+    return pressedBinaryKeys.map((value, index) => {
+      if (value === 1 || pressedBinaryKeysByKeyboard[index] === 1) return 1;
+      else return 0;
+    });
   }, [pressedBinaryKeys, pressedBinaryKeysByKeyboard]);
 
   const integratedPressedKeys = useMemo(() => {
