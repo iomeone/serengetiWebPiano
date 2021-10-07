@@ -279,13 +279,11 @@ export default class PlaybackEngine {
     if (this.scheduler === null) throw Error('Scheduler is null');
 
     this.osmd.cursor.reset();
-    let steps = 0;
     while (!this.osmd.cursor.Iterator.EndReached) {
       if (this.osmd.cursor.Iterator.CurrentVoiceEntries) {
         this.scheduler.loadNotes(this.osmd.cursor.Iterator.CurrentVoiceEntries);
       }
       this.osmd.cursor.next();
-      ++steps;
     }
     this.osmd.cursor.reset();
   }
