@@ -445,6 +445,8 @@ function SimilarityMonitor({
   );
 }
 
+const RELEASE_CONSTANT = 0.8; // for release time
+
 function getEventMatrix(
   noteSchedules: NoteSchedule[] | null,
   lastMeasureInd: number | null,
@@ -471,7 +473,7 @@ function getEventMatrix(
 
   for (const schedule of filtered) {
     const time = schedule.timing - baseTime;
-    const length = schedule.length;
+    const length = schedule.length * RELEASE_CONSTANT;
 
     const startFrame = Math.floor(time * measureSamples);
     const endFrame = startFrame + Math.floor(length * measureSamples);
