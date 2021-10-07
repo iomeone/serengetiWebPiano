@@ -39,12 +39,14 @@ export default function Viewer({ sheetKey, hidden, onResize }: ViewerProps) {
         }
       }
     }
+    //eslint-disable-next-line
   }, [resize, isSheetLoaded]);
 
   useEffect(() => {
     if (onResize !== undefined) {
       onResize(resize);
     }
+    //eslint-disable-next-line
   }, [resize]);
 
   useEffect(() => {

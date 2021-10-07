@@ -61,7 +61,7 @@ export default function SheetEditor({
       setStartInd(null);
       setEndInd(null);
     }
-  }, [startInd, endInd]);
+  }, [startInd, endInd, showModal]);
 
   //TODO: sheetClick => function
   useEffect(() => {
