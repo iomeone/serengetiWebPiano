@@ -109,6 +109,7 @@ const useAlignment = (): UseAlignmentRes => {
         alignmentService.destroy();
       }
     };
+    //eslint-disable-next-line
   }, []);
 
   return { initWithGesture: startMIDI, isReady, alignmentService };
@@ -248,7 +249,7 @@ export default function AlignmentViewer({
     const sampleRate = alignmentService.sampleRate;
     const measureSamples = Math.floor(realValueSec * sampleRate);
     return measureSamples;
-  }, [alignmentService]);
+  }, [alignmentService, bpm]);
   useEffect(() => {
     const filtered = noteSchedules?.filter(
       (schedule) => schedule.measureInd === lastMeasureInd,
@@ -287,6 +288,13 @@ export default function AlignmentViewer({
   onscroll = () => {
     refreshLastMeasureInd();
   };
+
+  // for-test
+  useEffect(() => {
+    if (sequenceLastMeasure !== null) {
+      console.log(sequenceLastMeasure);
+    }
+  }, [sequenceLastMeasure]);
 
   return (
     <Space
