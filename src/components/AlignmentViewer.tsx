@@ -4,7 +4,7 @@ import {
   loadSheetWithUrlThunk,
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import Viewer, { ResizeState } from './Viewer';
@@ -18,7 +18,13 @@ import {
   StaffLine,
   getMeasureBoundingBoxes,
   Rect,
+  getNoteSchedules,
+  NoteSchedule,
+  getBPM,
 } from 'utils/OSMD';
+import { AlignmentService } from 'services/AlignmentService';
+import { useAnimationFrame } from 'hooks/useAnimationFrame';
+import { noteToMidiKeyNumber } from 'utils/Note';
 
 enum Control {
   METRONOME,
@@ -72,6 +78,42 @@ type AlignmentViewerProps = {
   title?: string;
   url?: string;
 };
+
+type UseAlignmentRes = {
+  initWithGesture: () => void;
+  isReady: boolean;
+  alignmentService: AlignmentService | null;
+};
+const useAlignment = (): UseAlignmentRes => {
+  const { initWithGesture, isReady, pressedBinaryKeys } =
+    useIntergratedPressedKeys();
+
+  const [alignmentService, setAlignmentService] =
+    useState<AlignmentService | null>(null);
+
+  const startMIDI = () => {
+    initWithGesture();
+    const service = new AlignmentService();
+    setAlignmentService(service);
+  };
+
+  useEffect(() => {
+    if (alignmentService !== null) {
+      alignmentService.setBinaryPressedKeys(pressedBinaryKeys);
+    }
+  }, [pressedBinaryKeys, alignmentService]);
+
+  useEffect(() => {
+    return () => {
+      if (alignmentService !== null) {
+        alignmentService.destroy();
+      }
+    };
+  }, []);
+
+  return { initWithGesture: startMIDI, isReady, alignmentService };
+};
+
 export default function AlignmentViewer({
   sheetKey,
   title,
@@ -79,8 +121,7 @@ export default function AlignmentViewer({
 }: AlignmentViewerProps) {
   const { getOrCreateFrontPlaybackServiceWithGesture } =
     useFrontPlaybackService(sheetKey);
-
-  const { initWithGesture, isReady } = useIntergratedPressedKeys();
+  const { isReady, initWithGesture, alignmentService } = useAlignment();
 
   const { sheet, isLoaded } = useSheet(sheetKey);
   const [isSheetLoading, setIsSheetLoading] = useState(false);
@@ -142,9 +183,7 @@ export default function AlignmentViewer({
       case Control.MIDIREADY:
         return (
           <ControlButton
-            onClick={() => {
-              initWithGesture();
-            }}
+            onClick={initWithGesture}
             style={{
               color: isReady ? 'black' : '#888888',
             }}
@@ -155,18 +194,24 @@ export default function AlignmentViewer({
     }
   };
 
+  /* Sheet Info */
+
   const sheetRef = useRef<HTMLDivElement>(null);
   const [staffLines, setStaffLine] = useState<StaffLine[] | null>(null);
   const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
+  const [noteSchedules, setNoteSchedules] = useState<NoteSchedule[] | null>(
+    null,
+  );
+  const [bpm, setBPM] = useState(120);
   const [resize, setResize] = useState<ResizeState>(ResizeState.Init);
-
   useEffect(() => {
     if (isLoaded && resize === ResizeState.ResizeEnd) {
       setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
       setStaffLine(getStaffLines(sheet?.osmd));
+      setNoteSchedules(getNoteSchedules(sheet?.osmd));
+      setBPM(getBPM(sheet?.osmd));
     }
   }, [sheet, isLoaded, resize]);
-
   const [lastMeasureInd, setLastMeasureInd] = useState(-1);
   const refreshLastMeasureInd = () => {
     const rect = sheetRef.current?.getBoundingClientRect();
@@ -185,14 +230,60 @@ export default function AlignmentViewer({
       setLastMeasureInd(measureInd);
     }
   };
-
   useEffect(() => {
     if (staffLines !== null) {
       refreshLastMeasureInd();
     }
     //eslint-disable-next-line
   }, [staffLines]);
+  const [sequenceLastMeasure, setSequenceLastMeasure] =
+    useState<Uint8Array | null>(null);
+  const [matrixLastMeasure, setMatrixLastMeasure] = useState<number[][] | null>(
+    null,
+  );
+  const measureSamples = useMemo(() => {
+    if (alignmentService === null) return null;
 
+    const realValueSec = (60 / bpm) * 4;
+    const sampleRate = alignmentService.sampleRate;
+    const measureSamples = Math.floor(realValueSec * sampleRate);
+    return measureSamples;
+  }, [alignmentService]);
+  useEffect(() => {
+    const filtered = noteSchedules?.filter(
+      (schedule) => schedule.measureInd === lastMeasureInd,
+    );
+    if (
+      filtered === undefined ||
+      filtered.length === 0 ||
+      measureSamples === null
+    )
+      return;
+
+    const baseTime = filtered[0].timing;
+    const matrix: number[][] = Array.from(
+      {
+        length: measureSamples,
+      },
+      () => [],
+    );
+
+    for (const schedule of filtered) {
+      const time = schedule.timing - baseTime;
+      const length = schedule.length;
+
+      const startFrame = Math.floor(time * measureSamples);
+      const endFrame = startFrame + Math.floor(length * measureSamples);
+      for (let i = startFrame; i < endFrame; i++) {
+        matrix[i].push(noteToMidiKeyNumber(schedule.note));
+      }
+    }
+
+    setMatrixLastMeasure(matrix);
+    setSequenceLastMeasure(AlignmentService.EventMatrixToSequence(matrix));
+
+    //eslint-disable-next-line
+  }, [lastMeasureInd, measureSamples, noteSchedules]);
   onscroll = () => {
     refreshLastMeasureInd();
   };
@@ -206,6 +297,13 @@ export default function AlignmentViewer({
         marginBottom: -60,
       }}
     >
+      {alignmentService !== null && (
+        <InputMonitor
+          service={alignmentService}
+          matrixLastMeasure={matrixLastMeasure}
+          measureSamples={measureSamples}
+        ></InputMonitor>
+      )}
       <TitleBar>
         <NotoSansText>{viewerTitle}</NotoSansText>
         {controlPanel()}
@@ -245,5 +343,84 @@ const Box = styled.div<BoxProps>`
   position: absolute;
   background-color: ${(props) =>
     props.selected ? '#91eebb44' : 'transparent'};
-  cursor: pointer;
 `;
+
+type InputMonitorProps = {
+  service: AlignmentService;
+  matrixLastMeasure: number[][] | null;
+  measureSamples: number | null;
+};
+
+const Cont = styled.div`
+  position: fixed;
+  right: 0;
+  top: 0;
+`;
+
+const MATRIX_HEIGHT = 128;
+function InputMonitor({
+  service,
+  matrixLastMeasure,
+  measureSamples,
+}: InputMonitorProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const prevTime = useRef(0);
+
+  const fps = 20;
+  const frameStep = 1000 / fps;
+  const gap = 20;
+
+  useAnimationFrame(
+    (time) => {
+      if (time - prevTime.current < frameStep) {
+        return;
+      }
+      prevTime.current = time;
+
+      if (canvasRef?.current?.getContext) {
+        var ctx = canvasRef.current.getContext('2d');
+        if (ctx === null) return;
+
+        const data = service.getMidiMatrix();
+
+        for (let rowInd = 0; rowInd < service.sampleLength; rowInd++) {
+          for (let i = 0; i < MATRIX_HEIGHT; i++) {
+            if (data[rowInd * MATRIX_HEIGHT + i] === 1) {
+              ctx.fillStyle = '#1e88ffaa';
+            } else {
+              ctx.fillStyle = '#33333355';
+            }
+            ctx.fillRect(rowInd, MATRIX_HEIGHT - i, 1, 1);
+          }
+        }
+
+        if (matrixLastMeasure !== null) {
+          const offset = service.sampleLength + gap;
+          for (let rowInd = 0; rowInd < (measureSamples as number); rowInd++) {
+            ctx.fillStyle = '#33333355';
+            for (let i = 0; i < MATRIX_HEIGHT; i++) {
+              ctx.fillRect(rowInd + offset, MATRIX_HEIGHT - i, 1, 1);
+            }
+
+            ctx.fillStyle = '#1eff56aa';
+            for (const event of matrixLastMeasure[rowInd]) {
+              ctx.fillRect(rowInd + offset, MATRIX_HEIGHT - event, 1, 1);
+            }
+          }
+        }
+      }
+    },
+    [matrixLastMeasure],
+  );
+
+  return (
+    <Cont>
+      <canvas
+        width={service.sampleLength + gap + (measureSamples ?? 0)}
+        height={MATRIX_HEIGHT}
+        ref={canvasRef}
+      ></canvas>
+    </Cont>
+  );
+}
