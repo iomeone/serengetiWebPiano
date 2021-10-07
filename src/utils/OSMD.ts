@@ -10,6 +10,7 @@ export type NoteSchedule = {
   note: Note;
   timing: number;
   length: number;
+  measureInd: number;
 };
 
 export type Rect = {
@@ -45,11 +46,13 @@ export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
 
           const timing = iterator.currentTimeStamp.RealValue;
           const length = note.Length.RealValue;
+          const measureInd = iterator.CurrentMeasureIndex;
 
           allNoteSchedules.push({
             note: midiKeyNumberToNote(midiKeyNumber),
             timing,
             length,
+            measureInd,
           });
         }
       }
