@@ -18,9 +18,10 @@
     "@types/styled-components": "^5.1.9",
     "@types/uuid": "^8.3.1",
     "antd": "^4.15.5",
+    "copy-webpack-plugin": "^9.0.1",
     "firebase": "^9.0.1",
+    "golang-wasm-async-loader": "^0.4.1",
     "immer": "^9.0.3",
-    "midi-similarity-measurement": "git+https://github.com/sabana-music/midi-similarity-measurement.git",
     "opensheetmusicdisplay": "^1.0.0",
     "react": "^17.0.2",
     "react-app-rewired": "^2.1.8",
@@ -31,6 +32,7 @@
     "react-icons": "^4.2.0",
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
+    "react-scripts": "^4.0.3",
     "react-spring": "^9.2.4",
     "react-use-gesture": "^9.1.3",
     "redux": "^4.1.0",
@@ -44,7 +46,8 @@
     "uuid": "^8.3.2",
     "wasm-loader": "^1.3.0",
     "wasm-pack": "^0.10.1",
-    "web-vitals": "^1.0.1"
+    "web-vitals": "^1.0.1",
+    "midi-similarity-measurement": "file:../midi-similarity-measurement/pkg"
   },
   "scripts": {
     "start": "react-app-rewired start",

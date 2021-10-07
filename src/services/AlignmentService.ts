@@ -1,5 +1,4 @@
 import { noteToMidiKeyNumber, parseNoteNameToNote } from 'utils/Note';
-import { score_similarity } from 'midi-similarity-measurement/pkg/midi_similarity_measurement';
 
 export class AlignmentService {
   public readonly sampleRate = 35;
@@ -9,6 +8,7 @@ export class AlignmentService {
   public readonly sampleLength = this.sampleRate * this.sampleSec;
   private midiMatrixQueue: MIDIInfoCircularQueue;
   private timer: any;
+  private wasm: any = undefined;
 
   constructor() {
     this.midiMatrixQueue = new MIDIInfoCircularQueue(this.sampleLength);
@@ -22,6 +22,20 @@ export class AlignmentService {
     { length: 88 },
     () => 0,
   );
+
+  public async init() {
+    const wasm = await import('midi-similarity-measurement');
+    this.wasm = wasm;
+  }
+
+  public scoreSimilarity(source1: Uint8Array, source2: Uint8Array): number {
+    if (this.wasm === undefined) {
+      console.log('wasm is not loaded');
+      return 0;
+    }
+
+    return this.wasm?.score_similarity(source1, source2);
+  }
 
   public setBinaryPressedKeys(keys: Uint8Array) {
     if (keys.length !== 88) return;
@@ -39,13 +53,6 @@ export class AlignmentService {
   public getEventSequence(): Uint8Array {
     const matrix = this.midiMatrixQueue.getEventMatrix();
     return AlignmentService.EventMatrixToSequence(matrix);
-  }
-
-  public static ScoreSimilarity(
-    source1: Uint8Array,
-    source2: Uint8Array,
-  ): number {
-    return score_similarity(source1, source2);
   }
 
   public destroy() {
