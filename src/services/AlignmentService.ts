@@ -34,7 +34,7 @@ export class AlignmentService {
       return 0;
     }
 
-    return this.wasm?.score_similarity(source1, source2);
+    return this.wasm?.score_similarity(source1, source2, false);
   }
 
   public setBinaryPressedKeys(keys: Uint8Array) {
