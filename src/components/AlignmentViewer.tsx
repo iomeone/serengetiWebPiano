@@ -1,4 +1,4 @@
-import { Space, Spin } from 'antd';
+import { Space, Spin, Typography } from 'antd';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import {
   loadSheetWithUrlThunk,
@@ -244,11 +244,11 @@ export default function AlignmentViewer({
     if (alignmentService === null) return;
     alignmentService.init();
   }, [alignmentService]);
-  const [sequenceLastMeasure, setSequenceLastMeasure] =
+  const [eventSequenceLastMeasure, setEventSequenceLastMeasure] =
     useState<Uint8Array | null>(null);
-  const [matrixLastMeasure, setMatrixLastMeasure] = useState<number[][] | null>(
-    null,
-  );
+  const [eventMatrixLastMeasure, setEventMatrixLastMeasure] = useState<
+    number[][] | null
+  >(null);
   const measureSamples = useMemo(() => {
     if (alignmentService === null) return null;
     const realValueSec = (60 / bpm) * 4;
@@ -257,10 +257,16 @@ export default function AlignmentViewer({
     return measureSamples;
   }, [alignmentService, bpm]);
   useEffect(() => {
-    const matrix = getMatrix(noteSchedules, lastMeasureInd, measureSamples);
-    if (matrix === null) return;
-    setMatrixLastMeasure(matrix);
-    setSequenceLastMeasure(AlignmentService.EventMatrixToSequence(matrix));
+    const noteScheduleEventMatrix = getEventMatrix(
+      noteSchedules,
+      lastMeasureInd,
+      measureSamples,
+    );
+    if (noteScheduleEventMatrix === null) return;
+    setEventMatrixLastMeasure(noteScheduleEventMatrix);
+    setEventSequenceLastMeasure(
+      AlignmentService.EventMatrixToSequence(noteScheduleEventMatrix),
+    );
 
     //eslint-disable-next-line
   }, [lastMeasureInd, measureSamples, noteSchedules]);
@@ -270,14 +276,16 @@ export default function AlignmentViewer({
 
   /* similarity */
 
+  const [similarity, setSimilarity] = useState(0);
   useSimilarityInterval(() => {
-    if (alignmentService !== null && sequenceLastMeasure !== null) {
+    if (alignmentService !== null && eventSequenceLastMeasure !== null) {
       const sequencePlayed = alignmentService.getEventSequence();
       const score = alignmentService.scoreSimilarity(
         sequencePlayed,
-        sequenceLastMeasure,
+        eventSequenceLastMeasure,
       );
-      console.log('similarity: ', score);
+      setSimilarity(score);
+      console.log(`유사도: ${score}`);
     }
   });
 
@@ -291,11 +299,12 @@ export default function AlignmentViewer({
       }}
     >
       {alignmentService !== null && (
-        <InputMonitor
+        <SimilarityMonitor
+          similarity={similarity}
           service={alignmentService}
-          matrixLastMeasure={matrixLastMeasure}
+          eventMatrixLastMeasure={eventMatrixLastMeasure}
           measureSamples={measureSamples}
-        ></InputMonitor>
+        ></SimilarityMonitor>
       )}
       <TitleBar>
         <NotoSansText>{viewerTitle}</NotoSansText>
@@ -338,9 +347,14 @@ const Box = styled.div<BoxProps>`
     props.selected ? '#91eebb44' : 'transparent'};
 `;
 
-type InputMonitorProps = {
+/* similarity-monitor */
+
+const MATRIX_HEIGHT = 128;
+
+type SimilarityMonitorProps = {
+  similarity: number;
   service: AlignmentService;
-  matrixLastMeasure: number[][] | null;
+  eventMatrixLastMeasure: number[][] | null;
   measureSamples: number | null;
 };
 
@@ -349,20 +363,25 @@ const Cont = styled.div`
   right: 0;
   top: 0;
 `;
+const NumberCont = styled.div`
+  background-color: #333333aa;
+  font-size: 16px;
+  padding: 4px;
+`;
 
-const MATRIX_HEIGHT = 128;
-function InputMonitor({
+function SimilarityMonitor({
+  similarity,
   service,
-  matrixLastMeasure,
+  eventMatrixLastMeasure,
   measureSamples,
-}: InputMonitorProps) {
+}: SimilarityMonitorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const prevTime = useRef(0);
 
   const fps = 20;
   const frameStep = 1000 / fps;
-  const gap = 20;
+  const gap = 8;
 
   useAnimationFrame(
     (time) => {
@@ -388,7 +407,7 @@ function InputMonitor({
           }
         }
 
-        if (matrixLastMeasure !== null) {
+        if (eventMatrixLastMeasure !== null) {
           const offset = service.sampleLength + gap;
           for (let rowInd = 0; rowInd < (measureSamples as number); rowInd++) {
             ctx.fillStyle = '#33333355';
@@ -397,14 +416,14 @@ function InputMonitor({
             }
 
             ctx.fillStyle = '#1eff56aa';
-            for (const event of matrixLastMeasure[rowInd]) {
+            for (const event of eventMatrixLastMeasure[rowInd]) {
               ctx.fillRect(rowInd + offset, MATRIX_HEIGHT - event, 1, 1);
             }
           }
         }
       }
     },
-    [matrixLastMeasure],
+    [eventMatrixLastMeasure],
   );
 
   return (
@@ -414,11 +433,20 @@ function InputMonitor({
         height={MATRIX_HEIGHT}
         ref={canvasRef}
       ></canvas>
+      <NumberCont>
+        <Typography.Text
+          style={{
+            color: 'white',
+          }}
+        >
+          유사도: {similarity}
+        </Typography.Text>
+      </NumberCont>
     </Cont>
   );
 }
 
-function getMatrix(
+function getEventMatrix(
   noteSchedules: NoteSchedule[] | null,
   lastMeasureInd: number | null,
   measureSamples: number | null,
@@ -456,7 +484,7 @@ function getMatrix(
   return matrix;
 }
 
-const CALC_SIMILARITY_PERIOD = 200;
+const CALC_SIMILARITY_PERIOD = 500;
 const useSimilarityInterval = (callback: () => void) => {
   const [count, setCount] = useState(0);
   useEffect(() => {

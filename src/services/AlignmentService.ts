@@ -97,6 +97,7 @@ class MIDIInfoCircularQueue {
     if (row.length !== PIANO_LENGTH) return;
 
     this.matrix.set(row, this.cursor * ROW_LENGTH + this.offsetA0);
+    this.eventMatrix[this.cursor] = [];
     const eventRow = this.eventMatrix[this.cursor];
     for (let i = 0; i < ROW_LENGTH; i++) {
       if (row[i]) {
