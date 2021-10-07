@@ -94,6 +94,7 @@ export default function PianoRollModal({
         bpm: null,
         timeSignature: null,
       };
+    //eslint-disable-next-line
   }, [isLoaded]);
 
   const lower = useMemo(() => {
@@ -104,6 +105,8 @@ export default function PianoRollModal({
       return min;
     }
     return noteToMidiKeyNumber(piano.min);
+
+    //eslint-disable-next-line
   }, [isLoaded, noteSchedules]);
 
   const upper = useMemo(() => {
@@ -444,7 +447,7 @@ function PianoRoll({
         }
       }, true);
       if (IsContainHoldNote) {
-        console.log(holdNote, pressedKeys);
+        // console.log(holdNote, pressedKeys);
         const keys = [...pressedKeys];
         const a = noteArrayToBinaryKeys(
           beforeNote.concat(holdNote.map((value) => value.note)),
