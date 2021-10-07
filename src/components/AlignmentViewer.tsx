@@ -285,7 +285,6 @@ export default function AlignmentViewer({
         eventSequenceLastMeasure,
       );
       setSimilarity(score);
-      console.log(`유사도: ${score}`);
     }
   });
 
@@ -439,7 +438,7 @@ function SimilarityMonitor({
             color: 'white',
           }}
         >
-          유사도: {similarity}
+          오류: {similarity.toFixed(3)}
         </Typography.Text>
       </NumberCont>
     </Cont>
