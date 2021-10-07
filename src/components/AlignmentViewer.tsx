@@ -195,6 +195,18 @@ export default function AlignmentViewer({
     }
   };
 
+  useEffect(() => {
+    const source = new Uint8Array([
+      3, 0, 9, 3, 5, 1, 3, 5, 4, 2, 1, 9, 2, 37, 11,
+    ]);
+    const target = new Uint8Array([
+      5, 3, 127, 91, 1, 0, 7, 11, 22, 33, 44, 55, 66, 77,
+    ]);
+    const res = AlignmentService.ScoreSimilarity(source, target);
+
+    console.log('엄마 왜 난 박재우가 아니야? ', res);
+  }, []);
+
   /* Sheet Info */
 
   const sheetRef = useRef<HTMLDivElement>(null);

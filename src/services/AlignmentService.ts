@@ -1,4 +1,5 @@
 import { noteToMidiKeyNumber, parseNoteNameToNote } from 'utils/Note';
+import { score_similarity } from 'midi-similarity-measurement/pkg/midi_similarity_measurement';
 
 export class AlignmentService {
   public readonly sampleRate = 35;
@@ -38,6 +39,13 @@ export class AlignmentService {
   public getEventSequence(): Uint8Array {
     const matrix = this.midiMatrixQueue.getEventMatrix();
     return AlignmentService.EventMatrixToSequence(matrix);
+  }
+
+  public static ScoreSimilarity(
+    source1: Uint8Array,
+    source2: Uint8Array,
+  ): number {
+    return score_similarity(source1, source2);
   }
 
   public destroy() {
