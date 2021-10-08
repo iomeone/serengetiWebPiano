@@ -1,5 +1,7 @@
 {
   "name": "serengeti",
+  "main": "public/electron.js",
+  "homepage": "./",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -18,6 +20,7 @@
     "@types/styled-components": "^5.1.9",
     "@types/uuid": "^8.3.1",
     "antd": "^4.15.5",
+    "concurrently": "^6.3.0",
     "copy-webpack-plugin": "^9.0.1",
     "firebase": "^9.0.1",
     "golang-wasm-async-loader": "^0.4.1",
@@ -50,13 +53,16 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
+    "prepare-env": "copy \"./.env.base\" \"./.env\"",
+    "prepare-electron": "type \"./linebreak.txt\" >> \".env\" && type \".env.electron\" >> \".env\"",
+    "electron-start": "npm run prepare-env && npm run prepare-electron && concurrently \"react-app-rewired start\" \"wait-on http://localhost:3000 && electron .\"",
+    "react-start": "npm run prepare-env && react-app-rewired start",
+    "build": "npm run prepare-env && react-app-rewired build",
+    "test": "npm run prepare-env && react-app-rewired test",
     "eject": "react-app-rewired eject",
     "deploy": "aws s3 sync ./build s3://sabana-serengeti --profile=mathod-react",
     "invalidate": "aws cloudfront create-invalidation --profile=mathod-react --distribution-id=E1AIF31QADGXJA --paths / /index.html /error.html /service-worker.js /manifest.json /favicon.ico",
-    "shortcut": "yarn build & yarn deploy & yarn invalidate"
+    "shortcut": "npm run build && npm run deploy && npm run invalidate" 
   },
   "eslintConfig": {
     "extends": [
@@ -75,5 +81,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0",
+    "electron": "^11.5.0",
+    "wait-on": "^6.0.0"
   }
 }
