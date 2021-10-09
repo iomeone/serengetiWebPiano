@@ -55,14 +55,14 @@
   "scripts": {
     "prepare-env": "copy \"./.env.base\" \"./.env\"",
     "prepare-electron": "type \"./linebreak.txt\" >> \".env\" && type \".env.electron\" >> \".env\"",
-    "electron-start": "npm run prepare-env && npm run prepare-electron && concurrently \"react-app-rewired start\" \"wait-on http://localhost:3000 && electron .\"",
-    "react-start": "npm run prepare-env && react-app-rewired start",
+    "start-electron": "npm run prepare-env && npm run prepare-electron && concurrently \"react-app-rewired start\" \"wait-on http://localhost:3000 && electron .\"",
+    "start-react": "npm run prepare-env && react-app-rewired start",
     "build": "npm run prepare-env && react-app-rewired build",
     "test": "npm run prepare-env && react-app-rewired test",
     "eject": "react-app-rewired eject",
     "deploy": "aws s3 sync ./build s3://sabana-serengeti --profile=mathod-react",
     "invalidate": "aws cloudfront create-invalidation --profile=mathod-react --distribution-id=E1AIF31QADGXJA --paths / /index.html /error.html /service-worker.js /manifest.json /favicon.ico",
-    "shortcut": "npm run build && npm run deploy && npm run invalidate" 
+    "shortcut": "npm run build && npm run deploy && npm run invalidate"
   },
   "eslintConfig": {
     "extends": [
