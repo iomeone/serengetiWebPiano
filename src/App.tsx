@@ -69,7 +69,6 @@ type BreadcrumbItem = {
     | React.ComponentType<any>
     | undefined;
   extraIcon?: React.ReactNode;
-  exact: boolean;
 };
 
 type BreadCrumbMap = {
@@ -80,57 +79,50 @@ const routeMap: BreadCrumbMap = {
   '/sheet': {
     routeName: 'Sheet Music Viewer',
     component: SheetRoute,
-    exact: true,
   },
   '/osmd': {
     routeName: 'OSMD Component',
     component: OSMDRoute,
-    exact: true,
   },
   '/midi': {
     routeName: 'MIDI',
     component: MIDIRoute,
-    exact: true,
   },
   '/pianoRoll': {
     routeName: 'Piano Roll',
     component: PianoRollRoute,
-    exact: true,
   },
   '/worksheet': {
     routeName: 'Worksheet',
     component: WorksheetRoute,
-    exact: true,
   },
   '/worksheet/:id': {
     routeName: 'Worksheet',
     component: WorksheetRoute,
-    exact: true,
   },
   '/editor': {
     routeName: 'Editor',
     component: EditorRoute,
-    exact: true,
   },
   '/editor/:id': {
     routeName: 'Editor',
     component: EditorRoute,
-    exact: true,
   },
   '/osmdEditor': {
     routeName: 'OSMD Editor',
     component: OSMDEditor,
-    exact: true,
   },
   '/sampleWorksheet': {
     routeName: 'Sample Worksheet',
     component: SampleWorksheetRoute,
-    exact: true,
+  },
+  '/sampleWorksheet/:title/:chapter/:page': {
+    routeName: 'Sample Worksheet',
+    component: SampleWorksheetRoute,
   },
   '/alignment': {
     routeName: 'Alignment',
     component: AlignmentRoute,
-    exact: true,
   },
 };
 
@@ -222,16 +214,9 @@ function App() {
         </BreadCrumbCont>
         <Switch>
           <Route path="/" exact component={MainRoute} />
-          {Object.entries(routeMap).map(
-            ([route, { component, exact }], key) => (
-              <Route
-                key={key}
-                path={route}
-                exact={exact}
-                component={component}
-              />
-            ),
-          )}
+          {Object.entries(routeMap).map(([route, { component }], key) => (
+            <Route key={key} path={route} exact={true} component={component} />
+          ))}
           <Redirect to="/"></Redirect>
         </Switch>
       </Main>
