@@ -28,6 +28,10 @@ export function getBPM(osmd: OSMD) {
   return osmd.Sheet.DefaultStartTempoInBpm;
 }
 
+export function getDenominator(osmd: OSMD) {
+  return osmd.Sheet.SheetPlaybackSetting.rhythm.Denominator;
+}
+
 export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
   const allNoteSchedules: NoteSchedule[] = [];
   osmd.cursor.reset();
