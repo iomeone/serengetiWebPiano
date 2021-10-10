@@ -1,5 +1,10 @@
 import { noteToMidiKeyNumber, parseNoteNameToNote } from 'utils/Note';
 
+export type Similarity = {
+  euclideanError: number;
+  levenshteinError: number;
+};
+
 export class AlignmentService {
   public readonly sampleRate = 35;
   public readonly sampleStep = 1000 / this.sampleRate;
@@ -28,13 +33,24 @@ export class AlignmentService {
     this.wasm = wasm;
   }
 
-  public scoreSimilarity(source1: Uint8Array, source2: Uint8Array): number {
+  public scoreSimilarity(
+    source1: Uint8Array,
+    source2: Uint8Array,
+  ): Similarity | null {
     if (this.wasm === undefined) {
       console.log('wasm is not loaded');
-      return 0;
+      return null;
     }
 
-    return this.wasm?.score_similarity(source1, source2, false);
+    const res = this.wasm?.score_similarity(source1, source2, false) as [
+      number,
+      number,
+    ];
+
+    return {
+      euclideanError: res[0],
+      levenshteinError: res[1],
+    };
   }
 
   public setBinaryPressedKeys(keys: Uint8Array) {

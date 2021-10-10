@@ -22,7 +22,7 @@ import {
   NoteSchedule,
   getBPM,
 } from 'utils/OSMD';
-import { AlignmentService } from 'services/AlignmentService';
+import { AlignmentService, Similarity } from 'services/AlignmentService';
 import { useAnimationFrame } from 'hooks/useAnimationFrame';
 import { noteToMidiKeyNumber } from 'utils/Note';
 
@@ -276,7 +276,7 @@ export default function AlignmentViewer({
 
   /* similarity */
 
-  const [similarity, setSimilarity] = useState(0);
+  const [similarity, setSimilarity] = useState<Similarity | null>(null);
   useSimilarityInterval(() => {
     if (alignmentService !== null && eventSequenceLastMeasure !== null) {
       const sequencePlayed = alignmentService.getEventSequence();
@@ -351,7 +351,7 @@ const Box = styled.div<BoxProps>`
 const MATRIX_HEIGHT = 128;
 
 type SimilarityMonitorProps = {
-  similarity: number;
+  similarity: Similarity | null;
   service: AlignmentService;
   eventMatrixLastMeasure: number[][] | null;
   measureSamples: number | null;
@@ -438,7 +438,16 @@ function SimilarityMonitor({
             color: 'white',
           }}
         >
-          오류: {similarity.toFixed(3)}
+          ED: {(similarity?.euclideanError ?? -1).toFixed(3)}
+        </Typography.Text>
+      </NumberCont>
+      <NumberCont>
+        <Typography.Text
+          style={{
+            color: 'white',
+          }}
+        >
+          LV: {(similarity?.levenshteinError ?? -1).toFixed(3)}
         </Typography.Text>
       </NumberCont>
     </Cont>
