@@ -16,7 +16,7 @@ export enum AlignmentEvent {
 }
 
 export class AlignmentService {
-  private readonly CALC_SIMILARITY_PERIOD = 700;
+  private readonly CALC_SIMILARITY_PERIOD = 330;
 
   public readonly sampleRate = 30;
   public readonly sampleStep = 1000 / this.sampleRate;
@@ -49,9 +49,8 @@ export class AlignmentService {
     }, this.sampleStep);
 
     this.similarityTimer = setInterval(() => {
-      const userSequence = this._getUserMIDIKeyConcatenatedSequence();
-      const scoreSequenceArray =
-        this._getScoreMIDIKeyConcatenatedSequenceArray();
+      const userSequence = this._getUserMIDIKeySerializedSequence();
+      const scoreSequenceArray = this._getScoreMIDIKeySerializedSequenceArray();
       if (scoreSequenceArray === null) return;
       const newSimilarityArray = scoreSequenceArray.map((scoreSequence) =>
         this._calcScoreSimilarity(userSequence, scoreSequence),
@@ -171,23 +170,23 @@ export class AlignmentService {
     };
   }
 
-  private _getUserMIDIKeyConcatenatedSequence(): Uint8Array {
+  private _getUserMIDIKeySerializedSequence(): Uint8Array {
     const sequenceList = this.userMIDIQueue.getMIDIKeySequenceList();
-    return this._mapMIDIKeySequenceListToMIDIKeyConcatenatedSequence(
+    return this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(
       sequenceList,
     );
   }
 
-  private _getScoreMIDIKeyConcatenatedSequenceArray(): Uint8Array[] | null {
+  private _getScoreMIDIKeySerializedSequenceArray(): Uint8Array[] | null {
     const sequenceListArray = this.scoreMIDI.getMIDIKeySequenceListArray();
     return (
       sequenceListArray?.map((sequenceList) =>
-        this._mapMIDIKeySequenceListToMIDIKeyConcatenatedSequence(sequenceList),
+        this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(sequenceList),
       ) ?? null
     );
   }
 
-  private _mapMIDIKeySequenceListToMIDIKeyConcatenatedSequence(
+  private _mapMIDIKeySequenceListToMIDIKeySerializedSequence(
     midiKeySequenceList: number[][],
   ): Uint8Array {
     const length = midiKeySequenceList.reduce(
