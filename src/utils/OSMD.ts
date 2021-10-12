@@ -105,6 +105,7 @@ export type StaffLine = {
   firstMeasureInd: number;
   lastMeasureInd: number;
   bottom: number;
+  top: number;
 };
 
 export function getStaffLines(osmd: OSMD): StaffLine[] {
@@ -157,6 +158,7 @@ export function getStaffLines(osmd: OSMD): StaffLine[] {
     const firstMeasureInd = boxGroup[0].ind;
     const lastMeasureInd = boxGroup[lastInd].ind;
     let maxBottom = 0;
+    let boxTop = boxGroup[0].box.top;
     for (const box of boxGroup.map((box) => box.box)) {
       if (box.bottom > maxBottom) {
         maxBottom = box.bottom;
@@ -166,6 +168,7 @@ export function getStaffLines(osmd: OSMD): StaffLine[] {
     return {
       firstMeasureInd,
       lastMeasureInd,
+      top: boxTop,
       bottom: maxBottom,
     };
   });
