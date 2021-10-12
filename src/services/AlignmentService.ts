@@ -159,7 +159,7 @@ export class AlignmentService {
       return null;
     }
 
-    const res = this.wasm?.score_similarity(source1, source2, false) as [
+    const res = this.wasm?.score_similarity(source1, source2, 0) as [
       number,
       number,
     ];
