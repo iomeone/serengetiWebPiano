@@ -102,6 +102,7 @@ export function getMeasureBoundingBoxes(osmd: OSMD): Rect[] {
 }
 
 export type StaffLine = {
+  firstMeasureInd: number;
   lastMeasureInd: number;
   bottom: number;
 };
@@ -153,6 +154,7 @@ export function getStaffLines(osmd: OSMD): StaffLine[] {
 
   return boxGroupByTop.map((boxGroup) => {
     const lastInd = boxGroup.length - 1;
+    const firstMeasureInd = boxGroup[0].ind;
     const lastMeasureInd = boxGroup[lastInd].ind;
     let maxBottom = 0;
     for (const box of boxGroup.map((box) => box.box)) {
@@ -162,7 +164,8 @@ export function getStaffLines(osmd: OSMD): StaffLine[] {
     }
 
     return {
-      lastMeasureInd: lastMeasureInd,
+      firstMeasureInd,
+      lastMeasureInd,
       bottom: maxBottom,
     };
   });
