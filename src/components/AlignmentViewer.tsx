@@ -1,4 +1,4 @@
-import { Space, Spin, Typography } from 'antd';
+import { Space, Spin } from 'antd';
 import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import {
   loadSheetWithUrlThunk,
@@ -34,6 +34,13 @@ enum Control {
 type LoadingProps = {
   isLoading: boolean;
 };
+
+enum MeasureState {
+  DEFAULT,
+  UNPLAYED,
+  PLAYED,
+  PREVIOUS_STAFF,
+}
 
 const Loading = styled.div<LoadingProps>`
   display: ${(props) => (props.isLoading ? 'flex' : 'none')};
@@ -191,7 +198,7 @@ export default function AlignmentViewer({
     }
   };
 
-  /* Sheet Info */
+  /* sheet-info */
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const [staffLines, setStaffLines] = useState<StaffLine[] | null>(null);
@@ -269,6 +276,101 @@ export default function AlignmentViewer({
     refreshLastStaffInd();
   };
 
+  /* similarity-check */
+
+  const [previousStaffInd, setPreviousStaffInd] = useState<number | null>(null);
+  const [checkArray, setCheckArray] = useState<boolean[] | null>(null);
+  const [similarityArray, setSimilarityArray] = useState<Similarity[] | null>(
+    null,
+  );
+  useEffect(() => {
+    if (alignmentService !== null) {
+      alignmentService.addSimilarityArrayChangeListener(setSimilarityArray);
+      alignmentService.addScoreChangeListener(() => {
+        refreshCheckArray(alignmentService);
+      });
+    }
+  }, [alignmentService]);
+  const refreshCheckArray = (service: AlignmentService) => {
+    const length = service.getNumMeasures();
+    setCheckArray(Array.from({ length }, () => false));
+  };
+  const check = (similarity: Similarity) => {
+    const ee = similarity.euclideanError;
+    const le = similarity.levenshteinError;
+
+    return ee > 0 && le > 0 && ee + le < 0.87;
+  };
+  useEffect(() => {
+    if (
+      similarityArray === null ||
+      checkArray === null ||
+      similarityArray.length !== checkArray.length
+    ) {
+      return;
+    }
+
+    const newCheckArray = [];
+    for (let i = 0; i < similarityArray.length; i++) {
+      const similarity = similarityArray[i];
+      newCheckArray.push(check(similarity) || checkArray[i]);
+    }
+    setCheckArray(newCheckArray);
+    //eslint-disable-next-line
+  }, [similarityArray]);
+
+  const SCROLL_MARGIN = 40;
+
+  useEffect(() => {
+    if (checkArray === null || staffLines === null || lastStaffInd === null)
+      return;
+
+    const pageTurn =
+      checkArray.filter((check) => check).length >=
+      Math.ceil(checkArray.length / 2);
+
+    if (pageTurn) {
+      setPreviousStaffInd(lastStaffInd);
+      const lastStaff = staffLines[lastStaffInd];
+
+      const rect = sheetRef.current?.getBoundingClientRect();
+      const y = rect?.y;
+      if (y !== undefined) {
+        const upWard = y + lastStaff.top - SCROLL_MARGIN;
+        window.scrollBy({
+          top: upWard,
+          left: 0,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [checkArray]);
+
+  const getMeasureState = (measureInd: number): MeasureState => {
+    if (staffLines === null || lastStaffInd === null || checkArray === null)
+      return MeasureState.DEFAULT;
+
+    if (previousStaffInd !== null) {
+      const prevStaff = staffLines[previousStaffInd];
+
+      if (
+        prevStaff.firstMeasureInd <= measureInd &&
+        measureInd <= prevStaff.lastMeasureInd
+      )
+        return MeasureState.PREVIOUS_STAFF;
+    }
+
+    const curStaff = staffLines[lastStaffInd];
+    if (
+      curStaff.firstMeasureInd > measureInd ||
+      measureInd > curStaff.lastMeasureInd
+    )
+      return MeasureState.DEFAULT;
+
+    const ind = measureInd - curStaff.firstMeasureInd;
+    return checkArray[ind] ? MeasureState.PLAYED : MeasureState.UNPLAYED;
+  };
+
   return (
     <Space
       direction="vertical"
@@ -291,14 +393,7 @@ export default function AlignmentViewer({
           measureBoxes.map((box, ind) => (
             <Box
               key={ind}
-              selected={(() => {
-                if (staffLines === null || lastStaffInd === null) return false;
-                const curStaff = staffLines[lastStaffInd];
-                return (
-                  curStaff.firstMeasureInd <= ind &&
-                  ind <= curStaff.lastMeasureInd
-                );
-              })()}
+              state={getMeasureState(ind)}
               style={{
                 left: box.left,
                 top: box.top,
@@ -320,13 +415,23 @@ const SheetCont = styled.div`
 `;
 
 type BoxProps = {
-  selected: boolean;
+  state: MeasureState;
 };
 
 const Box = styled.div<BoxProps>`
   position: absolute;
-  background-color: ${(props) =>
-    props.selected ? '#91eebb44' : 'transparent'};
+  background-color: ${(props) => {
+    switch (props.state) {
+      case MeasureState.DEFAULT:
+        return 'transparent';
+      case MeasureState.UNPLAYED:
+        return '#ee979144';
+      case MeasureState.PLAYED:
+        return '#91eebb44';
+      case MeasureState.PREVIOUS_STAFF:
+        return '#91bcee44';
+    }
+  }};
 `;
 
 /* similarity-monitor */
