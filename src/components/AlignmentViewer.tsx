@@ -259,6 +259,8 @@ export default function AlignmentViewer({
     //eslint-disable-next-line
   }, [alignmentService, noteSchedules]);
 
+  const [skipPreviousStaffFlush, setSkipPreviousStaffFlush] = useState(false);
+
   useEffect(() => {
     if (
       alignmentService === null ||
@@ -269,14 +271,16 @@ export default function AlignmentViewer({
     alignmentService.setStaffLines(staffLines);
     alignmentService.setLastStaffInd(lastStaffInd);
 
+    if (!skipPreviousStaffFlush) {
+      setPreviousStaffInd(null);
+    }
+
     //eslint-disable-next-line
   }, [lastStaffInd]);
 
   onscroll = () => {
     refreshLastStaffInd();
   };
-
-  /* similarity-check */
 
   const [previousStaffInd, setPreviousStaffInd] = useState<number | null>(null);
   const [checkArray, setCheckArray] = useState<boolean[] | null>(null);
@@ -330,8 +334,10 @@ export default function AlignmentViewer({
       Math.ceil(checkArray.length / 2);
 
     if (pageTurn) {
-      setPreviousStaffInd(lastStaffInd);
       const lastStaff = staffLines[lastStaffInd];
+
+      setSkipPreviousStaffFlush(true);
+      setPreviousStaffInd(lastStaffInd);
 
       const rect = sheetRef.current?.getBoundingClientRect();
       const y = rect?.y;
@@ -343,6 +349,10 @@ export default function AlignmentViewer({
           behavior: 'smooth',
         });
       }
+
+      setTimeout(() => {
+        setSkipPreviousStaffFlush(false);
+      }, 1000);
     }
   }, [checkArray]);
 
@@ -429,7 +439,7 @@ const Box = styled.div<BoxProps>`
       case MeasureState.PLAYED:
         return '#91eebb44';
       case MeasureState.PREVIOUS_STAFF:
-        return '#91bcee44';
+        return '#a8d6f544';
     }
   }};
 `;
@@ -449,21 +459,27 @@ const Cont = styled.div`
   top: 0;
 `;
 
+const userInputColor = '#c5177daa';
+const scoreColor = '#1a0bebea';
+const backgroundColor = 'rgba(41, 41, 41, 0.08)';
+const textColor = '#d10bebea';
+
 type NumberContProps = {
   userSamples: number;
   gap: number;
   scoreSamples: number;
 };
 const NumberCont = styled.div<NumberContProps>`
-  background-color: rgba(33, 33, 33, 0.5);
-  font-size: 16px;
-  padding: 3px;
+  background-color: ${backgroundColor};
+  padding: 2px;
+  font-size: 12px;
   ${({ scoreSamples, userSamples, gap }) => css`
     & > span {
       display: inline-block;
       width: ${scoreSamples}px;
       margin-right: ${gap}px;
       padding-left: 8px;
+      color: ${textColor};
     }
     span:first-child {
       width: ${userSamples - 6}px;
@@ -501,9 +517,9 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
     for (let rowInd = 0; rowInd < service.sampleLength; rowInd++) {
       for (let i = 0; i < MATRIX_HEIGHT; i++) {
         if (userBinaryMidiKeyMatrix[rowInd * MATRIX_HEIGHT + i] === 1) {
-          ctx.fillStyle = '#1e88ffcc';
+          ctx.fillStyle = userInputColor;
         } else {
-          ctx.fillStyle = '#333333aa';
+          ctx.fillStyle = backgroundColor;
         }
         ctx.fillRect(rowInd, MATRIX_HEIGHT - i, 1, 1);
       }
@@ -528,9 +544,9 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         ) {
           for (let i = 0; i < MATRIX_HEIGHT; i++) {
             if (scoreMatrix[rowInd * MATRIX_HEIGHT + i] === 1) {
-              ctx.fillStyle = '#1eff56cc';
+              ctx.fillStyle = scoreColor;
             } else {
-              ctx.fillStyle = '#333333aa';
+              ctx.fillStyle = backgroundColor;
             }
             ctx.fillRect(rowInd + offset, MATRIX_HEIGHT - i, 1, 1);
           }
@@ -595,22 +611,9 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         userSamples={service.sampleLength}
         scoreSamples={service.MeasureSamples}
       >
-        <span
-          style={{
-            color: 'white',
-          }}
-        >
-          Euclidian
-        </span>
+        <span>Euclidian</span>
         {similarityArray?.map((similarity, ind) => (
-          <span
-            key={ind}
-            style={{
-              color: 'white',
-            }}
-          >
-            {similarity.euclideanError.toFixed(2)}
-          </span>
+          <span key={ind}>{similarity.euclideanError.toFixed(2)}</span>
         ))}
       </NumberCont>
       <NumberCont
@@ -618,22 +621,9 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         userSamples={service.sampleLength}
         scoreSamples={service.MeasureSamples}
       >
-        <span
-          style={{
-            color: 'white',
-          }}
-        >
-          Levenshtein
-        </span>
+        <span>Levenshtein</span>
         {similarityArray?.map((similarity, ind) => (
-          <span
-            key={ind}
-            style={{
-              color: 'white',
-            }}
-          >
-            {similarity.levenshteinError.toFixed(2)}
-          </span>
+          <span key={ind}>{similarity.levenshteinError.toFixed(2)}</span>
         ))}
       </NumberCont>
     </Cont>
