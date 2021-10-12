@@ -32,6 +32,10 @@ export function getDenominator(osmd: OSMD) {
   return osmd.Sheet.SheetPlaybackSetting.rhythm.Denominator;
 }
 
+export function getNumerator(osmd: OSMD) {
+  return osmd.Sheet.SheetPlaybackSetting.rhythm.Numerator;
+}
+
 export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
   const allNoteSchedules: NoteSchedule[] = [];
   osmd.cursor.reset();

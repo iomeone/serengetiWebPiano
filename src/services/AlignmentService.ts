@@ -86,6 +86,10 @@ export class AlignmentService {
     this.scoreMIDI.setDenominator(denominator);
   }
 
+  public setNumerator(numerator: number) {
+    this.scoreMIDI.setNumerator(numerator);
+  }
+
   public setStaffLines(staffLines: StaffLine[]) {
     this.scoreMIDI.setStaffLines(staffLines);
   }
@@ -215,6 +219,7 @@ class ScoreMIDI {
 
   private bpm: number = 120;
   private denominator: number = 4;
+  private numerator: number = 4;
   private lastStaffInd: number | null = null;
   private staffLines: StaffLine[] | null = null;
   private noteScheduleSequence: NoteSchedule[] | null = null;
@@ -262,6 +267,11 @@ class ScoreMIDI {
     this._calcMIDI();
   }
 
+  public setNumerator(numerator: number) {
+    this.numerator = numerator;
+    this._calcMIDI();
+  }
+
   public setLastStaffInd(ind: number) {
     this.lastStaffInd = ind;
     this._calcMIDI();
@@ -278,7 +288,7 @@ class ScoreMIDI {
   }
 
   public get MeasureSamples() {
-    const realValueSec = (60 / this.bpm) * this.denominator;
+    const realValueSec = (60 / this.bpm) * this.numerator;
     return Math.floor(realValueSec * this.sampleRate);
   }
 
@@ -287,9 +297,12 @@ class ScoreMIDI {
   }
 
   private _calcMIDI() {
-    if (this.lastStaffInd === null) return;
-    if (this.staffLines === null) return;
-    if (this.noteScheduleSequence === null) return;
+    if (
+      this.lastStaffInd === null ||
+      this.staffLines === null ||
+      this.noteScheduleSequence === null
+    )
+      return;
 
     const lastStaff = this.staffLines[this.lastStaffInd];
     const noteSchedulesByMeasure: NoteSchedule[][] = [];
