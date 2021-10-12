@@ -1,6 +1,6 @@
 import { EventEmitter } from 'utils/EventEmitter';
 import { noteToMidiKeyNumber, parseNoteNameToNote } from 'utils/Note';
-import { NoteSchedule } from 'utils/OSMD';
+import { NoteSchedule, StaffLine } from 'utils/OSMD';
 
 const MIDI_KEY_LENGTH = 128;
 const PIANO_LENGTH = 88;
@@ -11,13 +11,14 @@ export type Similarity = {
 };
 
 export enum AlignmentEvent {
-  SIMILARITY_CHANGE = 'SIMILARITY_CHANGE',
+  SIMILARITY_ARRAY_CHANGE = 'SIMILARITY_ARRAY_CHANGE',
+  SCORE_CHANGE = 'SCORE_CHANGE',
 }
 
 export class AlignmentService {
-  private readonly CALC_SIMILARITY_PERIOD = 500;
+  private readonly CALC_SIMILARITY_PERIOD = 700;
 
-  public readonly sampleRate = 35;
+  public readonly sampleRate = 30;
   public readonly sampleStep = 1000 / this.sampleRate;
   public readonly sampleSec = 3;
   public readonly sampleLength = this.sampleRate * this.sampleSec;
@@ -29,13 +30,17 @@ export class AlignmentService {
   private similarityTimer: any;
 
   private wasm: any = undefined;
-  private similarity: Similarity | null = null;
+  private similarityArray: Similarity[] | null = null;
   private events: EventEmitter<AlignmentEvent>;
 
   constructor() {
     this.userMIDIQueue = new UserMIDICircularQueue(this.sampleLength);
     this.scoreMIDI = new ScoreMIDI(this.sampleRate);
     this.events = new EventEmitter();
+
+    this.scoreMIDI.addChangeListener(() => {
+      this.events.emit(AlignmentEvent.SCORE_CHANGE);
+    });
 
     this.sampleQueueTimer = setInterval(() => {
       this.userMIDIQueue.enqueueBinaryPressedKeySequence(
@@ -45,9 +50,16 @@ export class AlignmentService {
 
     this.similarityTimer = setInterval(() => {
       const userSequence = this._getUserMIDIKeyConcatenatedSequence();
-      const scoreSequence = this._getScoreMIDIKeyConcatenatedSequence();
-      this.similarity = this._calcScoreSimilarity(userSequence, scoreSequence);
-      this._onSimilarityChange();
+      const scoreSequenceArray =
+        this._getScoreMIDIKeyConcatenatedSequenceArray();
+      if (scoreSequenceArray === null) return;
+      const newSimilarityArray = scoreSequenceArray.map((scoreSequence) =>
+        this._calcScoreSimilarity(userSequence, scoreSequence),
+      );
+      if (newSimilarityArray.find((s) => s === null) !== undefined) return;
+
+      this.similarityArray = newSimilarityArray as Similarity[];
+      this._onSimilarityArrayChange();
     }, this.CALC_SIMILARITY_PERIOD);
   }
 
@@ -75,8 +87,12 @@ export class AlignmentService {
     this.scoreMIDI.setDenominator(denominator);
   }
 
-  public setLastMeasureInd(lastMeasureInd: number) {
-    this.scoreMIDI.setLastMeasureInd(lastMeasureInd);
+  public setStaffLines(staffLines: StaffLine[]) {
+    this.scoreMIDI.setStaffLines(staffLines);
+  }
+
+  public setLastStaffInd(lastStaffInd: number) {
+    this.scoreMIDI.setLastStaffInd(lastStaffInd);
   }
 
   public setNoteScheduleSequence(noteScheduleSequence: NoteSchedule[]) {
@@ -92,8 +108,25 @@ export class AlignmentService {
     return this.userMIDIQueue.getBinaryMIDIKeyMatrix();
   }
 
-  public getScoreBinaryMIDIKeyMatrix() {
-    return this.scoreMIDI.getBinaryMIDIKeyMatrix();
+  public getScoreBinaryMIDIKeyMatrixArray() {
+    return this.scoreMIDI.getBinaryMIDIKeyMatrixArray();
+  }
+
+  public getFirstMeasureInd() {
+    return this.scoreMIDI.FirstMeasureInd;
+  }
+
+  public getLastMeasureInd() {
+    return this.scoreMIDI.LastMeasureInd;
+  }
+
+  public getNumMeasures() {
+    if (
+      this.scoreMIDI.LastMeasureInd === null ||
+      this.scoreMIDI.FirstMeasureInd === null
+    )
+      return 0;
+    return this.scoreMIDI.LastMeasureInd - this.scoreMIDI.FirstMeasureInd + 1;
   }
 
   public destroy() {
@@ -101,14 +134,21 @@ export class AlignmentService {
     clearInterval(this.similarityTimer);
   }
 
-  public addSimilarityChangeListener(
-    callback: (similarity: Similarity) => void,
+  public addSimilarityArrayChangeListener(
+    callback: (similarityArray: Similarity[]) => void,
   ) {
-    this.events.on(AlignmentEvent.SIMILARITY_CHANGE, callback);
+    this.events.on(AlignmentEvent.SIMILARITY_ARRAY_CHANGE, callback);
   }
 
-  private _onSimilarityChange() {
-    this.events.emit(AlignmentEvent.SIMILARITY_CHANGE, this.similarity);
+  public addScoreChangeListener(callback: () => void) {
+    this.events.on(AlignmentEvent.SCORE_CHANGE, callback);
+  }
+
+  private _onSimilarityArrayChange() {
+    this.events.emit(
+      AlignmentEvent.SIMILARITY_ARRAY_CHANGE,
+      this.similarityArray,
+    );
   }
 
   private _calcScoreSimilarity(
@@ -138,10 +178,12 @@ export class AlignmentService {
     );
   }
 
-  private _getScoreMIDIKeyConcatenatedSequence(): Uint8Array {
-    const sequenceList = this.scoreMIDI.getMIDIKeySequenceList();
-    return this._mapMIDIKeySequenceListToMIDIKeyConcatenatedSequence(
-      sequenceList ?? [],
+  private _getScoreMIDIKeyConcatenatedSequenceArray(): Uint8Array[] | null {
+    const sequenceListArray = this.scoreMIDI.getMIDIKeySequenceListArray();
+    return (
+      sequenceListArray?.map((sequenceList) =>
+        this._mapMIDIKeySequenceListToMIDIKeyConcatenatedSequence(sequenceList),
+      ) ?? null
     );
   }
 
@@ -167,28 +209,44 @@ export class AlignmentService {
   }
 }
 
+type MIDIKeySequenceList = number[][];
+
 class ScoreMIDI {
   private readonly RELEASE_CONSTANT = 0.8;
 
   private bpm: number = 120;
   private denominator: number = 4;
-  private lastMeasureInd: number | null = null;
+  private lastStaffInd: number | null = null;
+  private staffLines: StaffLine[] | null = null;
   private noteScheduleSequence: NoteSchedule[] | null = null;
   private sampleRate: number;
 
-  private midiKeySequenceList: number[][] | null = null;
-  private binaryMIDIKeyMatrix: Uint8Array | null = null;
+  private firstMeasureInd: number | null = null;
+  private lastMeasureInd: number | null = null;
+  private midiKeySequenceListArray: MIDIKeySequenceList[] | null = null;
+  private binaryMIDIKeyMatrixArray: Uint8Array[] | null = null;
+
+  private events: EventEmitter<AlignmentEvent>;
 
   constructor(sampleRate: number) {
     this.sampleRate = sampleRate;
+    this.events = new EventEmitter();
   }
 
-  public getMIDIKeySequenceList(): number[][] | null {
-    return this.midiKeySequenceList;
+  public getMIDIKeySequenceListArray(): MIDIKeySequenceList[] | null {
+    return this.midiKeySequenceListArray;
   }
 
-  public getBinaryMIDIKeyMatrix(): Uint8Array | null {
-    return this.binaryMIDIKeyMatrix;
+  public getBinaryMIDIKeyMatrixArray(): Uint8Array[] | null {
+    return this.binaryMIDIKeyMatrixArray;
+  }
+
+  public get FirstMeasureInd() {
+    return this.firstMeasureInd;
+  }
+
+  public get LastMeasureInd() {
+    return this.lastMeasureInd;
   }
 
   public refresh() {
@@ -205,8 +263,8 @@ class ScoreMIDI {
     this._calcMIDI();
   }
 
-  public setLastMeasureInd(ind: number) {
-    this.lastMeasureInd = ind;
+  public setLastStaffInd(ind: number) {
+    this.lastStaffInd = ind;
     this._calcMIDI();
   }
 
@@ -215,58 +273,102 @@ class ScoreMIDI {
     this._calcMIDI();
   }
 
+  public setStaffLines(staffLines: StaffLine[]) {
+    this.staffLines = staffLines;
+    this._calcMIDI();
+  }
+
   public get MeasureSamples() {
     const realValueSec = (60 / this.bpm) * this.denominator;
     return Math.floor(realValueSec * this.sampleRate);
   }
 
+  public addChangeListener(callback: () => void) {
+    this.events.on(AlignmentEvent.SCORE_CHANGE, callback);
+  }
+
   private _calcMIDI() {
-    const filtered = this.noteScheduleSequence?.filter(
-      (schedule) => schedule.measureInd === this.lastMeasureInd,
-    );
+    if (this.lastStaffInd === null) return;
+    if (this.staffLines === null) return;
+    if (this.noteScheduleSequence === null) return;
 
-    if (
-      filtered === undefined ||
-      filtered.length === 0 ||
-      this.MeasureSamples === null
+    const lastStaff = this.staffLines[this.lastStaffInd];
+    const noteSchedulesByMeasure: NoteSchedule[][] = [];
+    let noteScheduleInd = 0;
+    for (
+      let measureInd = lastStaff.firstMeasureInd;
+      measureInd <= lastStaff.lastMeasureInd;
+      measureInd++
     ) {
-      return;
-    }
+      const noteSchedulesInMeasure = [];
+      while (true) {
+        const noteSchedule = this.noteScheduleSequence[noteScheduleInd];
+        if (noteSchedule === undefined) break;
 
-    const baseTime = filtered[0].timing;
-    const midiKeySequenceList: number[][] = Array.from(
-      {
-        length: this.MeasureSamples,
-      },
-      () => [],
-    );
-
-    for (const schedule of filtered) {
-      const time = schedule.timing - baseTime;
-      const length = schedule.length * this.RELEASE_CONSTANT;
-
-      const startFrame = Math.floor(time * this.MeasureSamples);
-      const endFrame = startFrame + Math.floor(length * this.MeasureSamples);
-      for (let i = startFrame; i < endFrame; i++) {
-        midiKeySequenceList[i].push(noteToMidiKeyNumber(schedule.note));
+        if (noteSchedule.measureInd < measureInd) {
+          noteScheduleInd++;
+          continue;
+        } else if (noteSchedule.measureInd === measureInd) {
+          noteSchedulesInMeasure.push(noteSchedule);
+          noteScheduleInd++;
+        } else {
+          break;
+        }
       }
+      noteSchedulesByMeasure.push(noteSchedulesInMeasure);
     }
-    this.midiKeySequenceList = midiKeySequenceList;
 
-    const binaryMIDIKeyMatrix = Uint8Array.from(
-      {
-        length: MIDI_KEY_LENGTH * this.MeasureSamples,
-      },
-      () => 0,
-    );
+    this.firstMeasureInd = lastStaff.firstMeasureInd;
+    this.lastMeasureInd = lastStaff.lastMeasureInd;
 
-    for (let i = 0; i < midiKeySequenceList.length; i++) {
-      for (const midiKey of midiKeySequenceList[i]) {
-        binaryMIDIKeyMatrix[MIDI_KEY_LENGTH * i + midiKey] = 1;
+    const newMidiKeySequenceListArray: MIDIKeySequenceList[] = [];
+    const newBinaryMIDIKeyMatrixArray: Uint8Array[] = [];
+
+    for (const filtered of noteSchedulesByMeasure) {
+      const baseTime = filtered[0].timing;
+      const midiKeySequenceList: number[][] = Array.from(
+        {
+          length: this.MeasureSamples,
+        },
+        () => [],
+      );
+
+      for (const schedule of filtered) {
+        const time = schedule.timing - baseTime;
+        const length = schedule.length * this.RELEASE_CONSTANT;
+
+        const startFrame = Math.floor(time * this.MeasureSamples);
+        const endFrame = startFrame + Math.floor(length * this.MeasureSamples);
+        for (let i = startFrame; i < endFrame; i++) {
+          midiKeySequenceList[i].push(noteToMidiKeyNumber(schedule.note));
+        }
       }
+      newMidiKeySequenceListArray.push(midiKeySequenceList);
+
+      const binaryMIDIKeyMatrix = Uint8Array.from(
+        {
+          length: MIDI_KEY_LENGTH * this.MeasureSamples,
+        },
+        () => 0,
+      );
+
+      for (let i = 0; i < midiKeySequenceList.length; i++) {
+        for (const midiKey of midiKeySequenceList[i]) {
+          binaryMIDIKeyMatrix[MIDI_KEY_LENGTH * i + midiKey] = 1;
+        }
+      }
+
+      newBinaryMIDIKeyMatrixArray.push(binaryMIDIKeyMatrix);
     }
 
-    this.binaryMIDIKeyMatrix = binaryMIDIKeyMatrix;
+    this.midiKeySequenceListArray = newMidiKeySequenceListArray;
+    this.binaryMIDIKeyMatrixArray = newBinaryMIDIKeyMatrixArray;
+
+    this._onScoreChange();
+  }
+
+  private _onScoreChange() {
+    this.events.emit(AlignmentEvent.SCORE_CHANGE);
   }
 }
 

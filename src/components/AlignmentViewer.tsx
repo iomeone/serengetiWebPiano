@@ -4,9 +4,9 @@ import {
   loadSheetWithUrlThunk,
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import Viewer, { ResizeState } from './Viewer';
 import { useSheet } from 'hooks/useSheet';
 import { GiMetronome } from 'react-icons/gi';
@@ -194,60 +194,79 @@ export default function AlignmentViewer({
   /* Sheet Info */
 
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [staffLines, setStaffLine] = useState<StaffLine[] | null>(null);
+  const [staffLines, setStaffLines] = useState<StaffLine[] | null>(null);
   const [measureBoxes, setMeasureBoxes] = useState<Rect[] | null>(null);
   const [noteSchedules, setNoteSchedules] = useState<NoteSchedule[] | null>(
     null,
   );
+  const [lastStaffInd, setLastStaffInd] = useState<number | null>(null);
   const [resize, setResize] = useState<ResizeState>(ResizeState.Init);
+
   useEffect(() => {
     if (isLoaded && resize === ResizeState.ResizeEnd) {
       setMeasureBoxes(getMeasureBoundingBoxes(sheet?.osmd));
-      setStaffLine(getStaffLines(sheet?.osmd));
+      setStaffLines(getStaffLines(sheet?.osmd));
       setNoteSchedules(getNoteSchedules(sheet?.osmd));
     }
   }, [sheet, isLoaded, resize]);
-  const [lastMeasureInd, setLastMeasureInd] = useState<number | null>(null);
-  const refreshLastMeasureInd = () => {
+
+  const refreshLastStaffInd = () => {
     const rect = sheetRef.current?.getBoundingClientRect();
     const y = rect?.y;
     if (y !== undefined) {
-      let measureInd = -1;
+      let staffInd = -1;
       if (staffLines !== null) {
-        for (const line of staffLines) {
-          if (line.bottom + y > window.innerHeight) {
+        for (let ind = 0; ind < staffLines.length; ind++) {
+          if (staffLines[ind].bottom + y > window.innerHeight) {
             break;
           } else {
-            measureInd = line.lastMeasureInd;
+            staffInd = ind;
           }
         }
+        setLastStaffInd(staffInd);
       }
-      setLastMeasureInd(measureInd);
     }
   };
+
   useEffect(() => {
     if (staffLines !== null) {
-      refreshLastMeasureInd();
+      refreshLastStaffInd();
     }
     //eslint-disable-next-line
   }, [staffLines]);
+
   useEffect(() => {
-    if (alignmentService === null || noteSchedules === null) return;
+    if (
+      alignmentService === null ||
+      noteSchedules === null ||
+      staffLines === null
+    )
+      return;
     alignmentService.setBPM(getBPM(sheet?.osmd));
     alignmentService.setDenominator(getDenominator(sheet?.osmd));
     alignmentService.setNoteScheduleSequence(noteSchedules);
-    if (lastMeasureInd) alignmentService.setLastMeasureInd(lastMeasureInd);
+    alignmentService.setStaffLines(staffLines);
+    if (lastStaffInd) alignmentService.setLastStaffInd(lastStaffInd);
     alignmentService.init();
+
     //eslint-disable-next-line
   }, [alignmentService, noteSchedules]);
+
   useEffect(() => {
-    if (alignmentService === null || lastMeasureInd === null) return;
-    alignmentService.setLastMeasureInd(lastMeasureInd);
+    if (
+      alignmentService === null ||
+      lastStaffInd === null ||
+      staffLines === null
+    )
+      return;
+    alignmentService.setStaffLines(staffLines);
+    alignmentService.setLastStaffInd(lastStaffInd);
+
     //eslint-disable-next-line
-  }, [lastMeasureInd]);
+  }, [lastStaffInd]);
 
   onscroll = () => {
-    refreshLastMeasureInd();
+    refreshLastStaffInd();
   };
 
   return (
@@ -272,7 +291,14 @@ export default function AlignmentViewer({
           measureBoxes.map((box, ind) => (
             <Box
               key={ind}
-              selected={ind === lastMeasureInd}
+              selected={(() => {
+                if (staffLines === null || lastStaffInd === null) return false;
+                const curStaff = staffLines[lastStaffInd];
+                return (
+                  curStaff.firstMeasureInd <= ind &&
+                  ind <= curStaff.lastMeasureInd
+                );
+              })()}
               style={{
                 left: box.left,
                 top: box.top,
@@ -313,95 +339,197 @@ type SimilarityMonitorProps = {
 
 const Cont = styled.div`
   position: fixed;
+  z-index: 10;
   right: 0;
   top: 0;
 `;
-const NumberCont = styled.div`
-  background-color: #333333aa;
+
+type NumberContProps = {
+  userSamples: number;
+  gap: number;
+  scoreSamples: number;
+};
+const NumberCont = styled.div<NumberContProps>`
+  background-color: rgba(33, 33, 33, 0.5);
   font-size: 16px;
-  padding: 4px;
+  padding: 3px;
+  ${({ scoreSamples, userSamples, gap }) => css`
+    & > span {
+      display: inline-block;
+      width: ${scoreSamples}px;
+      margin-right: ${gap}px;
+      padding-left: 8px;
+    }
+    span:first-child {
+      width: ${userSamples - 6}px;
+      padding-left: 0px;
+    }
+    span:last-child {
+      width: auto;
+      margin-right: 0px;
+    }
+  `}
 `;
 
 function SimilarityMonitor({ service }: SimilarityMonitorProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasUserRef = useRef<HTMLCanvasElement>(null);
+  const canvasScoreRef = useRef<HTMLCanvasElement>(null);
   const prevTime = useRef(0);
   const fps = 20;
   const frameStep = 1000 / fps;
   const gap = 8;
 
-  const [similarity, setSimilarity] = useState<Similarity | null>(null);
-  useEffect(() => {
-    service.addSimilarityChangeListener(setSimilarity);
-  }, [service]);
+  const [similarityArray, setSimilarityArray] = useState<Similarity[] | null>(
+    null,
+  );
+  const scoreMatrixArrayRef = useRef<Uint8Array[] | null>(null);
 
-  useAnimationFrame((time) => {
-    if (time - prevTime.current < frameStep) {
-      return;
-    }
-    prevTime.current = time;
+  const drawUserInput = useCallback(() => {
+    if (canvasUserRef?.current?.getContext === undefined) return;
+    const canvas = canvasUserRef.current;
+    const ctx = canvas.getContext('2d');
+    if (ctx === null) return;
 
-    if (canvasRef?.current?.getContext) {
-      var ctx = canvasRef.current.getContext('2d');
-      if (ctx === null) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const userBinaryMidiKeyMatrix = service.getUserBinaryMIDIKeyMatrix();
-      const scoreBinaryMidiKeyMatrix = service.getScoreBinaryMIDIKeyMatrix();
-
-      for (let rowInd = 0; rowInd < service.sampleLength; rowInd++) {
-        for (let i = 0; i < MATRIX_HEIGHT; i++) {
-          if (userBinaryMidiKeyMatrix[rowInd * MATRIX_HEIGHT + i] === 1) {
-            ctx.fillStyle = '#1e88ffaa';
-          } else {
-            ctx.fillStyle = '#33333355';
-          }
-          ctx.fillRect(rowInd, MATRIX_HEIGHT - i, 1, 1);
+    const userBinaryMidiKeyMatrix = service.getUserBinaryMIDIKeyMatrix();
+    for (let rowInd = 0; rowInd < service.sampleLength; rowInd++) {
+      for (let i = 0; i < MATRIX_HEIGHT; i++) {
+        if (userBinaryMidiKeyMatrix[rowInd * MATRIX_HEIGHT + i] === 1) {
+          ctx.fillStyle = '#1e88ffcc';
+        } else {
+          ctx.fillStyle = '#333333aa';
         }
+        ctx.fillRect(rowInd, MATRIX_HEIGHT - i, 1, 1);
       }
+    }
+  }, [canvasUserRef, service]);
 
-      if (scoreBinaryMidiKeyMatrix !== null) {
-        const offset = service.sampleLength + gap;
+  const drawScores = useCallback(() => {
+    if (canvasScoreRef?.current?.getContext === undefined) return;
+    const canvas = canvasScoreRef.current;
+    const ctx = canvas.getContext('2d');
+    if (ctx === null) return;
+    const scoreBinaryMidiKeyMatrixArray = scoreMatrixArrayRef.current;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (scoreBinaryMidiKeyMatrixArray !== null) {
+      let offset = 0;
+      for (const scoreMatrix of scoreBinaryMidiKeyMatrixArray) {
         for (
           let rowInd = 0;
           rowInd < (service.MeasureSamples as number);
           rowInd++
         ) {
           for (let i = 0; i < MATRIX_HEIGHT; i++) {
-            if (scoreBinaryMidiKeyMatrix[rowInd * MATRIX_HEIGHT + i] === 1) {
-              ctx.fillStyle = '#1eff56aa';
+            if (scoreMatrix[rowInd * MATRIX_HEIGHT + i] === 1) {
+              ctx.fillStyle = '#1eff56cc';
             } else {
-              ctx.fillStyle = '#33333355';
+              ctx.fillStyle = '#333333aa';
             }
             ctx.fillRect(rowInd + offset, MATRIX_HEIGHT - i, 1, 1);
           }
         }
+        offset += gap + service.MeasureSamples;
       }
     }
-  }, []);
+  }, [canvasScoreRef, service]);
+
+  const needDrawScoreRef = useRef(false);
+  const [needDrawScore, setNeedDrawScore] = useState(false);
+
+  useEffect(() => {
+    service.addSimilarityArrayChangeListener(setSimilarityArray);
+    service.addScoreChangeListener(() => {
+      scoreMatrixArrayRef.current = service.getScoreBinaryMIDIKeyMatrixArray();
+      setNeedDrawScore(true);
+    });
+  }, [service]);
+
+  useAnimationFrame(
+    (time) => {
+      if (time - prevTime.current < frameStep) {
+        return;
+      }
+      prevTime.current = time;
+      drawUserInput();
+
+      if (needDrawScoreRef.current) {
+        drawScores();
+        setNeedDrawScore(false);
+      }
+    },
+    [drawUserInput, drawScores],
+  );
+
+  const numMeasures = service.getNumMeasures();
+  const canvasUserWidth = service.sampleLength;
+  const canvasScoreWidth =
+    gap * (numMeasures - 1) + service.MeasureSamples * numMeasures;
+
+  useEffect(() => {
+    needDrawScoreRef.current = needDrawScore;
+  }, [needDrawScore]);
 
   return (
     <Cont>
-      <canvas
-        width={service.sampleLength + gap + service.MeasureSamples}
-        height={MATRIX_HEIGHT}
-        ref={canvasRef}
-      ></canvas>
-      <NumberCont>
-        <Typography.Text
+      <Space size={gap}>
+        <canvas
+          width={canvasUserWidth}
+          height={MATRIX_HEIGHT}
+          ref={canvasUserRef}
+        ></canvas>
+        <canvas
+          width={canvasScoreWidth}
+          height={MATRIX_HEIGHT}
+          ref={canvasScoreRef}
+        ></canvas>
+      </Space>
+      <NumberCont
+        gap={gap}
+        userSamples={service.sampleLength}
+        scoreSamples={service.MeasureSamples}
+      >
+        <span
           style={{
             color: 'white',
           }}
         >
-          ED: {(similarity?.euclideanError ?? -1).toFixed(3)}
-        </Typography.Text>
+          Euclidian
+        </span>
+        {similarityArray?.map((similarity, ind) => (
+          <span
+            key={ind}
+            style={{
+              color: 'white',
+            }}
+          >
+            {similarity.euclideanError.toFixed(2)}
+          </span>
+        ))}
       </NumberCont>
-      <NumberCont>
-        <Typography.Text
+      <NumberCont
+        gap={gap}
+        userSamples={service.sampleLength}
+        scoreSamples={service.MeasureSamples}
+      >
+        <span
           style={{
             color: 'white',
           }}
         >
-          LV: {(similarity?.levenshteinError ?? -1).toFixed(3)}
-        </Typography.Text>
+          Levenshtein
+        </span>
+        {similarityArray?.map((similarity, ind) => (
+          <span
+            key={ind}
+            style={{
+              color: 'white',
+            }}
+          >
+            {similarity.levenshteinError.toFixed(2)}
+          </span>
+        ))}
       </NumberCont>
     </Cont>
   );
