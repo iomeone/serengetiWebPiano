@@ -22,6 +22,7 @@ import {
   NoteSchedule,
   getBPM,
   getDenominator,
+  getNumerator,
 } from 'utils/OSMD';
 import { AlignmentService, Similarity } from 'services/AlignmentService';
 import { useAnimationFrame } from 'hooks/useAnimationFrame';
@@ -251,6 +252,7 @@ export default function AlignmentViewer({
       return;
     alignmentService.setBPM(getBPM(sheet?.osmd));
     alignmentService.setDenominator(getDenominator(sheet?.osmd));
+    alignmentService.setNumerator(getNumerator(sheet?.osmd));
     alignmentService.setNoteScheduleSequence(noteSchedules);
     alignmentService.setStaffLines(staffLines);
     if (lastStaffInd) alignmentService.setLastStaffInd(lastStaffInd);
