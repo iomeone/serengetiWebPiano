@@ -356,6 +356,7 @@ export default function AlignmentViewer({
         setSkipPreviousStaffFlush(false);
       }, 1000);
     }
+    //eslint-disable-next-line
   }, [checkArray]);
 
   const getMeasureState = (measureInd: number): MeasureState => {
