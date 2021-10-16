@@ -10,6 +10,7 @@ export type NoteSchedule = {
   note: Note;
   timing: number;
   length: number;
+  measureInd: number;
 };
 
 export type Rect = {
@@ -25,6 +26,14 @@ export function getTimeSignature(osmd: OSMD) {
 
 export function getBPM(osmd: OSMD) {
   return osmd.Sheet.DefaultStartTempoInBpm;
+}
+
+export function getDenominator(osmd: OSMD) {
+  return osmd.Sheet.SheetPlaybackSetting.rhythm.Denominator;
+}
+
+export function getNumerator(osmd: OSMD) {
+  return osmd.Sheet.SheetPlaybackSetting.rhythm.Numerator;
 }
 
 export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
@@ -45,11 +54,13 @@ export function getNoteSchedules(osmd: OSMD): NoteSchedule[] {
 
           const timing = iterator.currentTimeStamp.RealValue;
           const length = note.Length.RealValue;
+          const measureInd = iterator.CurrentMeasureIndex;
 
           allNoteSchedules.push({
             note: midiKeyNumberToNote(midiKeyNumber),
             timing,
             length,
+            measureInd,
           });
         }
       }
@@ -95,8 +106,10 @@ export function getMeasureBoundingBoxes(osmd: OSMD): Rect[] {
 }
 
 export type StaffLine = {
+  firstMeasureInd: number;
   lastMeasureInd: number;
   bottom: number;
+  top: number;
 };
 
 export function getStaffLines(osmd: OSMD): StaffLine[] {
@@ -146,8 +159,10 @@ export function getStaffLines(osmd: OSMD): StaffLine[] {
 
   return boxGroupByTop.map((boxGroup) => {
     const lastInd = boxGroup.length - 1;
+    const firstMeasureInd = boxGroup[0].ind;
     const lastMeasureInd = boxGroup[lastInd].ind;
     let maxBottom = 0;
+    let boxTop = boxGroup[0].box.top;
     for (const box of boxGroup.map((box) => box.box)) {
       if (box.bottom > maxBottom) {
         maxBottom = box.bottom;
@@ -155,7 +170,9 @@ export function getStaffLines(osmd: OSMD): StaffLine[] {
     }
 
     return {
-      lastMeasureInd: lastMeasureInd,
+      firstMeasureInd,
+      lastMeasureInd,
+      top: boxTop,
       bottom: maxBottom,
     };
   });

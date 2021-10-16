@@ -8,7 +8,6 @@ import {
   CheckOutlined,
   CloseOutlined,
   DownCircleFilled,
-  ScissorOutlined,
 } from '@ant-design/icons';
 import { AntdIconProps } from '@ant-design/icons/lib/components/AntdIcon';
 import { setPianoVisibility } from 'modules/piano';

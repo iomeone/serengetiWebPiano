@@ -43,6 +43,7 @@ export function useFrontMIDIAudio(
     if (isReady) {
       initWithGesture();
     }
+    //eslint-disable-next-line
   }, [isReady, volume]);
 
   const initWithGesture = async () => {

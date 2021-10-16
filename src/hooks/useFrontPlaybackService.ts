@@ -26,8 +26,7 @@ type FrontPlaybackServiceRes = {
 export function useFrontPlaybackService(
   sheetKey: string,
 ): FrontPlaybackServiceRes {
-  const { audioContext, getOrCreateAudioContextWithGesture } =
-    useAudioContext();
+  const { getOrCreateAudioContextWithGesture } = useAudioContext();
   const sheet: Sheet | null = useSelector(
     (state: State) => state.audio.sheets[sheetKey] ?? null,
   );

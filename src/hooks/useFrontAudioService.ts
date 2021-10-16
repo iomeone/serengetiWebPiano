@@ -1,6 +1,6 @@
 import { setAudioService } from 'modules/audio';
 import { State } from 'modules/State';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FrontAudioService } from 'services/FrontAudioService';
 import { AudioServiceType, IAudioService } from 'services/IAudioService';
@@ -16,8 +16,7 @@ type FrontAudioServiceRes = {
 export function useFrontAudioService(): FrontAudioServiceRes {
   const dispatch = useDispatch();
 
-  const { audioContext, getOrCreateAudioContextWithGesture } =
-    useAudioContext();
+  const { getOrCreateAudioContextWithGesture } = useAudioContext();
   const audioService = useSelector((state: State) => state.audio.audioService);
   const serviceType = useSelector(
     (state: State) => state.audio.audioServiceType,

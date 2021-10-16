@@ -1,11 +1,7 @@
-import { stopOtherPlaybackServicesThunk } from 'modules/audio';
 import { Button, Space, Typography } from 'antd';
 import { useState } from 'react';
 import { MeasureRange } from 'utils/Editor';
 import TextEditor from './TextEditor';
-import { useSheet } from 'hooks/useSheet';
-import { useDispatch } from 'react-redux';
-import { useFrontPlaybackService } from 'hooks/useFrontPlaybackService';
 import { ScissorOutlined } from '@ant-design/icons';
 
 type Props = {
@@ -13,7 +9,7 @@ type Props = {
   sheetKey: string;
 };
 
-export default function CutMeasureInfo({ range, sheetKey }: Props) {
+export default function CutMeasureInfo({ range }: Props) {
   const [title, setTitle] = useState('');
 
   // TODO : Show SegmentViewer;

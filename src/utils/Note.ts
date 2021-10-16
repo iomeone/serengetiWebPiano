@@ -138,28 +138,28 @@ export const diatonicNumberToNoteName = (diatonicNumber: number): string => {
 const noteA0 = parseNoteNameToNote('A0');
 export const noteA0MidiKeyNumber = noteToMidiKeyNumber(noteA0);
 
-export const noteArrayToBinaryKeys = (notes: Note[]):boolean[] =>{
-  const binaryKeys = Array.from({length: 88}, () => false);
-  notes.forEach((note:Note)=>{
+export const noteArrayToBinaryKeys = (notes: Note[]): boolean[] => {
+  const binaryKeys = Array.from({ length: 88 }, () => false);
+  notes.forEach((note: Note) => {
     binaryKeys[noteToMidiKeyNumber(note) - noteA0MidiKeyNumber] = true;
   });
   return binaryKeys;
-}
-export const binaryKeysToNoteArray = (binaryKeys: boolean[]):Note[] => {
-  const result:Note[] = [];
-  binaryKeys.forEach((value,index)=>{
-    if(value) result.push(midiKeyNumberToNote(index + noteA0MidiKeyNumber));
-  })
+};
+export const binaryKeysToNoteArray = (binaryKeys: Uint8Array): Note[] => {
+  const result: Note[] = [];
+  binaryKeys.forEach((value, index) => {
+    if (value) result.push(midiKeyNumberToNote(index + noteA0MidiKeyNumber));
+  });
   return result;
-}
-export const isEqualNoteArray = (a: Note[],b: Note[]) =>{
-  const binaryKeys_A = noteArrayToBinaryKeys(a); 
+};
+export const isEqualNoteArray = (a: Note[], b: Note[]) => {
+  const binaryKeys_A = noteArrayToBinaryKeys(a);
   const binaryKeys_B = noteArrayToBinaryKeys(b);
-  // A0 아래는 같은지 확인할 수 없음 
-  binaryKeys_A.forEach((value,index)=>{
-    if(value !== binaryKeys_B[index]){
+  // A0 아래는 같은지 확인할 수 없음
+  binaryKeys_A.forEach((value, index) => {
+    if (value !== binaryKeys_B[index]) {
       return false;
     }
-  })
+  });
   return true;
-}
+};

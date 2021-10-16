@@ -94,6 +94,7 @@ export default function PianoRollModal({
         bpm: null,
         timeSignature: null,
       };
+    //eslint-disable-next-line
   }, [isLoaded]);
 
   const lower = useMemo(() => {
@@ -104,6 +105,8 @@ export default function PianoRollModal({
       return min;
     }
     return noteToMidiKeyNumber(piano.min);
+
+    //eslint-disable-next-line
   }, [isLoaded, noteSchedules]);
 
   const upper = useMemo(() => {
@@ -114,6 +117,8 @@ export default function PianoRollModal({
       return max;
     }
     return noteToMidiKeyNumber(piano.max);
+
+    //eslint-disable-next-line
   }, [isLoaded, noteSchedules]);
 
   const [dimensions, setDimensions] = useState({
@@ -216,20 +221,20 @@ function PianoRoll({
     }
   }, [timeSigniture, bpm]);
 
-  const songLength = useMemo(() => {
-    if (noteSchedules !== null && timeSigniture !== null) {
-      let lastPoint = 0;
-      for (let i = 0; i < noteSchedules.length; i++) {
-        const endPoint = noteSchedules[i].timing + noteSchedules[i].length;
-        if (endPoint > lastPoint) {
-          lastPoint = endPoint;
-        }
-      }
-      return lastPoint / velocity;
-    } else {
-      return 0;
-    }
-  }, [noteSchedules, velocity, timeSigniture, bpm]);
+  // const songLength = useMemo(() => {
+  //   if (noteSchedules !== null && timeSigniture !== null) {
+  //     let lastPoint = 0;
+  //     for (let i = 0; i < noteSchedules.length; i++) {
+  //       const endPoint = noteSchedules[i].timing + noteSchedules[i].length;
+  //       if (endPoint > lastPoint) {
+  //         lastPoint = endPoint;
+  //       }
+  //     }
+  //     return lastPoint / velocity;
+  //   } else {
+  //     return 0;
+  //   }
+  // }, [noteSchedules, velocity, timeSigniture, bpm]);
 
   const [count, setCount] = useState(0);
   const [before, setBefore] = useState<number | null>(null);
@@ -374,6 +379,8 @@ function PianoRoll({
       }
       setBefore(Date.now());
     }
+
+    //eslint-disable-next-line
   }, [count]);
 
   useEffect(() => {
@@ -381,6 +388,8 @@ function PianoRoll({
     setBefore(null);
     nextHoldNote();
     nextHoldTiming();
+
+    //eslint-disable-next-line
   }, [noteSchedules]);
 
   const [guideSchedules, setGuideSchedules] = useState<GuideSchedule[]>([]);
@@ -402,6 +411,8 @@ function PianoRoll({
       } as GuideSchedule;
     });
     setGuideSchedules(newGuides);
+
+    //eslint-disable-next-line
   }, [noteSchedules]);
 
   useEffect(() => {
@@ -416,6 +427,8 @@ function PianoRoll({
     if (playState !== PlayState.FINISH && playTime >= holdTiming) {
       setPlayState(PlayState.HOLD);
     }
+
+    //eslint-disable-next-line
   }, [count]);
 
   useEffect(() => {
@@ -444,7 +457,7 @@ function PianoRoll({
         }
       }, true);
       if (IsContainHoldNote) {
-        console.log(holdNote, pressedKeys);
+        // console.log(holdNote, pressedKeys);
         const keys = [...pressedKeys];
         const a = noteArrayToBinaryKeys(
           beforeNote.concat(holdNote.map((value) => value.note)),
@@ -470,6 +483,8 @@ function PianoRoll({
         }
       }
     }
+
+    //eslint-disable-next-line
   }, [pressedKeys]);
 
   const nextHoldTiming = () => {

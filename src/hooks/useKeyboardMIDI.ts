@@ -6,7 +6,7 @@ import { useKeyEvent } from './useKeyboard';
 
 type KeyBoardMIDIRes = {
   pressedKeysByKeyboard: Note[];
-  pressedBinaryKeysByKeyboard: boolean[];
+  pressedBinaryKeysByKeyboard: Uint8Array;
 };
 
 export const useKeyboardMIDI = (
