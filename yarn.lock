@@ -4570,6 +4570,11 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+create-wasm-app@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/create-wasm-app/-/create-wasm-app-0.1.0.tgz#63b4ab45e6235b07dcc14879261d0562d27e17db"
+  integrity sha512-BzClfEAxwfZxE5IDNbNzutr5W6EXZrC0m1ax2R3sOKdQeHo8QKB6e/79vFQU9mtlNxLO6IeT7Lxy8FxOV+awQg==
+
 cross-spawn@7.0.3, cross-spawn@^7.0.0, cross-spawn@^7.0.2:
   version "7.0.3"
   resolved "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.3.tgz"
@@ -8432,6 +8437,8 @@ micromatch@^4.0.2, micromatch@^4.0.4:
 
 "midi-similarity-measurement@file:midi-similarity-measurement":
   version "1.0.0"
+  dependencies:
+    create-wasm-app "^0.1.0"
 
 midimessage@^1.0.5:
   version "1.0.5"
