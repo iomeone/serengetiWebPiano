@@ -20,9 +20,12 @@ export async function getSimilarity(): Promise<any> {
 }
 
 export class AlignmentService {
-  private readonly CALC_SIMILARITY_PERIOD = 330;
+  private readonly CALC_SIMILARITY_PERIOD = 400;
 
-  public readonly sampleRate = 30;
+  public readonly sampleRate = 25;
+  public readonly onsetWeight = 5.0;
+  public readonly settlingFrame = 8;
+
   public readonly sampleStep = 1000 / this.sampleRate;
   public readonly sampleSec = 3;
   public readonly sampleLength = this.sampleRate * this.sampleSec;
@@ -53,11 +56,12 @@ export class AlignmentService {
     }, this.sampleStep);
 
     this.similarityTimer = setInterval(() => {
-      const userSequence = this._getUserMIDIKeySerializedSequence();
-      const scoreSequenceArray = this._getScoreMIDIKeySerializedSequenceArray();
-      if (scoreSequenceArray === null) return;
-      const newSimilarityArray = scoreSequenceArray.map((scoreSequence) =>
-        this._calcScoreSimilarity(userSequence, scoreSequence),
+      const userMatrix = this.getUserBinaryMIDIKeyMatrix();
+      const scoreMatrixArray = this.getScoreBinaryMIDIKeyMatrixArray();
+      if (scoreMatrixArray === null) return;
+
+      const newSimilarityArray = scoreMatrixArray.map((scoreMatrix) =>
+        this._calcScoreSimilarity(scoreMatrix, userMatrix),
       );
       if (newSimilarityArray.find((s) => s === null) !== undefined) return;
 
@@ -159,18 +163,20 @@ export class AlignmentService {
   }
 
   private _calcScoreSimilarity(
-    source1: Uint8Array,
-    source2: Uint8Array,
+    matrix1: Uint8Array,
+    matrix2: Uint8Array,
   ): Similarity | null {
     if (this.wasm === undefined) {
       console.log('wasm is not loaded');
       return null;
     }
 
-    const res = this.wasm?.scoreSimilarity(source1, source2, 0, false) as [
-      number,
-      number,
-    ];
+    const res = this.wasm?.scoreSimilarity(
+      matrix1,
+      matrix2,
+      this.onsetWeight,
+      this.settlingFrame,
+    ) as [number, number];
 
     return {
       euclideanError: res[0],
@@ -178,59 +184,41 @@ export class AlignmentService {
     };
   }
 
-  private _getUserMIDIKeySerializedSequence(): Uint8Array {
-    const sequenceList = this.userMIDIQueue.getMIDIKeySequenceList();
-    return this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(
-      sequenceList,
-    );
-  }
+  // private _getUserMIDIKeySerializedSequence(): Uint8Array {
+  //   const sequenceList = this.userMIDIQueue.getMIDIKeySequenceList();
+  //   return this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(
+  //     sequenceList,
+  //   );
+  // }
 
-  private _getScoreMIDIKeySerializedSequenceArray(): Uint8Array[] | null {
-    const sequenceListArray = this.scoreMIDI.getMIDIKeySequenceListArray();
-    return (
-      sequenceListArray?.map((sequenceList) =>
-        this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(sequenceList),
-      ) ?? null
-    );
-  }
+  // private _getScoreMIDIKeySerializedSequenceArray(): Uint8Array[] | null {
+  //   const sequenceListArray = this.scoreMIDI.getMIDIKeySequenceListArray();
+  //   return (
+  //     sequenceListArray?.map((sequenceList) =>
+  //       this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(sequenceList),
+  //     ) ?? null
+  //   );
+  // }
 
-  private _mapMIDIKeySequenceListToMIDIKeySerializedSequence(
-    midiKeySequenceList: number[][],
-  ): Uint8Array {
-    const length = midiKeySequenceList.reduce(
-      (acc, midiKeySequence) => acc + midiKeySequence.length + 1,
-      0,
-    );
-    const ret = Uint8Array.from({ length }, () => 0);
-
-    let curpos = 0;
-    for (const midiKeySequence of midiKeySequenceList) {
-      ret[curpos] = midiKeySequence.length;
-      curpos++;
-      for (const event of midiKeySequence) {
-        ret[curpos] = event;
-        curpos++;
-      }
-    }
-    return ret;
-  }
-
-  // public async test(source1: number[][], source2: number[][]) {
-  //   const wasm = await getSimilarity();
-  //   const src1 =
-  //     this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(source1);
-  //   const src2 =
-  //     this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(source2);
-  //   console.log(src1, src2);
-
-  //   const [euclideanError, timeWarpingError] = wasm.scoreSimilarity(
-  //     src1,
-  //     src2,
+  // private _mapMIDIKeySequenceListToMIDIKeySerializedSequence(
+  //   midiKeySequenceList: number[][],
+  // ): Uint8Array {
+  //   const length = midiKeySequenceList.reduce(
+  //     (acc, midiKeySequence) => acc + midiKeySequence.length + 1,
   //     0,
-  //     true,
-  //   ) as [number, number];
+  //   );
+  //   const ret = Uint8Array.from({ length }, () => 0);
 
-  //   console.log(euclideanError, timeWarpingError);
+  //   let curpos = 0;
+  //   for (const midiKeySequence of midiKeySequenceList) {
+  //     ret[curpos] = midiKeySequence.length;
+  //     curpos++;
+  //     for (const event of midiKeySequence) {
+  //       ret[curpos] = event;
+  //       curpos++;
+  //     }
+  //   }
+  //   return ret;
   // }
 }
 
