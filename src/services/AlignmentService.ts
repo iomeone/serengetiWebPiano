@@ -15,6 +15,10 @@ export enum AlignmentEvent {
   SCORE_CHANGE = 'SCORE_CHANGE',
 }
 
+export async function getSimilarity(): Promise<any> {
+  return import('midi-similarity-measurement');
+}
+
 export class AlignmentService {
   private readonly CALC_SIMILARITY_PERIOD = 330;
 
@@ -72,7 +76,7 @@ export class AlignmentService {
   );
 
   public async init() {
-    const wasm = await import('midi-similarity-measurement');
+    const wasm = await getSimilarity();
     this.wasm = wasm;
 
     this.scoreMIDI.refresh();
@@ -163,7 +167,7 @@ export class AlignmentService {
       return null;
     }
 
-    const res = this.wasm?.score_similarity(source1, source2, 0) as [
+    const res = this.wasm?.scoreSimilarity(source1, source2, 0, false) as [
       number,
       number,
     ];
@@ -210,6 +214,24 @@ export class AlignmentService {
     }
     return ret;
   }
+
+  // public async test(source1: number[][], source2: number[][]) {
+  //   const wasm = await getSimilarity();
+  //   const src1 =
+  //     this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(source1);
+  //   const src2 =
+  //     this._mapMIDIKeySequenceListToMIDIKeySerializedSequence(source2);
+  //   console.log(src1, src2);
+
+  //   const [euclideanError, timeWarpingError] = wasm.scoreSimilarity(
+  //     src1,
+  //     src2,
+  //     0,
+  //     true,
+  //   ) as [number, number];
+
+  //   console.log(euclideanError, timeWarpingError);
+  // }
 }
 
 type MIDIKeySequenceList = number[][];
