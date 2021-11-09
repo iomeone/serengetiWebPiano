@@ -305,7 +305,11 @@ export default function AlignmentViewer({
     const ee = similarity.euclideanError;
     const le = similarity.levenshteinError;
 
-    return ee > 0 && le > 0 && ee + le < 0.87;
+    return (
+      ee > 0 &&
+      le > 0 &&
+      Math.pow((ee - 0.08) / 0.4, 2) + Math.pow((le - 0.41) / 0.33, 2) < 1.1
+    );
   };
   useEffect(() => {
     if (
