@@ -7,7 +7,7 @@ const PIANO_LENGTH = 88;
 
 export type Similarity = {
   euclideanError: number;
-  levenshteinError: number;
+  timeWarpingError: number;
 };
 
 export enum AlignmentEvent {
@@ -182,7 +182,7 @@ export class AlignmentService {
 
     return {
       euclideanError: res[0],
-      levenshteinError: res[1],
+      timeWarpingError: res[1],
     };
   }
 
