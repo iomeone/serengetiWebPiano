@@ -125,6 +125,13 @@ const useAlignment = (): UseAlignmentRes => {
   return { initWithGesture: startMIDI, isReady, alignmentService };
 };
 
+const check = (similarity: Similarity, sensitivity: number) => {
+  const ee = similarity.euclideanError;
+  const le = similarity.timeWarpingError;
+
+  return ee > 0 && le > 0 && ee + le < sensitivity;
+};
+
 export default function AlignmentViewer({
   sheetKey,
   title,
@@ -307,12 +314,6 @@ export default function AlignmentViewer({
     const length = service.getNumMeasures();
     setCheckArray(Array.from({ length }, () => false));
   };
-  const check = (similarity: Similarity) => {
-    const ee = similarity.euclideanError;
-    const le = similarity.levenshteinError;
-
-    return ee > 0 && le > 0 && ee + le < sensitivity;
-  };
   useEffect(() => {
     if (
       similarityArray === null ||
@@ -325,7 +326,7 @@ export default function AlignmentViewer({
     const newCheckArray = [];
     for (let i = 0; i < similarityArray.length; i++) {
       const similarity = similarityArray[i];
-      newCheckArray.push(check(similarity) || checkArray[i]);
+      newCheckArray.push(check(similarity, sensitivity) || checkArray[i]);
     }
     setCheckArray(newCheckArray);
     //eslint-disable-next-line
@@ -473,11 +474,20 @@ type SimilarityMonitorProps = {
   mode: MonitorMode;
 };
 
-const Cont = styled.div`
+type ContProps = {
+  mode: MonitorMode;
+};
+
+const Cont = styled.div<ContProps>`
   position: fixed;
   z-index: 10;
   right: 0;
   top: 0;
+  ${({ mode }) =>
+    mode === MonitorMode.Opaque &&
+    css`
+      background-color: #444444;
+    `};
 `;
 
 type NumberContProps = {
@@ -486,26 +496,26 @@ type NumberContProps = {
   scoreSamples: number;
   backgroundColor: string;
   textColor: string;
+  scale: number;
 };
 const NumberCont = styled.div<NumberContProps>`
+  font-family: 'Noto Sans KR', sans-serif;
   background-color: ${({ backgroundColor }) => backgroundColor};
-  padding: 2px;
-  font-size: 12px;
-  ${({ scoreSamples, userSamples, gap, textColor }) => css`
+  padding: ${({ scale }) => scale * 2}px;
+  font-size: ${({ scale }) => scale * 8}px;
+  ${({ scoreSamples, userSamples, gap, textColor, scale }) => css`
     & > span {
       display: inline-block;
-      width: ${scoreSamples}px;
-      margin-right: ${gap}px;
-      padding-left: 8px;
+      width: ${scoreSamples * scale}px;
+      margin-right: ${gap * scale}px;
+      padding-left: ${8 * scale}px;
       color: ${textColor};
+      text-align: center;
     }
     span:first-child {
-      width: ${userSamples - 6}px;
+      width: ${(userSamples - 6) * scale}px;
       padding-left: 0px;
-    }
-    span:last-child {
-      width: auto;
-      margin-right: 0px;
+      text-align: right;
     }
   `}
 `;
@@ -513,10 +523,17 @@ const NumberCont = styled.div<NumberContProps>`
 function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
   const canvasUserRef = useRef<HTMLCanvasElement>(null);
   const canvasScoreRef = useRef<HTMLCanvasElement>(null);
+  const canvasSpaceRef = useRef<HTMLCanvasElement>(null);
   const prevTime = useRef(0);
   const fps = 20;
   const frameStep = 1000 / fps;
   const gap = 8;
+
+  const scale = 2.5;
+
+  const sensitivity = useSelector(
+    (state: State) => state.alignment.sensitivity,
+  );
 
   const { backgroundColor, scoreColor, textColor, userInputColor } =
     useModeColor(mode);
@@ -524,6 +541,7 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
   const [similarityArray, setSimilarityArray] = useState<Similarity[] | null>(
     null,
   );
+  const similarityArrayRef = useRef<Similarity[] | null>(null);
   const scoreMatrixArrayRef = useRef<Uint8Array[] | null>(null);
 
   const drawUserInput = useCallback(() => {
@@ -542,7 +560,7 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
         } else {
           ctx.fillStyle = backgroundColor;
         }
-        ctx.fillRect(rowInd, MATRIX_HEIGHT - i, 1, 1);
+        ctx.fillRect(rowInd * scale, (MATRIX_HEIGHT - i) * scale, scale, scale);
       }
     }
   }, [canvasUserRef, service, backgroundColor, userInputColor]);
@@ -569,7 +587,12 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
             } else {
               ctx.fillStyle = backgroundColor;
             }
-            ctx.fillRect(rowInd + offset, MATRIX_HEIGHT - i, 1, 1);
+            ctx.fillRect(
+              (rowInd + offset) * scale,
+              (MATRIX_HEIGHT - i) * scale,
+              scale,
+              scale,
+            );
           }
         }
         offset += gap + service.MeasureSamples;
@@ -577,11 +600,69 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
     }
   }, [canvasScoreRef, service, scoreColor, backgroundColor]);
 
+  const drawSpaces = useCallback(() => {
+    if (canvasSpaceRef?.current?.getContext === undefined) return;
+    const canvas = canvasSpaceRef.current;
+    const ctx = canvas.getContext('2d');
+    if (ctx === null) return;
+    const similarityArr = similarityArrayRef.current;
+    if (similarityArr === null) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const eeRange = [0, 1];
+    const tweRange = [0, 1.5];
+    function scaler(ee: number, twe: number): [number, number] {
+      const normalizedEE = (ee - eeRange[0]) / (eeRange[1] - eeRange[0]);
+      const normalizedTWE = (twe - tweRange[0]) / (tweRange[1] - tweRange[0]);
+
+      const coeffw = canvas.width;
+      const coeffh = canvas.height;
+      return [normalizedEE * coeffw, coeffh - normalizedTWE * coeffh];
+    }
+
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.shadowBlur = 3 * scale;
+
+    for (let i = 0; i < similarityArr.length; i++) {
+      const ee = similarityArr[i].euclideanError;
+      const twe = similarityArr[i].timeWarpingError;
+      const [x, y] = scaler(ee, twe);
+      if (check(similarityArr[i], sensitivity)) {
+        ctx.fillStyle = '#ffdfdf';
+        ctx.shadowColor = '#ff0000';
+      } else {
+        ctx.fillStyle = scoreColor;
+        ctx.shadowColor = scoreColor;
+      }
+      ctx.beginPath();
+      ctx.ellipse(x, y, scale, scale, 0, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    ctx.shadowBlur = 0;
+  }, [canvasSpaceRef, backgroundColor, scoreColor, sensitivity]);
+
+  /* 여기는 이렇게 짠 이유가 있다. useState가 캔버스 사이즈를 변경시키는 side-effect를 낼 경우, 그 이후에 렌더링하기 위함. */
+  const [needDrawScore, setNeedDrawScore] = useState(true);
   const needDrawScoreRef = useRef(false);
-  const [needDrawScore, setNeedDrawScore] = useState(false);
+  useEffect(() => {
+    needDrawScoreRef.current = needDrawScore;
+  }, [needDrawScore]);
+  const [needDrawSpace, setNeedDrawSpace] = useState(true);
+  const needDrawSpaceRef = useRef(false);
+  useEffect(() => {
+    needDrawSpaceRef.current = needDrawSpace;
+  }, [needDrawSpace]);
 
   useEffect(() => {
-    service.addSimilarityArrayChangeListener(setSimilarityArray);
+    service.addSimilarityArrayChangeListener((arr) => {
+      setSimilarityArray(arr);
+      similarityArrayRef.current = arr;
+      setNeedDrawSpace(true);
+    });
     service.addScoreChangeListener(() => {
       scoreMatrixArrayRef.current = service.getScoreBinaryMIDIKeyMatrixArray();
       setNeedDrawScore(true);
@@ -600,8 +681,13 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
         drawScores();
         setNeedDrawScore(false);
       }
+
+      if (needDrawSpaceRef.current) {
+        drawSpaces();
+        setNeedDrawSpace(false);
+      }
     },
-    [drawUserInput, drawScores],
+    [drawUserInput, drawScores, drawSpaces],
   );
 
   const numMeasures = service.getNumMeasures();
@@ -609,27 +695,28 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
   const canvasScoreWidth =
     gap * (numMeasures - 1) + service.MeasureSamples * numMeasures;
 
-  useEffect(() => {
-    needDrawScoreRef.current = needDrawScore;
-  }, [needDrawScore]);
-
   if (mode === MonitorMode.Disable) return <></>;
-
   return (
-    <Cont>
-      <Space size={gap}>
+    <Cont mode={mode}>
+      <Space size={gap * scale}>
         <canvas
-          width={canvasUserWidth}
-          height={MATRIX_HEIGHT}
+          width={canvasUserWidth * scale}
+          height={MATRIX_HEIGHT * scale}
           ref={canvasUserRef}
         ></canvas>
         <canvas
-          width={canvasScoreWidth}
-          height={MATRIX_HEIGHT}
+          width={canvasScoreWidth * scale}
+          height={MATRIX_HEIGHT * scale}
           ref={canvasScoreRef}
+        ></canvas>
+        <canvas
+          width={MATRIX_HEIGHT * scale}
+          height={MATRIX_HEIGHT * scale}
+          ref={canvasSpaceRef}
         ></canvas>
       </Space>
       <NumberCont
+        scale={scale}
         backgroundColor={backgroundColor}
         textColor={textColor}
         gap={gap}
@@ -642,15 +729,16 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
         ))}
       </NumberCont>
       <NumberCont
+        scale={scale}
         backgroundColor={backgroundColor}
         textColor={textColor}
         gap={gap}
         userSamples={service.sampleLength}
         scoreSamples={service.MeasureSamples}
       >
-        <span>Levenshtein</span>
+        <span>TimeWarping</span>
         {similarityArray?.map((similarity, ind) => (
-          <span key={ind}>{similarity.levenshteinError.toFixed(2)}</span>
+          <span key={ind}>{similarity.timeWarpingError.toFixed(2)}</span>
         ))}
       </NumberCont>
     </Cont>
