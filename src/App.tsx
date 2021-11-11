@@ -54,7 +54,6 @@ const HeaderCont = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
 `;
 
 const BreadCrumbCont = styled.div`
@@ -170,16 +169,20 @@ function App() {
         onVisibleChange={setSettingsModal}
       ></SettingsModal>
       <Header>
-        <HeaderCont
-          onClick={() => {
-            if (loc.pathname === '/') {
-              history.go(0);
-            } else {
-              history.push('/');
-            }
-          }}
-        >
-          <Space size={8}>
+        <HeaderCont>
+          <Space
+            size={8}
+            onClick={() => {
+              if (loc.pathname === '/') {
+                history.go(0);
+              } else {
+                history.push('/');
+              }
+            }}
+            style={{
+              cursor: 'pointer',
+            }}
+          >
             <Typography.Text
               style={{
                 color: 'white',
