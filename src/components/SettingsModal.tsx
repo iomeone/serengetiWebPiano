@@ -1,13 +1,7 @@
 import { getAuth, User } from 'firebase/auth';
 import { Button, Modal, Slider, Checkbox, Space, Typography, Spin } from 'antd';
 import produce from 'immer';
-import {
-  setPianoRange,
-  setPianoVisibility,
-  setSensitivity,
-  setSimilarityMonitorMode,
-  setVolume,
-} from 'modules/piano';
+import { setPianoRange, setPianoVisibility, setVolume } from 'modules/piano';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,7 +20,11 @@ import {
   similarityMonitorModeToNumber,
   similarityMonitorModeToStr,
 } from 'utils/SimilarityMonitor';
-import { setTurningThreshold } from 'modules/alignment';
+import {
+  setSensitivity,
+  setSimilarityMonitorMode,
+  setTurningThreshold,
+} from 'modules/alignment';
 
 type Props = {
   visible: boolean;
