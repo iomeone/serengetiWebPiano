@@ -1,4 +1,5 @@
 import { WidthMode } from 'constants/layout';
+import { MonitorMode } from 'models/SimilarityMonitor';
 import { State } from 'modules/State';
 import { parseNoteNameToNote } from 'utils/Note';
 
@@ -13,7 +14,9 @@ const inistialState: State = {
     visibility: false,
     min: parseNoteNameToNote('A0'),
     max: parseNoteNameToNote('C8'),
-    volume: 1
+    volume: 1,
+    similarityMonitorMode: MonitorMode.Transparent,
+    sensitivity: 0.88,
   },
   layout: {
     ready: false,

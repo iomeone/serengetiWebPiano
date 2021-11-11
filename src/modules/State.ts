@@ -1,6 +1,7 @@
 import { WidthMode } from 'constants/layout';
 import { KeyEvent, KeyMap } from 'models/KeyMap';
 import { Sheet } from 'models/Sheet';
+import { MonitorMode } from 'models/SimilarityMonitor';
 import { Worksheet } from 'models/Worksheet';
 import { AudioServiceType, IAudioService } from 'services/IAudioService';
 import { IAudioContext } from 'standardized-audio-context';
@@ -20,6 +21,8 @@ export type PianoState = {
   min: Note;
   max: Note;
   volume: number;
+  similarityMonitorMode: MonitorMode;
+  sensitivity: number;
 };
 
 export type LayoutState = {
