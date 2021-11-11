@@ -22,10 +22,16 @@ export const setTurningThreshold = (turningThreshold: number) =>
   action(SET_TURNING_THRESHOLD, { turningThreshold });
 export type SetTurningThreshold = ActionType<typeof setTurningThreshold>;
 
+export const SET_MONITOR_SCALE = '@ALIGNMENT/SET_MONITOR_SCALE';
+export const setMonitorScale = (scale: number) =>
+  action(SET_MONITOR_SCALE, { scale });
+export type SetMonitorScale = ActionType<typeof setMonitorScale>;
+
 export type AlignmentActions =
   | SetSimilarityMonitorMode
   | SetSensitivity
-  | SetTurningThreshold;
+  | SetTurningThreshold
+  | SetMonitorScale;
 
 export const alignmentReducer = (
   state: AlignmentState = inistialState.alignment,
@@ -48,6 +54,12 @@ export const alignmentReducer = (
       const { payload } = action as SetTurningThreshold;
       return produce<AlignmentState>(state, (draft) => {
         draft.turningThreshold = payload.turningThreshold;
+      });
+    }
+    case SET_MONITOR_SCALE: {
+      const { payload } = action as SetMonitorScale;
+      return produce<AlignmentState>(state, (draft) => {
+        draft.monitorScale = payload.scale;
       });
     }
     default:

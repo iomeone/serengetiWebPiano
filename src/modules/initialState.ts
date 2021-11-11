@@ -20,6 +20,7 @@ const inistialState: State = {
     similarityMonitorMode: MonitorMode.Transparent,
     sensitivity: 0.88,
     turningThreshold: 0.5,
+    monitorScale: 1.0,
   },
   layout: {
     ready: false,

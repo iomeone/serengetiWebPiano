@@ -529,7 +529,7 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
   const frameStep = 1000 / fps;
   const gap = 8;
 
-  const scale = 2.5;
+  const scale = useSelector((state: State) => state.alignment.monitorScale);
 
   const sensitivity = useSelector(
     (state: State) => state.alignment.sensitivity,
@@ -563,7 +563,7 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
         ctx.fillRect(rowInd * scale, (MATRIX_HEIGHT - i) * scale, scale, scale);
       }
     }
-  }, [canvasUserRef, service, backgroundColor, userInputColor]);
+  }, [canvasUserRef, service, backgroundColor, userInputColor, scale]);
 
   const drawScores = useCallback(() => {
     if (canvasScoreRef?.current?.getContext === undefined) return;
@@ -598,7 +598,7 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
         offset += gap + service.MeasureSamples;
       }
     }
-  }, [canvasScoreRef, service, scoreColor, backgroundColor]);
+  }, [canvasScoreRef, service, scoreColor, backgroundColor, scale]);
 
   const drawSpaces = useCallback(() => {
     if (canvasSpaceRef?.current?.getContext === undefined) return;
@@ -643,7 +643,7 @@ function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
     }
 
     ctx.shadowBlur = 0;
-  }, [canvasSpaceRef, backgroundColor, scoreColor, sensitivity]);
+  }, [canvasSpaceRef, backgroundColor, scoreColor, sensitivity, scale]);
 
   /* 여기는 이렇게 짠 이유가 있다. useState가 캔버스 사이즈를 변경시키는 side-effect를 낼 경우, 그 이후에 렌더링하기 위함. */
   const [needDrawScore, setNeedDrawScore] = useState(true);

@@ -21,6 +21,7 @@ import {
   similarityMonitorModeToStr,
 } from 'utils/SimilarityMonitor';
 import {
+  setMonitorScale,
   setSensitivity,
   setSimilarityMonitorMode,
   setTurningThreshold,
@@ -46,6 +47,7 @@ type AlignmentOption = {
   monitorMode: MonitorMode;
   sensitivity: number;
   turningThreshold: number;
+  monitorScale: number;
 };
 
 const useSettings = () => {
@@ -64,6 +66,9 @@ const useSettings = () => {
   const turningThreshold = useSelector(
     (state: State) => state.alignment.turningThreshold,
   );
+  const monitorScale = useSelector(
+    (state: State) => state.alignment.monitorScale,
+  );
 
   useEffect(() => {
     setOption({
@@ -76,6 +81,7 @@ const useSettings = () => {
         monitorMode,
         sensitivity,
         turningThreshold,
+        monitorScale,
       },
     });
   }, [
@@ -86,6 +92,7 @@ const useSettings = () => {
     monitorMode,
     sensitivity,
     turningThreshold,
+    monitorScale,
   ]);
 
   return option;
@@ -143,6 +150,7 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
     dispatch(setSimilarityMonitorMode(nextOption.alignment.monitorMode));
     dispatch(setSensitivity(nextOption.alignment.sensitivity));
     dispatch(setTurningThreshold(nextOption.alignment.turningThreshold));
+    dispatch(setMonitorScale(nextOption.alignment.monitorScale));
   };
 
   if (option === null || newOption === null) return <div></div>;
@@ -281,6 +289,20 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
             handleOption(
               produce(newOption, (draft) => {
                 draft.alignment.turningThreshold = turningThreshold;
+              }),
+            );
+          }}
+        />
+        <Typography.Text>Similarity Monitor Scale</Typography.Text>
+        <Slider
+          min={1.0}
+          max={3.0}
+          step={0.1}
+          value={newOption.alignment.monitorScale}
+          onChange={(scale) => {
+            handleOption(
+              produce(newOption, (draft) => {
+                draft.alignment.monitorScale = scale;
               }),
             );
           }}

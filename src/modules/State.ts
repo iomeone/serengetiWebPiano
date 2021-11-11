@@ -27,6 +27,7 @@ export type AlignmentState = {
   similarityMonitorMode: MonitorMode;
   sensitivity: number;
   turningThreshold: number;
+  monitorScale: number;
 };
 
 export type LayoutState = {
