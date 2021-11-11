@@ -1,7 +1,13 @@
 import { getAuth, User } from 'firebase/auth';
 import { Button, Modal, Slider, Checkbox, Space, Typography, Spin } from 'antd';
 import produce from 'immer';
-import { setPianoRange, setPianoVisibility, setVolume } from 'modules/piano';
+import {
+  setPianoRange,
+  setPianoVisibility,
+  setSensitivity,
+  setSimilarityMonitorMode,
+  setVolume,
+} from 'modules/piano';
 import { State } from 'modules/State';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,6 +20,12 @@ import {
   parseNoteNameToDiatonicNumber,
 } from 'utils/Note';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { MonitorMode } from 'models/SimilarityMonitor';
+import {
+  numberToSimilarityMonitorMode,
+  similarityMonitorModeToNumber,
+  similarityMonitorModeToStr,
+} from 'utils/SimilarityMonitor';
 
 type Props = {
   visible: boolean;
@@ -28,6 +40,8 @@ type PianoOption = {
   visibility: boolean;
   range: [Note, Note];
   volume: number;
+  monitorMode: MonitorMode;
+  sensitivity: number;
 };
 
 const useSettings = () => {
@@ -36,15 +50,22 @@ const useSettings = () => {
   const max = useSelector((state: State) => state.piano.max);
   const min = useSelector((state: State) => state.piano.min);
   const volume = useSelector((state: State) => state.piano.volume);
+  const monitorMode = useSelector(
+    (state: State) => state.piano.similarityMonitorMode,
+  );
+  const sensitivity = useSelector((state: State) => state.piano.sensitivity);
+
   useEffect(() => {
     setOption({
       piano: {
         visibility,
         range: [min, max],
         volume,
+        monitorMode,
+        sensitivity,
       },
     });
-  }, [visibility, max, min, volume]);
+  }, [visibility, max, min, volume, monitorMode, sensitivity]);
 
   return option;
 };
@@ -54,6 +75,13 @@ const diatonicNumberFormatter = (diatonicNumber?: number): string => {
     return '';
   }
   return diatonicNumberToNoteName(diatonicNumber);
+};
+
+const similarityMonitorModeFormatter = (modeNum?: number): string => {
+  if (modeNum === undefined) {
+    return '';
+  }
+  return similarityMonitorModeToStr(numberToSimilarityMonitorMode(modeNum));
 };
 
 export default function SettingsModal({ visible, onVisibleChange }: Props) {
@@ -91,6 +119,8 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
     dispatch(setPianoVisibility(nextOption.piano.visibility));
     dispatch(setPianoRange(nextOption.piano.range));
     dispatch(setVolume(nextOption.piano.volume));
+    dispatch(setSimilarityMonitorMode(nextOption.piano.monitorMode));
+    dispatch(setSensitivity(nextOption.piano.sensitivity));
   };
 
   if (option === null || newOption === null) return <div></div>;
@@ -179,6 +209,35 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
             handleOption(
               produce(newOption, (draft) => {
                 draft.piano.volume = volume;
+              }),
+            );
+          }}
+        />
+        <Typography.Text>Similarity Monitor</Typography.Text>
+        <Slider
+          min={similarityMonitorModeToNumber(MonitorMode.Disable)}
+          max={similarityMonitorModeToNumber(MonitorMode.Opaque)}
+          tipFormatter={similarityMonitorModeFormatter}
+          value={similarityMonitorModeToNumber(newOption.piano.monitorMode)}
+          onChange={(modeNum) => {
+            handleOption(
+              produce(newOption, (draft) => {
+                draft.piano.monitorMode =
+                  numberToSimilarityMonitorMode(modeNum);
+              }),
+            );
+          }}
+        />
+        <Typography.Text>Sensitivity</Typography.Text>
+        <Slider
+          min={0.1}
+          max={1.5}
+          step={0.01}
+          value={newOption.piano.sensitivity}
+          onChange={(sensitivity) => {
+            handleOption(
+              produce(newOption, (draft) => {
+                draft.piano.sensitivity = sensitivity;
               }),
             );
           }}
