@@ -5,7 +5,7 @@ import {
   stopOtherPlaybackServicesThunk,
 } from 'modules/audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled, { css } from 'styled-components';
 import Viewer, { ResizeState } from './Viewer';
 import { useSheet } from 'hooks/useSheet';
@@ -26,6 +26,8 @@ import {
 } from 'utils/OSMD';
 import { AlignmentService, Similarity } from 'services/AlignmentService';
 import { useAnimationFrame } from 'hooks/useAnimationFrame';
+import { State } from 'modules/State';
+import { MonitorMode } from 'models/SimilarityMonitor';
 
 enum Control {
   METRONOME,
@@ -289,6 +291,8 @@ export default function AlignmentViewer({
   const [similarityArray, setSimilarityArray] = useState<Similarity[] | null>(
     null,
   );
+  const sensitivity = useSelector((state: State) => state.piano.sensitivity);
+
   useEffect(() => {
     if (alignmentService !== null) {
       alignmentService.addSimilarityArrayChangeListener(setSimilarityArray);
@@ -305,11 +309,7 @@ export default function AlignmentViewer({
     const ee = similarity.euclideanError;
     const le = similarity.levenshteinError;
 
-    return (
-      ee > 0 &&
-      le > 0 &&
-      Math.pow((ee - 0.08) / 0.4, 2) + Math.pow((le - 0.41) / 0.33, 2) < 1.1
-    );
+    return ee > 0 && le > 0 && ee + le < sensitivity;
   };
   useEffect(() => {
     if (
@@ -388,6 +388,10 @@ export default function AlignmentViewer({
     return checkArray[ind] ? MeasureState.PLAYED : MeasureState.UNPLAYED;
   };
 
+  const monitorMode = useSelector(
+    (state: State) => state.piano.similarityMonitorMode,
+  );
+
   return (
     <Space
       direction="vertical"
@@ -398,7 +402,10 @@ export default function AlignmentViewer({
       }}
     >
       {alignmentService !== null && (
-        <SimilarityMonitor service={alignmentService}></SimilarityMonitor>
+        <SimilarityMonitor
+          service={alignmentService}
+          mode={monitorMode}
+        ></SimilarityMonitor>
       )}
       <TitleBar>
         <NotoSansText>{viewerTitle}</NotoSansText>
@@ -457,6 +464,7 @@ const MATRIX_HEIGHT = 128;
 
 type SimilarityMonitorProps = {
   service: AlignmentService;
+  mode: MonitorMode;
 };
 
 const Cont = styled.div`
@@ -466,21 +474,18 @@ const Cont = styled.div`
   top: 0;
 `;
 
-const userInputColor = '#c5177daa';
-const scoreColor = '#1a0bebea';
-const backgroundColor = 'rgba(41, 41, 41, 0.08)';
-const textColor = '#d10bebea';
-
 type NumberContProps = {
   userSamples: number;
   gap: number;
   scoreSamples: number;
+  backgroundColor: string;
+  textColor: string;
 };
 const NumberCont = styled.div<NumberContProps>`
-  background-color: ${backgroundColor};
+  background-color: ${({ backgroundColor }) => backgroundColor};
   padding: 2px;
   font-size: 12px;
-  ${({ scoreSamples, userSamples, gap }) => css`
+  ${({ scoreSamples, userSamples, gap, textColor }) => css`
     & > span {
       display: inline-block;
       width: ${scoreSamples}px;
@@ -499,13 +504,16 @@ const NumberCont = styled.div<NumberContProps>`
   `}
 `;
 
-function SimilarityMonitor({ service }: SimilarityMonitorProps) {
+function SimilarityMonitor({ service, mode }: SimilarityMonitorProps) {
   const canvasUserRef = useRef<HTMLCanvasElement>(null);
   const canvasScoreRef = useRef<HTMLCanvasElement>(null);
   const prevTime = useRef(0);
   const fps = 20;
   const frameStep = 1000 / fps;
   const gap = 8;
+
+  const { backgroundColor, scoreColor, textColor, userInputColor } =
+    useModeColor(mode);
 
   const [similarityArray, setSimilarityArray] = useState<Similarity[] | null>(
     null,
@@ -531,7 +539,7 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         ctx.fillRect(rowInd, MATRIX_HEIGHT - i, 1, 1);
       }
     }
-  }, [canvasUserRef, service]);
+  }, [canvasUserRef, service, backgroundColor, userInputColor]);
 
   const drawScores = useCallback(() => {
     if (canvasScoreRef?.current?.getContext === undefined) return;
@@ -561,7 +569,7 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         offset += gap + service.MeasureSamples;
       }
     }
-  }, [canvasScoreRef, service]);
+  }, [canvasScoreRef, service, scoreColor, backgroundColor]);
 
   const needDrawScoreRef = useRef(false);
   const [needDrawScore, setNeedDrawScore] = useState(false);
@@ -599,6 +607,8 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
     needDrawScoreRef.current = needDrawScore;
   }, [needDrawScore]);
 
+  if (mode === MonitorMode.Disable) return <></>;
+
   return (
     <Cont>
       <Space size={gap}>
@@ -614,6 +624,8 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         ></canvas>
       </Space>
       <NumberCont
+        backgroundColor={backgroundColor}
+        textColor={textColor}
         gap={gap}
         userSamples={service.sampleLength}
         scoreSamples={service.MeasureSamples}
@@ -624,6 +636,8 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
         ))}
       </NumberCont>
       <NumberCont
+        backgroundColor={backgroundColor}
+        textColor={textColor}
         gap={gap}
         userSamples={service.sampleLength}
         scoreSamples={service.MeasureSamples}
@@ -635,4 +649,25 @@ function SimilarityMonitor({ service }: SimilarityMonitorProps) {
       </NumberCont>
     </Cont>
   );
+}
+
+function useModeColor(mode: MonitorMode) {
+  switch (mode) {
+    case MonitorMode.Opaque:
+      return {
+        userInputColor: '#ff98d4aa',
+        scoreColor: '#91fafdea',
+        backgroundColor: 'rgba(41, 41, 41, 0.863)',
+        textColor: '#f5f2efea',
+      };
+    case MonitorMode.Disable:
+    case MonitorMode.Transparent:
+    default:
+      return {
+        userInputColor: '#c5177daa',
+        scoreColor: '#1a0bebea',
+        backgroundColor: 'rgba(41, 41, 41, 0.08)',
+        textColor: '#d10bebea',
+      };
+  }
 }
