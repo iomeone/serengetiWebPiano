@@ -202,6 +202,9 @@ function App() {
             </Typography.Text>
           </Space>
           <Button
+            style={{
+              zIndex: 99,
+            }}
             shape="circle"
             onClick={() => {
               setSettingsModal(true);
