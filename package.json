@@ -24,7 +24,7 @@
     "firebase": "^9.0.1",
     "golang-wasm-async-loader": "^0.4.1",
     "immer": "^9.0.3",
-    "midi-similarity-measurement": "^0.1.7",
+    "midi-similarity-measurement": "^0.1.9",
     "opensheetmusicdisplay": "^1.0.0",
     "react": "^17.0.2",
     "react-app-rewired": "^2.1.8",

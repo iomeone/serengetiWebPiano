@@ -20,11 +20,11 @@ export async function getSimilarity(): Promise<any> {
 }
 
 export class AlignmentService {
-  private readonly CALC_SIMILARITY_PERIOD = 400;
+  private readonly CALC_SIMILARITY_PERIOD = 350;
 
-  public readonly sampleRate = 25;
-  public readonly onsetWeight = 5.0;
-  public readonly settlingFrame = 8;
+  public readonly sampleRate = 20;
+  public readonly onsetWeight = 10;
+  public readonly settlingFrame = 5;
 
   public readonly sampleStep = 1000 / this.sampleRate;
   public readonly sampleSec = 3;
@@ -176,6 +176,8 @@ export class AlignmentService {
       matrix2,
       this.onsetWeight,
       this.settlingFrame,
+      false, //use distance_fn
+      false, //debug
     ) as [number, number];
 
     return {
