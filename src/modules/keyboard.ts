@@ -14,7 +14,7 @@ type SetKeyUp = ActionType<typeof setKeyUp>;
 
 export type KeyboardActions = SetKeyDown | SetKeyUp;
 
-export const KeyboardReducer = (
+export const keyboardReducer = (
   state: KeyboardState = inistialState.keyboard,
   action: KeyboardActions,
 ): KeyboardState => {

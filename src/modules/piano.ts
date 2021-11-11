@@ -62,18 +62,6 @@ export const pianoReducer = (
         draft.volume = payload.volume;
       });
     }
-    case SET_SIMILARITY_MONITOR_MODE: {
-      const { payload } = action as SetSimilarityMonitorMode;
-      return produce<PianoState>(state, (draft) => {
-        draft.similarityMonitorMode = payload.mode;
-      });
-    }
-    case SET_SENSITIVITY: {
-      const { payload } = action as SetSensitivity;
-      return produce<PianoState>(state, (draft) => {
-        draft.sensitivity = payload.sensitivity;
-      });
-    }
     default:
       return state;
   }

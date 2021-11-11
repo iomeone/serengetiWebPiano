@@ -291,7 +291,9 @@ export default function AlignmentViewer({
   const [similarityArray, setSimilarityArray] = useState<Similarity[] | null>(
     null,
   );
-  const sensitivity = useSelector((state: State) => state.piano.sensitivity);
+  const sensitivity = useSelector(
+    (state: State) => state.alignment.sensitivity,
+  );
 
   useEffect(() => {
     if (alignmentService !== null) {
@@ -331,13 +333,17 @@ export default function AlignmentViewer({
 
   const SCROLL_MARGIN = 40;
 
+  const turningThreshold = useSelector(
+    (state: State) => state.alignment.turningThreshold,
+  );
+
   useEffect(() => {
     if (checkArray === null || staffLines === null || lastStaffInd === null)
       return;
 
     const pageTurn =
       checkArray.filter((check) => check).length >=
-      Math.ceil(checkArray.length / 2);
+      Math.ceil(checkArray.length * turningThreshold);
 
     if (pageTurn) {
       const lastStaff = staffLines[lastStaffInd];
@@ -389,7 +395,7 @@ export default function AlignmentViewer({
   };
 
   const monitorMode = useSelector(
-    (state: State) => state.piano.similarityMonitorMode,
+    (state: State) => state.alignment.similarityMonitorMode,
   );
 
   return (

@@ -15,8 +15,11 @@ const inistialState: State = {
     min: parseNoteNameToNote('A0'),
     max: parseNoteNameToNote('C8'),
     volume: 1,
+  },
+  alignment: {
     similarityMonitorMode: MonitorMode.Transparent,
     sensitivity: 0.88,
+    turningThreshold: 0.5,
   },
   layout: {
     ready: false,

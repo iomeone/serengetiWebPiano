@@ -21,8 +21,12 @@ export type PianoState = {
   min: Note;
   max: Note;
   volume: number;
+};
+
+export type AlignmentState = {
   similarityMonitorMode: MonitorMode;
   sensitivity: number;
+  turningThreshold: number;
 };
 
 export type LayoutState = {
@@ -50,4 +54,5 @@ export type State = {
   layout: LayoutState;
   editor: EditorState;
   keyboard: KeyboardState;
+  alignment: AlignmentState;
 };

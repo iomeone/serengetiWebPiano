@@ -26,6 +26,7 @@ import {
   similarityMonitorModeToNumber,
   similarityMonitorModeToStr,
 } from 'utils/SimilarityMonitor';
+import { setTurningThreshold } from 'modules/alignment';
 
 type Props = {
   visible: boolean;
@@ -34,14 +35,19 @@ type Props = {
 
 type GeneralOption = {
   piano: PianoOption;
+  alignment: AlignmentOption;
 };
 
 type PianoOption = {
   visibility: boolean;
   range: [Note, Note];
   volume: number;
+};
+
+type AlignmentOption = {
   monitorMode: MonitorMode;
   sensitivity: number;
+  turningThreshold: number;
 };
 
 const useSettings = () => {
@@ -50,10 +56,16 @@ const useSettings = () => {
   const max = useSelector((state: State) => state.piano.max);
   const min = useSelector((state: State) => state.piano.min);
   const volume = useSelector((state: State) => state.piano.volume);
+
   const monitorMode = useSelector(
-    (state: State) => state.piano.similarityMonitorMode,
+    (state: State) => state.alignment.similarityMonitorMode,
   );
-  const sensitivity = useSelector((state: State) => state.piano.sensitivity);
+  const sensitivity = useSelector(
+    (state: State) => state.alignment.sensitivity,
+  );
+  const turningThreshold = useSelector(
+    (state: State) => state.alignment.turningThreshold,
+  );
 
   useEffect(() => {
     setOption({
@@ -61,11 +73,22 @@ const useSettings = () => {
         visibility,
         range: [min, max],
         volume,
+      },
+      alignment: {
         monitorMode,
         sensitivity,
+        turningThreshold,
       },
     });
-  }, [visibility, max, min, volume, monitorMode, sensitivity]);
+  }, [
+    visibility,
+    max,
+    min,
+    volume,
+    monitorMode,
+    sensitivity,
+    turningThreshold,
+  ]);
 
   return option;
 };
@@ -119,8 +142,9 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
     dispatch(setPianoVisibility(nextOption.piano.visibility));
     dispatch(setPianoRange(nextOption.piano.range));
     dispatch(setVolume(nextOption.piano.volume));
-    dispatch(setSimilarityMonitorMode(nextOption.piano.monitorMode));
-    dispatch(setSensitivity(nextOption.piano.sensitivity));
+    dispatch(setSimilarityMonitorMode(nextOption.alignment.monitorMode));
+    dispatch(setSensitivity(nextOption.alignment.sensitivity));
+    dispatch(setTurningThreshold(nextOption.alignment.turningThreshold));
   };
 
   if (option === null || newOption === null) return <div></div>;
@@ -213,16 +237,23 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
             );
           }}
         />
+        <Typography.Text
+          style={{
+            fontWeight: 'bold',
+          }}
+        >
+          Alignment Option
+        </Typography.Text>
         <Typography.Text>Similarity Monitor</Typography.Text>
         <Slider
           min={similarityMonitorModeToNumber(MonitorMode.Disable)}
           max={similarityMonitorModeToNumber(MonitorMode.Opaque)}
           tipFormatter={similarityMonitorModeFormatter}
-          value={similarityMonitorModeToNumber(newOption.piano.monitorMode)}
+          value={similarityMonitorModeToNumber(newOption.alignment.monitorMode)}
           onChange={(modeNum) => {
             handleOption(
               produce(newOption, (draft) => {
-                draft.piano.monitorMode =
+                draft.alignment.monitorMode =
                   numberToSimilarityMonitorMode(modeNum);
               }),
             );
@@ -233,11 +264,25 @@ export default function SettingsModal({ visible, onVisibleChange }: Props) {
           min={0.1}
           max={1.5}
           step={0.01}
-          value={newOption.piano.sensitivity}
+          value={newOption.alignment.sensitivity}
           onChange={(sensitivity) => {
             handleOption(
               produce(newOption, (draft) => {
-                draft.piano.sensitivity = sensitivity;
+                draft.alignment.sensitivity = sensitivity;
+              }),
+            );
+          }}
+        />
+        <Typography.Text>Turning Threshold</Typography.Text>
+        <Slider
+          min={0.4}
+          max={0.9}
+          step={0.01}
+          value={newOption.alignment.turningThreshold}
+          onChange={(turningThreshold) => {
+            handleOption(
+              produce(newOption, (draft) => {
+                draft.alignment.turningThreshold = turningThreshold;
               }),
             );
           }}
