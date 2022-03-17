@@ -7,9 +7,10 @@ import { ScissorOutlined } from '@ant-design/icons';
 type Props = {
   range: MeasureRange | null;
   sheetKey: string;
+  appendMeasureRange: () => void;
 };
 
-export default function CutMeasureInfo({ range }: Props) {
+export default function CutMeasureInfo({ range, appendMeasureRange }: Props) {
   const [title, setTitle] = useState('');
 
   // TODO : Show SegmentViewer;
@@ -38,6 +39,7 @@ export default function CutMeasureInfo({ range }: Props) {
             <Button
               onClick={() => {
                 //TODO:cut function
+                appendMeasureRange();
               }}
             >
               <ScissorOutlined />
